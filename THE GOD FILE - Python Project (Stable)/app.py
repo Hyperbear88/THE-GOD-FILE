@@ -17,6 +17,7 @@ from datetime import datetime
 # 1. LOGGING & EXE PATHS
 # ----------------------------
 LOG_FILE = "session_log.txt"
+SETTINGS_FILE = "user_settings.json"
 
 def log_event(message, is_error=False):
     timestamp = datetime.now().strftime("%H:%M:%S")
@@ -28,6 +29,38 @@ def log_event(message, is_error=False):
             f.write(log_entry + "\n")
             f.flush()
     except: pass
+
+def load_user_settings():
+    defaults = {
+        "menu_music_enabled": True,
+        "menu_music_volume": 70,
+        "audio_enabled": True,
+        "sfx_enabled": True,
+        "menu_videos_enabled": True,
+        "card_videos_enabled": True
+    }
+    try:
+        if os.path.exists(SETTINGS_FILE):
+            with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+                raw = json.load(f)
+            if isinstance(raw, dict):
+                defaults.update(raw)
+    except Exception as ex:
+        log_event(f"Could not load settings: {ex}", is_error=True)
+    defaults["menu_music_volume"] = int(clamp(defaults.get("menu_music_volume", 70), 0, 100))
+    defaults["menu_music_enabled"] = bool(defaults.get("menu_music_enabled", True))
+    defaults["audio_enabled"] = bool(defaults.get("audio_enabled", True))
+    defaults["sfx_enabled"] = bool(defaults.get("sfx_enabled", True))
+    defaults["menu_videos_enabled"] = bool(defaults.get("menu_videos_enabled", True))
+    defaults["card_videos_enabled"] = bool(defaults.get("card_videos_enabled", True))
+    return defaults
+
+def save_user_settings(settings):
+    try:
+        with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
+            json.dump(settings, f, indent=2)
+    except Exception as ex:
+        log_event(f"Could not save settings: {ex}", is_error=True)
 
 def resource_path(relative_path):
     candidates = []
@@ -64,6 +97,7 @@ VIEW_START_X, VIEW_START_Y = 80, 120
 
 HAND_GRID_SPACING_X = 290
 HAND_GRID_SPACING_Y = 515 
+MAIN_MENU_MUSIC = resource_path(os.path.join("audio", "main menu.mp3"))
 
 IMAGES_DIR = resource_path("images")
 CARDS_JSON = resource_path("cards.json")
@@ -588,6 +622,8 @@ class Game:
         self.seer_slots_filled_today = 0
         self.draw_of_fate_uses = 0
         self.draw_of_fate_current = 0
+        self.audio_enabled = True
+        self.sfx_enabled = True
         self.rebuild_deck(); self.shuffle_deck(play_sound=False)
         self.draw_of_fate_uses = self.get_draw_of_fate_uses_by_level()
         self.draw_of_fate_current = self.draw_of_fate_uses
@@ -629,7 +665,7 @@ class Game:
         random.shuffle(self.deck)
         self.stacked = None 
         if trigger_anim: self.shuffle_anim_timer = SHUFFLE_ANIM_DURATION
-        if play_sound: 
+        if play_sound and self.audio_enabled and self.sfx_enabled: 
             try: pygame.mixer.Sound(SHUFFLE_SOUND).play()
             except: pass
 
@@ -969,22 +1005,40 @@ def safe_main():
         log_event(f"Scanning JSON... Found {len(results)} bolded fields.")
         
         hand_tex, view_tex, preview_tex_hd, preview_bgs, thumb_tex, total_steps, cur_step = {}, {}, {}, {}, {}, len(cards_raw) * 4 + 2, 0
+        def _asset_pct(step): return (step / max(1, total_steps)) * 0.9
         THUMB_H, THUMB_W = 185, 132
         for c in cards_raw:
             cid, cname, img_path = c['id'], c['name'], os.path.join(IMAGES_DIR, c['image'])
-            hand_tex[cid] = load_image_safe(img_path, (HAND_CARD_W, HAND_CARD_H), cname); cur_step += 1; draw_loading_screen(cur_step/total_steps, f"Hand Texture: {cname}", hand_tex[cid])
-            view_tex[cid] = load_image_safe(img_path, (VIEW_CARD_W, VIEW_CARD_H), cname); cur_step += 1; draw_loading_screen(cur_step/total_steps, f"Grid Texture: {cname}", hand_tex[cid])
+            hand_tex[cid] = load_image_safe(img_path, (HAND_CARD_W, HAND_CARD_H), cname); cur_step += 1; draw_loading_screen(_asset_pct(cur_step), f"Hand Texture: {cname}", hand_tex[cid])
+            view_tex[cid] = load_image_safe(img_path, (VIEW_CARD_W, VIEW_CARD_H), cname); cur_step += 1; draw_loading_screen(_asset_pct(cur_step), f"Grid Texture: {cname}", hand_tex[cid])
             thumb_tex[cid] = pygame.transform.smoothscale(hand_tex[cid], (THUMB_W, THUMB_H))
             prev_h, prev_w = int(H * 0.80), int(int(H * 0.80) * (HAND_CARD_W / HAND_CARD_H))
-            preview_tex_hd[cid] = load_image_safe(img_path, (prev_w, prev_h), cname); cur_step += 1; draw_loading_screen(cur_step/total_steps, f"HD View: {cname}", hand_tex[cid])
-            found = next((f for f in os.listdir(IMAGES_DIR) if f.lower().startswith(f"{cid}-") and f.lower().endswith("_bg.png")), None); preview_bgs[cid] = pygame.transform.smoothscale(pygame.image.load(os.path.join(IMAGES_DIR, found)).convert(), (W, H)) if found else pygame.Surface((W,H)); cur_step += 1; draw_loading_screen(cur_step/total_steps, f"Backdrop: {cname}", hand_tex[cid])
+            preview_tex_hd[cid] = load_image_safe(img_path, (prev_w, prev_h), cname); cur_step += 1; draw_loading_screen(_asset_pct(cur_step), f"HD View: {cname}", hand_tex[cid])
+            found = next((f for f in os.listdir(IMAGES_DIR) if f.lower().startswith(f"{cid}-") and f.lower().endswith("_bg.png")), None); preview_bgs[cid] = pygame.transform.smoothscale(pygame.image.load(os.path.join(IMAGES_DIR, found)).convert(), (W, H)) if found else pygame.Surface((W,H)); cur_step += 1; draw_loading_screen(_asset_pct(cur_step), f"Backdrop: {cname}", hand_tex[cid])
         
         menu_bg, normal_bg, deck_back_sm, v_face_hand = load_image_safe(os.path.join(IMAGES_DIR, MENU_BG_IMAGE), (W, H)), load_image_safe(os.path.join(IMAGES_DIR, NORMAL_BG_IMAGE), (W, H)), load_image_safe(os.path.join(IMAGES_DIR, DECK_BACK_IMAGE), (160, 224)), load_image_safe(os.path.join(IMAGES_DIR, VANISHED_CARD_IMAGE), (HAND_CARD_W, HAND_CARD_H))
+        cur_step += 1; draw_loading_screen(_asset_pct(cur_step), "Interface Textures", v_face_hand)
         # Release loading bg video so the file can be reopened later
         if _loading_bg_video["cap"] is not None:
             _loading_bg_video["cap"].release()
             _loading_bg_video["cap"] = None
         v_face_view, v_face_deck = pygame.transform.smoothscale(v_face_hand, (VIEW_CARD_W, VIEW_CARD_H)), pygame.transform.smoothscale(v_face_hand, (160, 224))
+        cur_step += 1; draw_loading_screen(_asset_pct(cur_step), "Finalizing Visual Assets", v_face_hand)
+        
+        # Last 10%: options/settings load stage over 10 seconds
+        user_settings = load_user_settings()
+        _settings_stage_seconds = 10.0
+        _settings_start = time.time()
+        while True:
+            _elapsed = time.time() - _settings_start
+            _frac = clamp(_elapsed / _settings_stage_seconds, 0.0, 1.0)
+            draw_loading_screen(0.9 + (_frac * 0.1), f"Loading options... {int(_frac * 100)}%")
+            for _ev in pygame.event.get():
+                if _ev.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+            if _frac >= 1.0:
+                break
         
         glow_gold, glow_purple, game = make_glow(HAND_CARD_W, HAND_CARD_H, GOLD), make_glow(HAND_CARD_W, HAND_CARD_H, PURPLE_TAP), Game(cards_raw)
         
@@ -1040,7 +1094,27 @@ def safe_main():
         menu_box_rect = pygame.Rect(W//2 - 200, H//2 - 50, 400, 350)
         menu_lvl_dd = Dropdown((menu_box_rect.x+50, menu_box_rect.y+100, 300, 45), [(i, i) for i in range(1, 21)], fantasy=True)
         start_game_btn = Button((menu_box_rect.x+50, menu_box_rect.y+170, 300, 50), "START GAME", primary=True, fantasy=True)
-        menu_quit_btn = Button((menu_box_rect.x+50, menu_box_rect.y+240, 300, 50), "Exit game", danger=True, fantasy=True)
+        settings_btn = Button((menu_box_rect.x+50, menu_box_rect.y+225, 300, 50), "Settings", fantasy=True)
+        menu_quit_btn = Button((menu_box_rect.x+50, menu_box_rect.y+285, 300, 50), "Exit game", danger=True, fantasy=True)
+        settings_box_rect = pygame.Rect(W//2 - 250, H//2 - 220, 500, 500)
+        settings_music_dd = Dropdown((settings_box_rect.x + 190, settings_box_rect.y + 140, 220, 40), [("on", "On"), ("off", "Off")], fantasy=True)
+        settings_music_slider = IntSlider((settings_box_rect.x + 190, settings_box_rect.y + 205, 220, 36), 0, 100, 70)
+        settings_sound_btn = Button((settings_box_rect.x + 50, settings_box_rect.y + 285, 180, 45), "Audio: ON", primary=True, fantasy=True)
+        settings_fx_btn = Button((settings_box_rect.x + 270, settings_box_rect.y + 285, 180, 45), "FX: ON", primary=True, fantasy=True)
+        settings_menu_video_btn = Button((settings_box_rect.x + 50, settings_box_rect.y + 340, 180, 45), "Menu Vids: ON", primary=True, fantasy=True)
+        settings_card_video_btn = Button((settings_box_rect.x + 270, settings_box_rect.y + 340, 180, 45), "Card Videos: ON", primary=True, fantasy=True)
+        settings_back_btn = Button((settings_box_rect.x + 50, settings_box_rect.y + 415, 180, 50), "Main Menu", warning=True, fantasy=True)
+        settings_exit_btn = Button((settings_box_rect.x + 270, settings_box_rect.y + 415, 180, 50), "Exit Game", danger=True, fantasy=True)
+        menu_music_enabled = user_settings["menu_music_enabled"]
+        menu_music_volume = user_settings["menu_music_volume"]
+        audio_enabled = user_settings["audio_enabled"]
+        sfx_enabled = user_settings["sfx_enabled"]
+        menu_videos_enabled = user_settings["menu_videos_enabled"]
+        card_videos_enabled = user_settings["card_videos_enabled"]
+        settings_music_slider.set_value(menu_music_volume)
+        settings_music_dd.selected_index = 0 if menu_music_enabled else 1
+        game.audio_enabled = audio_enabled
+        game.sfx_enabled = sfx_enabled
         
         screen_mode, running, scroll_y, preview_cid, card_fire_particles = "menu", True, 0, None, []
         preview_state = {'mode': 'normal', 'orientation': 'upright'}
@@ -1107,6 +1181,9 @@ def safe_main():
             game.add_history(f"{game.cards[h['id']]['name']} was Used and Vanished.", [h['id']])
 
         def start_fool_video(card_id, post_action):
+            if not card_videos_enabled:
+                post_action()
+                return False
             video_path = card_video_paths.get(card_id)
             if not video_path or not os.path.exists(video_path):
                 post_action()
@@ -1181,7 +1258,7 @@ def safe_main():
             btn_d1.rect = pygame.Rect(ui_x, _title_y - 108, _d1_half, 90)
             stack_btn.rect = pygame.Rect(ui_x + _d1_half + 10, _title_y - 108, _d1_half, 90)
 
-            if screen_mode == "fool_video" and fool_video_state["cap"] is not None:
+            if card_videos_enabled and screen_mode == "fool_video" and fool_video_state["cap"] is not None:
                 fool_video_state["accum"] += dt
                 while fool_video_state["accum"] >= fool_video_state["frame_interval"]:
                     fool_video_state["accum"] -= fool_video_state["frame_interval"]
@@ -1200,7 +1277,7 @@ def safe_main():
             
             # Update looping background videos for prophet_selection and deck screens
             for _bgv in (prophet_bg_video, deck_bg_video):
-                if _bgv["cap"] is not None:
+                if menu_videos_enabled and _bgv["cap"] is not None:
                     _bgv["accum"] += dt
                     while _bgv["accum"] >= _bgv["frame_interval"]:
                         _bgv["accum"] -= _bgv["frame_interval"]
@@ -1268,9 +1345,15 @@ def safe_main():
             for e in pygame.event.get():
                 if current_roll_anim: continue 
                 if e.type == pygame.QUIT: running = False
-                if screen_mode == "fool_video":
-                    if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+                if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+                    if screen_mode == "fool_video":
                         stop_card_video(play_action=True)
+                    rest_menu_open = False
+                    top_menu_open = False
+                    history_overlay_open = False
+                    screen_mode = "menu"
+                    continue
+                if screen_mode == "fool_video":
                     continue
                 
                 if screen_mode == "menu":
@@ -1282,10 +1365,46 @@ def safe_main():
                         draw_of_fate_slider.set_value(game.draw_of_fate_uses)
                         lvl_change_dd.selected_index = game.level - 1
                     if start_game_btn.handle_event(e):
-                        game = Game(cards_raw); game.level = menu_lvl_dd.get_selected(); lvl_change_dd.selected_index = game.level - 1; game.hand_limit = game.get_base_limit(); game.draw_of_fate_uses = game.get_draw_of_fate_uses_by_level(); game.draw_of_fate_current = game.draw_of_fate_uses; draw_of_fate_slider.set_value(game.draw_of_fate_uses)
+                        game = Game(cards_raw); game.level = menu_lvl_dd.get_selected(); lvl_change_dd.selected_index = game.level - 1; game.hand_limit = game.get_base_limit(); game.draw_of_fate_uses = game.get_draw_of_fate_uses_by_level(); game.draw_of_fate_current = game.draw_of_fate_uses; draw_of_fate_slider.set_value(game.draw_of_fate_uses); game.audio_enabled = audio_enabled; game.sfx_enabled = sfx_enabled
                         if game.level >= 17: total = game.long_rest(skip_draw=True); prophet_remaining_draws = total - 1; screen_mode, scroll_y = "prophet_selection", 0
                         else: game.long_rest(); screen_mode = "normal"
+                    if settings_btn.handle_event(e):
+                        screen_mode = "settings"
                     if menu_quit_btn.handle_event(e): running = False
+                
+                elif screen_mode == "settings":
+                    if settings_music_dd.handle_event(e):
+                        menu_music_enabled = (settings_music_dd.get_selected() == "on")
+                        save_user_settings({"menu_music_enabled": menu_music_enabled, "menu_music_volume": menu_music_volume, "audio_enabled": audio_enabled, "sfx_enabled": sfx_enabled, "menu_videos_enabled": menu_videos_enabled, "card_videos_enabled": card_videos_enabled})
+                    if settings_music_slider.handle_event(e):
+                        menu_music_volume = settings_music_slider.value
+                        save_user_settings({"menu_music_enabled": menu_music_enabled, "menu_music_volume": menu_music_volume, "audio_enabled": audio_enabled, "sfx_enabled": sfx_enabled, "menu_videos_enabled": menu_videos_enabled, "card_videos_enabled": card_videos_enabled})
+                    if settings_sound_btn.handle_event(e):
+                        audio_enabled = not audio_enabled
+                        game.audio_enabled = audio_enabled
+                        if not audio_enabled:
+                            try:
+                                pygame.mixer.stop()
+                                pygame.mixer.music.stop()
+                            except Exception:
+                                pass
+                        save_user_settings({"menu_music_enabled": menu_music_enabled, "menu_music_volume": menu_music_volume, "audio_enabled": audio_enabled, "sfx_enabled": sfx_enabled, "menu_videos_enabled": menu_videos_enabled, "card_videos_enabled": card_videos_enabled})
+                    if settings_fx_btn.handle_event(e):
+                        sfx_enabled = not sfx_enabled
+                        game.sfx_enabled = sfx_enabled
+                        save_user_settings({"menu_music_enabled": menu_music_enabled, "menu_music_volume": menu_music_volume, "audio_enabled": audio_enabled, "sfx_enabled": sfx_enabled, "menu_videos_enabled": menu_videos_enabled, "card_videos_enabled": card_videos_enabled})
+                    if settings_menu_video_btn.handle_event(e):
+                        menu_videos_enabled = not menu_videos_enabled
+                        save_user_settings({"menu_music_enabled": menu_music_enabled, "menu_music_volume": menu_music_volume, "audio_enabled": audio_enabled, "sfx_enabled": sfx_enabled, "menu_videos_enabled": menu_videos_enabled, "card_videos_enabled": card_videos_enabled})
+                    if settings_card_video_btn.handle_event(e):
+                        card_videos_enabled = not card_videos_enabled
+                        if not card_videos_enabled and screen_mode == "fool_video" and fool_video_state["cap"] is not None:
+                            stop_card_video(play_action=True)
+                        save_user_settings({"menu_music_enabled": menu_music_enabled, "menu_music_volume": menu_music_volume, "audio_enabled": audio_enabled, "sfx_enabled": sfx_enabled, "menu_videos_enabled": menu_videos_enabled, "card_videos_enabled": card_videos_enabled})
+                    if settings_back_btn.handle_event(e):
+                        screen_mode = "menu"
+                    if settings_exit_btn.handle_event(e):
+                        running = False
                 
                 elif screen_mode == "preview_view":
                     if exit_view_btn.handle_event(e): 
@@ -1680,6 +1799,21 @@ def safe_main():
 
             # --- DRAWING ---
             screen.fill((10, 12, 18))
+            # Play menu music in menu/settings if enabled
+            if screen_mode in ["menu", "settings"] and menu_music_enabled and audio_enabled:
+                try:
+                    pygame.mixer.music.set_volume(menu_music_volume / 100.0)
+                except Exception:
+                    pass
+                if not pygame.mixer.music.get_busy() or pygame.mixer.music.get_pos() == -1:
+                    try:
+                        pygame.mixer.music.load(MAIN_MENU_MUSIC)
+                        pygame.mixer.music.play(-1)
+                    except Exception as e:
+                        log_event(f"Music error: {e}", True)
+            else:
+                if pygame.mixer.music.get_busy():
+                    pygame.mixer.music.stop()
             
             if screen_mode == "menu":
                 screen.blit(menu_bg, (0, 0))
@@ -1713,8 +1847,45 @@ def safe_main():
                 screen.blit(choose_lvl_surf, (choose_lvl_x, choose_lvl_y))
                 menu_lvl_dd.draw_base(screen, f_small)
                 start_game_btn.draw(screen, f_small, dt)
+                settings_btn.draw(screen, f_small, dt)
                 menu_quit_btn.draw(screen, f_small, dt)
                 menu_lvl_dd.draw_menu(screen, f_small)
+            
+            elif screen_mode == "settings":
+                screen.blit(menu_bg, (0, 0))
+                _vignette = pygame.Surface((W, H), pygame.SRCALPHA)
+                _vignette.fill((10, 6, 14, 105))
+                screen.blit(_vignette, (0, 0))
+                _s_outer = settings_box_rect.inflate(16, 20)
+                draw_round_rect(screen, _s_outer, (36, 20, 12, 220), 24)
+                pygame.draw.rect(screen, (120, 86, 42, 220), _s_outer, 3, 24)
+                draw_round_rect(screen, settings_box_rect, (18, 14, 24, 230), 20)
+                pygame.draw.rect(screen, (235, 190, 60, 170), settings_box_rect, 2, 20)
+                _st = f_preview_title.render("SETTINGS", True, GOLD)
+                screen.blit(_st, (settings_box_rect.centerx - _st.get_width() // 2, settings_box_rect.y + 22))
+                _hint = f_tiny.render("Press Escape to return to Main Menu", True, (205, 178, 126))
+                screen.blit(_hint, (settings_box_rect.centerx - _hint.get_width() // 2, settings_box_rect.y + 78))
+
+                _lbl1 = f_small.render("Menu Music", True, (232, 215, 176))
+                _lbl2 = f_small.render("Music Volume", True, (232, 215, 176))
+                _lbl3 = f_small.render("Global Toggles", True, (232, 215, 176))
+                screen.blit(_lbl1, (settings_box_rect.x + 70, settings_box_rect.y + 146))
+                screen.blit(_lbl2, (settings_box_rect.x + 70, settings_box_rect.y + 210))
+                screen.blit(_lbl3, (settings_box_rect.x + 70, settings_box_rect.y + 250))
+
+                settings_music_dd.draw_base(screen, f_small)
+                settings_music_slider.draw(screen, f_tiny)
+                settings_sound_btn.text = f"Audio: {'ON' if audio_enabled else 'OFF'}"
+                settings_fx_btn.text = f"FX: {'ON' if sfx_enabled else 'OFF'}"
+                settings_menu_video_btn.text = f"Menu Vids: {'ON' if menu_videos_enabled else 'PAUSED'}"
+                settings_card_video_btn.text = f"Card Videos: {'ON' if card_videos_enabled else 'OFF'}"
+                settings_sound_btn.draw(screen, f_small, dt)
+                settings_fx_btn.draw(screen, f_small, dt)
+                settings_menu_video_btn.draw(screen, f_tiny, dt)
+                settings_card_video_btn.draw(screen, f_small, dt)
+                settings_back_btn.draw(screen, f_small, dt)
+                settings_exit_btn.draw(screen, f_small, dt)
+                settings_music_dd.draw_menu(screen, f_small)
             
             elif screen_mode == "normal":
                 screen.blit(normal_bg, (0, 0))
