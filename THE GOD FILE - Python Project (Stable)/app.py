@@ -2,6 +2,7 @@ import os
 import json
 import random
 import math
+import time
 import pygame
 import copy
 import sys
@@ -556,8 +557,12 @@ class IntSlider:
         knob_x = self._value_to_x()
         fill_w = max(2, knob_x - track.x)
         pygame.draw.rect(surf, GOLD, (track.x, track.y, fill_w, track.h), border_radius=3)
-        pygame.draw.circle(surf, (255, 245, 185), (knob_x, track.centery), 8)
-        pygame.draw.circle(surf, GOLD, (knob_x, track.centery), 8, 2)
+        # Draw knob as a rounded pill with value text
+        _knob_r = 12
+        pygame.draw.circle(surf, (255, 245, 185), (knob_x, track.centery), _knob_r)
+        pygame.draw.circle(surf, GOLD, (knob_x, track.centery), _knob_r, 2)
+        _val_surf = font.render(str(self.value), True, (20, 15, 5))
+        surf.blit(_val_surf, (knob_x - _val_surf.get_width() // 2, track.centery - _val_surf.get_height() // 2))
 
 # ----------------------------
 # 7. GAME CONTROLLER
@@ -722,12 +727,177 @@ def safe_main():
     try:
         screen, W, H = safe_init(); clock = pygame.time.Clock(); f_title, f_small, f_tiny, f_seer_bold, f_seer_dice_sim, f_seer_massive, f_preview_title, f_preview_body, f_labels, f_hand_header, f_hand_body = pygame.font.SysFont("Segoe UI", 26, True), pygame.font.SysFont("Segoe UI", 18, True), pygame.font.SysFont("Segoe UI", 18), pygame.font.SysFont("Segoe UI", 20, True), pygame.font.SysFont("Segoe UI", 24, True), pygame.font.SysFont("timesnewroman", 72, True), pygame.font.SysFont("timesnewroman", 44, bold=True), pygame.font.SysFont("georgia", 26), pygame.font.SysFont("timesnewroman", 32, bold=True), pygame.font.SysFont("timesnewroman", 22, bold=True), pygame.font.SysFont("georgia", 18)
 
-        def draw_loading_screen(pct, status):
-            screen.fill((10, 15, 25)); bw, bh = 600, 30; bx, by = (W-bw)//2, (H-bh)//2
-            pygame.draw.rect(screen, (30, 40, 60), (bx, by, bw, bh), border_radius=15); pygame.draw.rect(screen, GOLD, (bx+4, by+4, int((bw-8)*pct), bh-8), border_radius=11)
-            dots = "." * (int(pygame.time.get_ticks() / 500) % 4)
-            txt = f_small.render(f"Loading{dots}", True, (230, 230, 255)); screen.blit(txt, txt.get_rect(center=(W//2, by - 60)))
-            sub = f_tiny.render(status, True, (160, 160, 180)); screen.blit(sub, sub.get_rect(center=(W//2, by - 30))); pygame.display.flip()
+        _loading_log = []       # list of (status_text, thumb_surface_or_None)
+        _loading_display_pct = 0.0
+        _loading_font_log = pygame.font.SysFont("Georgia", 18, True)
+        _loading_font_status = pygame.font.SysFont("Georgia", 20, True)
+        _loading_font_title = pygame.font.SysFont("Times New Roman", 38, True)
+        _loading_font_pct = pygame.font.SysFont("Times New Roman", 24, True)
+        _loading_particles = []   # list of [x, y, vx, vy, life, max_life, size, color]
+
+        def draw_loading_screen(pct, status, thumb=None):
+            nonlocal _loading_display_pct
+            _loading_log.append((status, thumb))
+            # Smooth interpolation toward target percentage
+            anim_steps = 6
+            step_sleep = 0.008
+            target = pct
+            for _ai in range(anim_steps):
+                _loading_display_pct += (target - _loading_display_pct) * 0.35
+                if _ai == anim_steps - 1:
+                    _loading_display_pct = target
+                _render_loading_frame(_loading_display_pct, status, thumb)
+                time.sleep(step_sleep)
+
+        def _render_loading_frame(pct, status, thumb):
+            screen.fill((8, 6, 18))
+            t = pygame.time.get_ticks() / 1000.0
+            # --- Mystical background ambience ---
+            for _si in range(3):
+                _sx = W // 2 + int(math.sin(t * 0.3 + _si * 2.1) * W * 0.35)
+                _sy = H // 3 + int(math.cos(t * 0.25 + _si * 1.7) * H * 0.15)
+                _sr = 120 + int(math.sin(t * 0.5 + _si) * 40)
+                _glow = pygame.Surface((_sr * 2, _sr * 2), pygame.SRCALPHA)
+                _gc = [(40, 20, 80, 18), (80, 40, 20, 12), (20, 40, 80, 15)][_si]
+                pygame.draw.circle(_glow, _gc, (_sr, _sr), _sr)
+                screen.blit(_glow, (_sx - _sr, _sy - _sr))
+
+            bw, bh = 640, 36
+            bx, by = (W - bw) // 2, 160
+            # --- Title with golden glow ---
+            dot_count = int(t * 1.5) % 4
+            dots = " ." * dot_count
+            title_text = f"Channeling the Arcana{dots}"
+            # Title shadow
+            _ts = _loading_font_title.render(title_text, True, (60, 30, 10))
+            screen.blit(_ts, _ts.get_rect(center=(W // 2 + 2, by - 72)))
+            title = _loading_font_title.render(title_text, True, (255, 215, 80))
+            screen.blit(title, title.get_rect(center=(W // 2, by - 74)))
+
+            # --- Percentage with mystical styling ---
+            pct_str = f"~ {int(pct * 100)}% ~"
+            pct_txt = _loading_font_pct.render(pct_str, True, (200, 180, 255))
+            screen.blit(pct_txt, pct_txt.get_rect(center=(W // 2, by - 34)))
+
+            # --- Ornate bar frame ---
+            # Outer ornate border
+            frame_r = pygame.Rect(bx - 6, by - 6, bw + 12, bh + 12)
+            pygame.draw.rect(screen, (50, 35, 15), frame_r, border_radius=18)
+            pygame.draw.rect(screen, (160, 120, 40), frame_r, 2, border_radius=18)
+            # Inner ornate border
+            inner_frame = pygame.Rect(bx - 2, by - 2, bw + 4, bh + 4)
+            pygame.draw.rect(screen, (30, 20, 45), inner_frame, border_radius=14)
+            pygame.draw.rect(screen, (120, 90, 30), inner_frame, 1, border_radius=14)
+            # Bar dark interior
+            pygame.draw.rect(screen, (15, 10, 30), (bx, by, bw, bh), border_radius=12)
+
+            # --- Filled portion with magical gradient ---
+            fill_w = max(0, int((bw - 8) * pct))
+            if fill_w > 0:
+                bar_surf = pygame.Surface((fill_w, bh - 8), pygame.SRCALPHA)
+                for _col_x in range(fill_w):
+                    ratio = _col_x / max(fill_w, 1)
+                    # Purple-to-gold magical gradient
+                    r = int(100 + 155 * ratio)
+                    g = int(50 + 150 * ratio)
+                    b = int(180 - 140 * ratio)
+                    # Mystical shimmer wave
+                    shimmer = math.sin(t * 5.0 + _col_x * 0.05) * 0.2 + 0.8
+                    pulse = math.sin(t * 2.0 + _col_x * 0.02) * 0.1 + 0.9
+                    r = min(255, int(r * shimmer * pulse))
+                    g = min(255, int(g * shimmer * pulse))
+                    b = min(255, int(b * shimmer * pulse))
+                    pygame.draw.line(bar_surf, (r, g, b), (_col_x, 0), (_col_x, bh - 9))
+                # Round the fill
+                mask_surf = pygame.Surface((fill_w, bh - 8), pygame.SRCALPHA)
+                pygame.draw.rect(mask_surf, (255, 255, 255), (0, 0, fill_w, bh - 8), border_radius=10)
+                bar_surf.blit(mask_surf, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+                screen.blit(bar_surf, (bx + 4, by + 4))
+                # Leading edge glow (mystical purple-gold)
+                glow_x = bx + 4 + fill_w
+                for _gr, _gc in [(24, (255, 200, 60, 35)), (16, (180, 100, 255, 50)), (10, (255, 255, 200, 60))]:
+                    glow_s = pygame.Surface((_gr * 2, bh + 20), pygame.SRCALPHA)
+                    pygame.draw.circle(glow_s, _gc, (_gr, (bh + 20) // 2), _gr)
+                    screen.blit(glow_s, (glow_x - _gr, by - 10))
+                # Spawn sparkle particles at leading edge
+                if random.random() < 0.6:
+                    _loading_particles.append([
+                        glow_x, by + bh // 2,
+                        random.uniform(-1.5, 1.5), random.uniform(-3, -0.5),
+                        0, random.uniform(0.4, 1.0),
+                        random.uniform(1.5, 3.5),
+                        random.choice([(255, 220, 80), (200, 150, 255), (255, 180, 255), (255, 255, 200)])
+                    ])
+
+            # Corner diamond decorations (drawn, not unicode)
+            for _ri, (_rx, _ry) in enumerate([(bx - 18, by + bh // 2), (bx + bw + 18, by + bh // 2)]):
+                _rune_pulse = int(180 + 60 * math.sin(t * 3 + _ri * 1.5))
+                _dcol = (_rune_pulse, int(_rune_pulse * 0.7), 40)
+                _dsz = 7
+                pygame.draw.polygon(screen, _dcol, [(_rx, _ry - _dsz), (_rx + _dsz, _ry), (_rx, _ry + _dsz), (_rx - _dsz, _ry)])
+                pygame.draw.polygon(screen, (min(255, _rune_pulse + 40), int(_rune_pulse * 0.5), 20), [(_rx, _ry - _dsz), (_rx + _dsz, _ry), (_rx, _ry + _dsz), (_rx - _dsz, _ry)], 1)
+
+            # --- Update and draw particles ---
+            for _p in _loading_particles[:]:
+                _p[0] += _p[2]; _p[1] += _p[3]; _p[4] += 0.016
+                if _p[4] >= _p[5]:
+                    _loading_particles.remove(_p); continue
+                _alpha = int(255 * (1 - _p[4] / _p[5]))
+                _ps = pygame.Surface((int(_p[6] * 2), int(_p[6] * 2)), pygame.SRCALPHA)
+                pygame.draw.circle(_ps, (*_p[7], _alpha), (int(_p[6]), int(_p[6])), int(_p[6]))
+                screen.blit(_ps, (int(_p[0] - _p[6]), int(_p[1] - _p[6])))
+
+            # --- Current status ---
+            sub = _loading_font_status.render(status, True, (200, 190, 230))
+            screen.blit(sub, sub.get_rect(center=(W // 2, by + bh + 26)))
+
+            # --- Feature log with thumbnails ---
+            log_left = bx - 40
+            log_top = by + bh + 60
+            row_h = 50
+            max_visible = min(len(_loading_log), 10)
+            visible = _loading_log[-max_visible:]
+            for _li, (_entry_text, _entry_thumb) in enumerate(visible):
+                _ly = log_top + _li * row_h
+                if _ly + row_h > H - 10:
+                    break
+                # Fade: older entries are dimmer
+                fade = max(0.35, (_li + 1) / max_visible) if max_visible > 1 else 1.0
+                # Row background
+                _row_bg = pygame.Surface((bw + 80, row_h - 4), pygame.SRCALPHA)
+                pygame.draw.rect(_row_bg, (20, 15, 40, int(120 * fade)), (0, 0, bw + 80, row_h - 4), border_radius=8)
+                screen.blit(_row_bg, (log_left, _ly))
+                # Gold left border accent
+                pygame.draw.rect(screen, (int(235 * fade), int(190 * fade), int(60 * fade)), (log_left, _ly + 4, 3, row_h - 12), border_radius=2)
+                # Thumbnail
+                _text_x = log_left + 14
+                if _entry_thumb is not None:
+                    _th_h = row_h - 8
+                    _th_w = int(_th_h * (HAND_CARD_W / HAND_CARD_H))
+                    _th_img = pygame.transform.smoothscale(_entry_thumb, (_th_w, _th_h))
+                    # Subtle border around thumb
+                    _tb_r = pygame.Rect(log_left + 10, _ly + 3, _th_w + 4, _th_h + 2)
+                    pygame.draw.rect(screen, (int(120 * fade), int(100 * fade), int(50 * fade)), _tb_r, 1, border_radius=3)
+                    screen.blit(_th_img, (log_left + 12, _ly + 4))
+                    _text_x = log_left + 12 + _th_w + 10
+                # Drawn checkmark (no unicode)
+                _check_col = (int(80 * fade + 60), int(200 * fade), int(80 * fade + 40))
+                _ck_cy = _ly + row_h // 2
+                pygame.draw.lines(screen, _check_col, False, [(_text_x, _ck_cy), (_text_x + 5, _ck_cy + 6), (_text_x + 14, _ck_cy - 6)], 2)
+                _text_x += 20
+                # Entry text — color by type
+                if "Hand" in _entry_text:
+                    col = (int(130 * fade + 60), int(220 * fade), int(120 * fade))
+                elif "Grid" in _entry_text:
+                    col = (int(100 * fade + 40), int(170 * fade + 40), int(240 * fade))
+                elif "HD" in _entry_text:
+                    col = (int(240 * fade), int(200 * fade), int(100 * fade))
+                else:
+                    col = (int(200 * fade), int(130 * fade + 40), int(240 * fade))
+                line = _loading_font_log.render(_entry_text, True, col)
+                screen.blit(line, (_text_x, _ly + (row_h - line.get_height()) // 2))
+
+            pygame.display.flip()
 
         with open(CARDS_JSON, 'r') as f: cards_raw = json.load(f)['cards']
         results = find_bold_markdown(cards_raw)
@@ -737,12 +907,12 @@ def safe_main():
         THUMB_H, THUMB_W = 185, 132
         for c in cards_raw:
             cid, cname, img_path = c['id'], c['name'], os.path.join(IMAGES_DIR, c['image'])
-            hand_tex[cid] = load_image_safe(img_path, (HAND_CARD_W, HAND_CARD_H), cname); cur_step += 1; draw_loading_screen(cur_step/total_steps, f"Hand Texture: {cname}")
-            view_tex[cid] = load_image_safe(img_path, (VIEW_CARD_W, VIEW_CARD_H), cname); cur_step += 1; draw_loading_screen(cur_step/total_steps, f"Grid Texture: {cname}")
+            hand_tex[cid] = load_image_safe(img_path, (HAND_CARD_W, HAND_CARD_H), cname); cur_step += 1; draw_loading_screen(cur_step/total_steps, f"Hand Texture: {cname}", hand_tex[cid])
+            view_tex[cid] = load_image_safe(img_path, (VIEW_CARD_W, VIEW_CARD_H), cname); cur_step += 1; draw_loading_screen(cur_step/total_steps, f"Grid Texture: {cname}", hand_tex[cid])
             thumb_tex[cid] = pygame.transform.smoothscale(hand_tex[cid], (THUMB_W, THUMB_H))
             prev_h, prev_w = int(H * 0.80), int(int(H * 0.80) * (HAND_CARD_W / HAND_CARD_H))
-            preview_tex_hd[cid] = load_image_safe(img_path, (prev_w, prev_h), cname); cur_step += 1; draw_loading_screen(cur_step/total_steps, f"HD View: {cname}")
-            found = next((f for f in os.listdir(IMAGES_DIR) if f.lower().startswith(f"{cid}-") and f.lower().endswith("_bg.png")), None); preview_bgs[cid] = pygame.transform.smoothscale(pygame.image.load(os.path.join(IMAGES_DIR, found)).convert(), (W, H)) if found else pygame.Surface((W,H)); cur_step += 1; draw_loading_screen(cur_step/total_steps, f"Backdrop: {cname}")
+            preview_tex_hd[cid] = load_image_safe(img_path, (prev_w, prev_h), cname); cur_step += 1; draw_loading_screen(cur_step/total_steps, f"HD View: {cname}", hand_tex[cid])
+            found = next((f for f in os.listdir(IMAGES_DIR) if f.lower().startswith(f"{cid}-") and f.lower().endswith("_bg.png")), None); preview_bgs[cid] = pygame.transform.smoothscale(pygame.image.load(os.path.join(IMAGES_DIR, found)).convert(), (W, H)) if found else pygame.Surface((W,H)); cur_step += 1; draw_loading_screen(cur_step/total_steps, f"Backdrop: {cname}", hand_tex[cid])
         
         menu_bg, normal_bg, deck_back_sm, v_face_hand = load_image_safe(os.path.join(IMAGES_DIR, MENU_BG_IMAGE), (W, H)), load_image_safe(os.path.join(IMAGES_DIR, NORMAL_BG_IMAGE), (W, H)), load_image_safe(os.path.join(IMAGES_DIR, DECK_BACK_IMAGE), (160, 224)), load_image_safe(os.path.join(IMAGES_DIR, VANISHED_CARD_IMAGE), (HAND_CARD_W, HAND_CARD_H))
         v_face_view, v_face_deck = pygame.transform.smoothscale(v_face_hand, (VIEW_CARD_W, VIEW_CARD_H)), pygame.transform.smoothscale(v_face_hand, (160, 224))
@@ -771,6 +941,7 @@ def safe_main():
         _img_destroy_undead = _load_btn_img("Destroy_Undead_Button.png")
         _img_settings = _load_btn_img("Settings_Menu_Image.png")
         _img_dof_token = _load_btn_img("Draw_of_Fate_Token.png")
+        _img_side_panel = _load_btn_img("Side_Panel_Image.png")
 
         # UI BUTTONS
         ui_x, ui_w = PADDING+PANEL_INNER_PAD, PANEL_W-PANEL_INNER_PAD*2
@@ -933,10 +1104,10 @@ def safe_main():
             destroy_undead_btn.rect = pygame.Rect(fate_r.x + half_w + 10, fate_r.bottom + 8, half_w, half_w)
             # Position Draw 1 / Stack Top just above the Draw of Fate title
             _div_top = fate_r.y - 105  # divider_box top
-            _title_y = _div_top - 24   # Draw of Fate label y
+            _title_y = _div_top - 38   # Draw of Fate label y
             _d1_half = (ui_w - 10) // 2
-            btn_d1.rect = pygame.Rect(ui_x, _title_y - 94, _d1_half, 90)
-            stack_btn.rect = pygame.Rect(ui_x + _d1_half + 10, _title_y - 94, _d1_half, 90)
+            btn_d1.rect = pygame.Rect(ui_x, _title_y - 108, _d1_half, 90)
+            stack_btn.rect = pygame.Rect(ui_x + _d1_half + 10, _title_y - 108, _d1_half, 90)
 
             if screen_mode == "fool_video" and fool_video_state["cap"] is not None:
                 fool_video_state["accum"] += dt
@@ -1403,8 +1574,21 @@ def safe_main():
                 screen.blit(normal_bg, (0, 0))
                 
                 # 1. SIDEBAR
-                draw_round_rect(screen, (PADDING, PADDING, PANEL_W, H-PADDING*2), (18, 24, 38, 240), 15)
-                pygame.draw.rect(screen, (255, 255, 255, 40), (PADDING, PADDING, PANEL_W, H-PADDING*2), 2, 15)
+                _side_r = pygame.Rect(PADDING, PADDING, PANEL_W, H - PADDING * 2)
+                if _img_side_panel:
+                    _sp_img = pygame.transform.smoothscale(_img_side_panel, (_side_r.w, _side_r.h))
+                    # Grey-out tint
+                    _grey_ov = pygame.Surface((_side_r.w, _side_r.h), pygame.SRCALPHA)
+                    _grey_ov.fill((25, 25, 35, 120))
+                    _sp_img.blit(_grey_ov, (0, 0))
+                    # Clip to rounded rect
+                    _sp_mask = pygame.Surface((_side_r.w, _side_r.h), pygame.SRCALPHA)
+                    draw_round_rect(_sp_mask, (0, 0, _side_r.w, _side_r.h), (255, 255, 255, 255), 15)
+                    _sp_img.blit(_sp_mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+                    screen.blit(_sp_img, (_side_r.x, _side_r.y))
+                else:
+                    draw_round_rect(screen, _side_r, (18, 24, 38, 240), 15)
+                pygame.draw.rect(screen, (255, 255, 255, 40), _side_r, 2, 15)
                 
                 screen.blit(f_small.render("Select player level", True, (200, 255, 220)), (ui_x + 15, PADDING + 15))
                 lvl_change_dd.draw_base(screen, f_small)
@@ -1456,17 +1640,33 @@ def safe_main():
                         _tf.draw(screen)
                         if _tf.done: dof_token_fizzles.remove(_tf)
                     label = f_small.render("Draw of Fate", True, GOLD)
-                    screen.blit(label, (fate_rect.centerx - label.get_width() // 2, divider_box.y - 24))
+                    _dof_lbl_x = fate_rect.centerx - label.get_width() // 2
+                    _dof_lbl_y = divider_box.y - 32
+                    _dof_lbl_bg = pygame.Rect(_dof_lbl_x - 6, _dof_lbl_y - 2, label.get_width() + 12, label.get_height() + 4)
+                    draw_round_rect(screen, _dof_lbl_bg, (0, 0, 0, 180), 6)
+                    screen.blit(label, (_dof_lbl_x, _dof_lbl_y))
                     uses_label = f_small.render("Channel Divinity Uses:", True, GOLD)
-                    screen.blit(uses_label, (fate_rect.centerx - uses_label.get_width() // 2, fate_rect.y - 40))
+                    _cd_lbl_x = fate_rect.centerx - uses_label.get_width() // 2
+                    _cd_lbl_y = fate_rect.y - 32
+                    _cd_lbl_bg = pygame.Rect(_cd_lbl_x - 6, _cd_lbl_y - 2, uses_label.get_width() + 12, uses_label.get_height() + 4)
+                    draw_round_rect(screen, _cd_lbl_bg, (0, 0, 0, 180), 6)
+                    screen.blit(uses_label, (_cd_lbl_x, _cd_lbl_y))
                     draw_of_fate_slider.draw(screen, f_small)
                     turn_undead_btn.draw(screen, f_tiny, dt)
                     destroy_undead_btn.draw(screen, f_tiny, dt)
                     # Labels under Turn/Destroy Undead
                     _tu_lbl = f_small.render("Turn Undead", True, GOLD)
-                    screen.blit(_tu_lbl, (turn_undead_btn.rect.centerx - _tu_lbl.get_width() // 2, turn_undead_btn.rect.bottom + 4))
+                    _tu_lbl_x = turn_undead_btn.rect.centerx - _tu_lbl.get_width() // 2
+                    _tu_lbl_y = turn_undead_btn.rect.bottom + 4
+                    _tu_lbl_bg = pygame.Rect(_tu_lbl_x - 6, _tu_lbl_y - 2, _tu_lbl.get_width() + 12, _tu_lbl.get_height() + 4)
+                    draw_round_rect(screen, _tu_lbl_bg, (0, 0, 0, 180), 6)
+                    screen.blit(_tu_lbl, (_tu_lbl_x, _tu_lbl_y))
                     _du_lbl = f_small.render("Destroy Undead", True, GOLD)
-                    screen.blit(_du_lbl, (destroy_undead_btn.rect.centerx - _du_lbl.get_width() // 2, destroy_undead_btn.rect.bottom + 4))
+                    _du_lbl_x = destroy_undead_btn.rect.centerx - _du_lbl.get_width() // 2
+                    _du_lbl_y = destroy_undead_btn.rect.bottom + 4
+                    _du_lbl_bg = pygame.Rect(_du_lbl_x - 6, _du_lbl_y - 2, _du_lbl.get_width() + 12, _du_lbl.get_height() + 4)
+                    draw_round_rect(screen, _du_lbl_bg, (0, 0, 0, 180), 6)
+                    screen.blit(_du_lbl, (_du_lbl_x, _du_lbl_y))
                     btn_d1.draw(screen, f_tiny, dt)
                     stack_btn.draw(screen, f_tiny, dt)
                 if game.level >= 6:
@@ -1476,7 +1676,10 @@ def safe_main():
                     dt_box = pygame.Rect(dt_box_x, dt_box_y, dt_box_w, dt_box_h)
                     title_surf = f_small.render("SEER DICE TABLE", True, PINK_D20)
                     title_x = dt_box.centerx - title_surf.get_width() // 2
-                    screen.blit(title_surf, (title_x, dt_box.y - 32))
+                    _seer_lbl_y = dt_box.y - 32
+                    _seer_lbl_bg = pygame.Rect(title_x - 6, _seer_lbl_y - 2, title_surf.get_width() + 12, title_surf.get_height() + 4)
+                    draw_round_rect(screen, _seer_lbl_bg, (0, 0, 0, 180), 6)
+                    screen.blit(title_surf, (title_x, _seer_lbl_y))
                     draw_round_rect(screen, dt_box, (10, 15, 25, 240), 15)
                     pygame.draw.rect(screen, PINK_D20, dt_box, 1, 15)
                     dice_count = len(game.seer_dice_table)
