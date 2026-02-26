@@ -628,7 +628,6 @@ class Game:
         self.hand, self.fortune_zone, self.major_zone, self.stacked, self.first_three_ids, self.seer_dice_table, self.ppf_charges, self.days_passed = [], [], [], None, [], [], 3, self.days_passed + 1
         self.seer_slots_filled_today = 0
         self.hand_limit = self.get_base_limit()
-        self.draw_of_fate_uses = self.get_draw_of_fate_uses_by_level()
         self.draw_of_fate_current = self.draw_of_fate_uses
         self.vanished = []
         self.rebuild_deck()
@@ -642,7 +641,6 @@ class Game:
 
     def short_rest(self):
         self.save_state()
-        self.draw_of_fate_uses = self.get_draw_of_fate_uses_by_level()
         self.draw_of_fate_current = self.draw_of_fate_uses
         self.add_history(f"Short Rest: Channel Divinity restored to {self.draw_of_fate_uses} use(s).")
     
@@ -998,6 +996,7 @@ def safe_main():
         _img_settings = _load_btn_img("Settings_Menu_Image.png")
         _img_dof_token = _load_btn_img("Draw_of_Fate_Token.png")
         _img_side_panel = _load_btn_img("Side_Panel_Image.png")
+        _img_rest = _load_btn_img("Rest_Button.png")
 
         # UI BUTTONS
         ui_x, ui_w = PADDING+PANEL_INNER_PAD, PANEL_W-PANEL_INNER_PAD*2
@@ -1009,15 +1008,17 @@ def safe_main():
         btn_half_w = (ui_w - 10) // 2
         btn_d1 = Button((ui_x, 480, btn_half_w, 45), "Draw 1", True, image=_img_draw)
         stack_btn = Button((ui_x + btn_half_w + 10, 480, btn_half_w, 45), "Stack Top", primary=True, image=_img_stack)
-        short_rest_btn = Button((W-750, PADDING, 135, 35), "Short Rest", warning=True)
-        rest_btn = Button((W-610, PADDING, 140, 35), "Long Rest", gold=True)
+        short_rest_btn = Button((0, 0, 50, 50), "S", warning=True)
+        rest_btn = Button((0, 0, 50, 50), "L", gold=True)
         draw_of_fate_slider = IntSlider((ui_x + 35, H - 200, ui_w - 70, 34), 0, 6, game.draw_of_fate_uses)
         turn_undead_btn = Button((ui_x, H - 160, (ui_w - 10) // 2, 42), "Turn Undead", green=True, image=_img_turn_undead)
         destroy_undead_btn = Button((ui_x + (ui_w - 10) // 2 + 10, H - 160, (ui_w - 10) // 2, 42), "Destroy Undead", danger=True, image=_img_destroy_undead)
         quit_btn = Button((W-160, PADDING + 45, 140, 35), "Exit game", danger=True)
         menu_btn = Button((W-160, PADDING + 85, 140, 35), "Main Menu", warning=True)
-        history_btn = Button((W-240, H-810, 210, 270), "View History", primary=True, image=_img_history)
+        history_btn = Button((W-240, H-810, 210, 210), "View History", primary=True, image=_img_history)
         hamburger_btn = Button((W-50, PADDING, 35, 35), "\u2630", image=_img_settings)
+        rest_menu_btn = Button((W-240, H-810, 150, 150), "Rest", primary=True, image=_img_rest)
+        rest_menu_open = False
         top_menu_open = False
         exit_view_btn = Button((PADDING, PADDING, 160, 45), "Exit View", primary=True)
         
@@ -1413,16 +1414,21 @@ def safe_main():
                     if btn_d1.handle_event(e): game.save_state(); game.draw_of_fate_current = max(0, game.draw_of_fate_current - 1); game.initiate_bulk_draw(1)
                     if stack_btn.handle_event(e): game.save_state(); game.draw_of_fate_current = max(0, game.draw_of_fate_current - 1); screen_mode, scroll_y = "stack_selection", 0
                     if game.level >= 6 and ppf_btn.handle_event(e) and not ppf_btn.disabled: screen_mode, scroll_y = "ppf_selection", 0
-                    if game.level >= 2 and short_rest_btn.handle_event(e): game.short_rest(); draw_of_fate_slider.set_value(game.draw_of_fate_uses)
+                    if game.level >= 2 and rest_menu_open and short_rest_btn.handle_event(e): game.short_rest(); rest_menu_open = False
                     if game.level >= 2 and turn_undead_btn.handle_event(e): game.save_state(); game.draw_of_fate_current = max(0, game.draw_of_fate_current - 1); game.add_history("Used Turn Undead.")
                     if game.level >= 2 and destroy_undead_btn.handle_event(e): game.save_state(); game.draw_of_fate_current = max(0, game.draw_of_fate_current - 2); game.add_history("Used Destroy Undead.")
-                    if rest_btn.handle_event(e):
+                    if rest_menu_open and rest_btn.handle_event(e):
                         if game.level >= 17: total = game.long_rest(skip_draw=True); prophet_remaining_draws = total - 1; screen_mode, scroll_y = "prophet_selection", 0
                         else: game.long_rest()
-                        draw_of_fate_slider.set_value(game.draw_of_fate_uses)
+                        rest_menu_open = False
                     if undo_btn.handle_event(e): game.undo()
                     draw_of_fate_slider.set_value(game.draw_of_fate_uses)
                     if history_btn.handle_event(e): history_overlay_open = not history_overlay_open; history_scroll = 0
+                    if rest_menu_btn.handle_event(e): rest_menu_open = not rest_menu_open
+                    elif rest_menu_open and e.type == pygame.MOUSEBUTTONDOWN:
+                        # Close rest menu if clicking outside it
+                        _rm_area = pygame.Rect(rest_menu_btn.rect.x, rest_menu_btn.rect.y - 90, rest_menu_btn.rect.w, 90 + rest_menu_btn.rect.h)
+                        if not _rm_area.collidepoint(e.pos): rest_menu_open = False
                     if hamburger_btn.handle_event(e): top_menu_open = not top_menu_open
                     elif top_menu_open:
                         if quit_btn.handle_event(e): running = False
@@ -1656,8 +1662,6 @@ def safe_main():
                     reset_major_btn.draw(screen, f_tiny, dt)
 
                 # 2. TOP RIGHT BUTTONS
-                (game.level >= 2 and short_rest_btn.draw(screen, f_tiny, dt))
-                rest_btn.draw(screen, f_tiny, dt)
                 hamburger_btn.draw(screen, f_tiny, dt)
                 if top_menu_open:
                     _menu_bg = pygame.Rect(W - 170, PADDING + 40, 160, 90)
@@ -1837,9 +1841,25 @@ def safe_main():
                 # 7. DECK & VANISHED PILE
                 vz_rect = pygame.Rect(W-460, H-340, 210, 310)
                 mz_rect = pygame.Rect(W-240, H-340, 210, 310)
-                _hist_h = 135
-                history_btn.rect = pygame.Rect(mz_rect.x, mz_rect.y - _hist_h - 10, mz_rect.w, _hist_h)
+                _hist_sz = 150
+                _rest_sz = 100
+                _btn_gap = 10
+                # History button directly above deck
+                history_btn.rect = pygame.Rect(mz_rect.x + (mz_rect.w - _hist_sz) // 2, mz_rect.y - _hist_sz - _btn_gap, _hist_sz, _hist_sz)
                 history_btn.draw(screen, f_tiny, dt)
+                # Rest button next to vanished pile (above it)
+                rest_menu_btn.rect = pygame.Rect(vz_rect.x + (vz_rect.w - _rest_sz) // 2, vz_rect.y - _rest_sz - _btn_gap, _rest_sz, _rest_sz)
+                rest_menu_btn.draw(screen, f_tiny, dt)
+                if rest_menu_open:
+                    _rm_x = rest_menu_btn.rect.x
+                    _rm_y = rest_menu_btn.rect.y - 90
+                    _rm_bg = pygame.Rect(_rm_x, _rm_y, _rest_sz, 85)
+                    draw_round_rect(screen, _rm_bg, (18, 24, 38, 235), 10)
+                    pygame.draw.rect(screen, GOLD, _rm_bg, 1, 10)
+                    short_rest_btn.rect = pygame.Rect(_rm_x + 5, _rm_y + 5, _rest_sz - 10, 35)
+                    rest_btn.rect = pygame.Rect(_rm_x + 5, _rm_y + 45, _rest_sz - 10, 35)
+                    if game.level >= 2: short_rest_btn.draw(screen, f_tiny, dt)
+                    rest_btn.draw(screen, f_tiny, dt)
                 
                 for r, lbl in [(vz_rect, "Vanished Pile"), (mz_rect, "Main Deck")]:
                     draw_round_rect(screen, r, (5,8,15,220), 20)

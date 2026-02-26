@@ -149,3 +149,28 @@ FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\danie\\Deskt
 16:55:23 [INFO]  Scanning JSON... Found 80 bolded fields.
 16:56:35 [INFO]  Scanning JSON... Found 80 bolded fields.
 16:57:35 [INFO]  Scanning JSON... Found 80 bolded fields.
+17:00:35 [INFO]  Scanning JSON... Found 80 bolded fields.
+17:04:36 [INFO]  Scanning JSON... Found 80 bolded fields.
+17:06:44 [INFO]  Scanning JSON... Found 80 bolded fields.
+17:06:59 [INFO]  Scanning JSON... Found 80 bolded fields.
+17:13:22 [INFO]  Scanning JSON... Found 80 bolded fields.
+17:18:25 [INFO]  Scanning JSON... Found 80 bolded fields.
+17:20:36 [INFO]  Scanning JSON... Found 80 bolded fields.
+17:28:37 [INFO]  Scanning JSON... Found 80 bolded fields.
+17:34:45 [INFO]  Scanning JSON... Found 80 bolded fields.
+17:35:45 [INFO]  Scanning JSON... Found 80 bolded fields.
+17:52:32 [INFO]  Scanning JSON... Found 80 bolded fields.
+17:52:59 [ERROR] Traceback (most recent call last):
+  File "C:\Users\danie\Desktop\BACKUPs\THE GOD FILE - Python Project (Stable)\app.py", line 1850, in safe_main
+    rest_menu_btn.rect = pygame.Rect(vz_rect.x + (vz_rect.w - _rest_sz) // 2, vz_rect.y - _rest_sz - _btn_gap, _rest_sz, _rest_sz)
+    ^^^^^^^^^^^^^
+NameError: name 'rest_menu_btn' is not defined. Did you mean: 'reset_major_btn'?
+
+17:55:19 [INFO]  Scanning JSON... Found 80 bolded fields.
+17:55:40 [ERROR] Traceback (most recent call last):
+  File "C:\Users\danie\Desktop\BACKUPs\THE GOD FILE - Python Project (Stable)\app.py", line 1850, in safe_main
+    rest_menu_btn.rect = pygame.Rect(vz_rect.x + (vz_rect.w - _rest_sz) // 2, vz_rect.y - _rest_sz - _btn_gap, _rest_sz, _rest_sz)
+    ^^^^^^^^^^^^^
+NameError: name 'rest_menu_btn' is not defined. Did you mean: 'reset_major_btn'?
+
+17:56:02 [INFO]  Scanning JSON... Found 80 bolded fields.
