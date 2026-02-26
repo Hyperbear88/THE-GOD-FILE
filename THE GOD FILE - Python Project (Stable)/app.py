@@ -6,6 +6,7 @@ import time
 import pygame
 import copy
 import sys
+import random
 import traceback
 import re
 import webbrowser
@@ -68,7 +69,7 @@ IMAGES_DIR = resource_path("images")
 CARDS_JSON = resource_path("cards.json")
 DECK_BACK_IMAGE = "21-Tarot_Back.png"
 VANISHED_CARD_IMAGE = "Vanished.png"
-SHUFFLE_SOUND = resource_path("shuffle.wav")
+SHUFFLE_SOUND = resource_path(os.path.join("audio", "shuffle.wav"))
 VIDEOS_DIR = resource_path("videos")
 MENU_BG_IMAGE = "Teller_Room.png"
 NORMAL_BG_IMAGE = "BG_3.png"
@@ -613,6 +614,11 @@ class Game:
     def undo(self):
         if not self.history: return
         s = self.history.pop(); self.deck, self.hand, self.fortune_zone, self.major_zone, self.vanished, self.stacked, self.first_three_ids, self.days_until_major, self.days_passed, self.hand_limit, self.seer_dice_table, self.history_log, self.level, self.ppf_charges, self.used_major_ids, self.major_fortune_used_this_week, self.seer_slots_filled_today, self.draw_of_fate_uses, self.draw_of_fate_current = s["deck"], s["hand"], s.get("fortune_zone", []), s.get("major_zone", []), s["vanished"], s["stacked"], s["f3"], s["cd"], s["days"], s["limit"], s["table"], s.get("history", []), s.get("level", 1), s.get("ppf", 3), s.get("used_major", []), s.get("major_cooldown", False), s.get("seer_filled", 0), s.get("draw_of_fate", 0), s.get("draw_of_fate_cur", 0)
+        # Flush transient animation queues to stop them from resolving post-undo
+        self.draw_queue = []
+        self.is_drawing = False
+        self.fizzles = []
+        self.shuffle_anim_timer = 0.0
         self.add_history("Undo: Reverted to previous state.")
 
     def rebuild_deck(self):
@@ -714,7 +720,8 @@ class Game:
             drawn_ids.append(cid)
         names = ", ".join(self.cards[cid]['name'] for cid in drawn_ids)
         self.add_history(f"Drew {len(drawn_ids)} card(s): {names}", drawn_ids)
-        self.draw_queue, self.is_drawing = [], False; self.shuffle_deck(play_sound=False, trigger_anim=False)
+        self.draw_queue, self.is_drawing = [], False
+        self.shuffle_deck(play_sound=False, trigger_anim=False)
 
     def check_has_tapped_effect(self, card_dict):
         """Helper to cleanly evaluate if a given card dictionary possesses a tapped effect based on its mode and orientation."""
@@ -1246,6 +1253,18 @@ def safe_main():
             ppf_btn.disabled = (game.ppf_charges <= 0 or game.level < 6 or len(game.fortune_zone) >= 1)
             major_btn.disabled = (game.major_fortune_used_this_week or len(game.major_zone) > 0 or game.level < 17)
             
+            # --- ANIMATION SAFETY CHECK FOR UNDO BUTTON ---
+            is_animating = (
+                current_roll_anim is not None or
+                game.is_drawing or
+                len(game.fizzles) > 0 or
+                len(dof_token_fizzles) > 0 or
+                game.shuffle_anim_timer > 0 or
+                screen_mode == "fool_video"
+            )
+            undo_btn.disabled = is_animating or (len(game.history) == 0)
+            # ----------------------------------------------
+            
             for e in pygame.event.get():
                 if current_roll_anim: continue 
                 if e.type == pygame.QUIT: running = False
@@ -1548,10 +1567,22 @@ def safe_main():
                                         game.hand.remove(h); h['mode'] = 'fortune'; game.fortune_zone.append(h)
                                         game.add_history(f"{game.cards[h['id']]['name']} moved to Fortune Zone.", [h['id']])
                                 else:
-                                    if h in game.fortune_zone: game.fortune_zone.remove(h)
-                                    elif h in game.major_zone: game.major_zone.remove(h)
-                                    h['mode'] = 'normal'; game.hand.append(h)
-                                    game.add_history(f"{game.cards[h['id']]['name']} returned to Hand.", [h['id']])
+                                    if h in game.fortune_zone:
+                                        if h.get('ppf_added'):
+                                            game.toast_msg, game.toast_timer = "Cannot demote PP&F Fortune card!", TOAST_DURATION
+                                        else:
+                                            game.fortune_zone.remove(h)
+                                            h['mode'] = 'normal'
+                                            game.hand.append(h)
+                                            game.add_history(f"{game.cards[h['id']]['name']} returned to Hand.", [h['id']])
+                                    elif h in game.major_zone:
+                                        if h.get('major_added'):
+                                            game.toast_msg, game.toast_timer = "Cannot demote Major Fortune card!", TOAST_DURATION
+                                        else:
+                                            game.major_zone.remove(h)
+                                            h['mode'] = 'normal'
+                                            game.hand.append(h)
+                                            game.add_history(f"{game.cards[h['id']]['name']} returned to Hand.", [h['id']])
                                 break
 
                 elif screen_mode in ["deck", "vanish_view", "world_restore_view", "prophet_selection", "ppf_selection", "stack_selection", "major_selection"]:
@@ -1620,8 +1651,20 @@ def safe_main():
                             for i, cid in enumerate(cur_list):
                                 gx, gy = VIEW_START_X+(i%6)*CELL_W, VIEW_START_Y+(i//6)*CELL_H-scroll_y+160
                                 if pygame.Rect(gx, gy, VIEW_CARD_W, VIEW_CARD_H).collidepoint(e.pos):
-                                    if screen_mode == "ppf_selection": game.save_state(); game.fortune_zone.append({"id": cid, "mode": "fortune", "orientation": "upright", "flip": 0.0, "scroll_up": 0, "scroll_inv": 0, "max_sc_up": 0, "max_sc_inv": 0, "is_vanishing": False, "tapped": False}); game.ppf_charges -= 1; game.add_history(f"PP&F: {game.cards[cid]['name']} added to Fortune Zone.", [cid]); game.rebuild_deck(); screen_mode = "normal"
-                                    elif screen_mode == "major_selection": game.save_state(); game.major_zone.append({"id": cid, "mode": "major", "orientation": "upright", "flip": 0.0, "scroll_up": 0, "scroll_inv": 0, "max_sc_up": 0, "max_sc_inv": 0, "is_vanishing": False, "tapped": False}); game.major_fortune_used_this_week = True; game.add_history(f"Major Fortune: {game.cards[cid]['name']} activated.", [cid]); game.rebuild_deck(); screen_mode = "normal"
+                                    if screen_mode == "ppf_selection":
+                                        game.save_state()
+                                        game.fortune_zone.append({"id": cid, "mode": "fortune", "orientation": "upright", "flip": 0.0, "scroll_up": 0, "scroll_inv": 0, "max_sc_up": 0, "max_sc_inv": 0, "is_vanishing": False, "tapped": False, "ppf_added": True})
+                                        game.ppf_charges -= 1
+                                        game.add_history(f"PP&F: {game.cards[cid]['name']} added to Fortune Zone.", [cid])
+                                        game.rebuild_deck()
+                                        screen_mode = "normal"
+                                    elif screen_mode == "major_selection":
+                                        game.save_state()
+                                        game.major_zone.append({"id": cid, "mode": "major", "orientation": "upright", "flip": 0.0, "scroll_up": 0, "scroll_inv": 0, "max_sc_up": 0, "max_sc_inv": 0, "is_vanishing": False, "tapped": False, "major_added": True})
+                                        game.major_fortune_used_this_week = True
+                                        game.add_history(f"Major Fortune: {game.cards[cid]['name']} activated.", [cid])
+                                        game.rebuild_deck()
+                                        screen_mode = "normal"
                                     elif screen_mode == "prophet_selection": 
                                         if cid in game.vanished: game.vanished.remove(cid)
                                         if cid in game.deck: game.deck.remove(cid)
@@ -2202,7 +2245,14 @@ def safe_main():
                 
                 for i, cid in enumerate(cur_list):
                     gx, gy = VIEW_START_X+(i%6)*CELL_W, VIEW_START_Y+(i//6)*CELL_H-scroll_y+160
-                    if -VIEW_CARD_H < gy < H: screen.blit(v_face_view if screen_mode=="vanish_view" else view_tex[cid], (gx, gy))
+                    if -VIEW_CARD_H < gy < H:
+                        screen.blit(v_face_view if screen_mode=="vanish_view" else view_tex[cid], (gx, gy))
+                        if screen_mode == "vanish_view":
+                            name = game.cards[cid]["name"]
+                            name_font = pygame.font.SysFont("timesnewroman", 18, bold=True)
+                            name_surf = name_font.render(name, True, (255,255,255))
+                            name_rect = name_surf.get_rect(center=(gx+VIEW_CARD_W//2, gy+VIEW_CARD_H+16))
+                            screen.blit(name_surf, name_rect)
                 # Grid scrollbar
                 _g_max_scroll_draw = get_card_grid_max_scroll(len(cur_list), H)
                 if _g_max_scroll_draw > 0:

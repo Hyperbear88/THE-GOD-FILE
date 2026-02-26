@@ -1,185 +1,35 @@
-01:34:55 [INFO]  Scanning JSON... Found 80 bolded fields.
-01:36:27 [INFO]  Scanning JSON... Found 80 bolded fields.
-01:37:14 [INFO]  Scanning JSON... Found 80 bolded fields.
-01:50:47 [ERROR] Traceback (most recent call last):
-  File "C:\Users\danie\Desktop\BACKUPs\THE GOD FILE - Python Project (Stable)\app.py", line 530, in safe_main
-    with open(CARDS_JSON, 'r') as f: cards_raw = json.load(f)['cards']
-         ~~~~^^^^^^^^^^^^^^^^^
-FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\danie\\Desktop\\BACKUPs\\cards.json'
+20:52:48 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:55:23 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:57:41 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:59:40 [ERROR] Traceback (most recent call last):
+  File "C:\Users\danie\Desktop\BACKUPs\THE GOD FILE - Python Project (Stable)\app.py", line 961, in safe_main
+    if greedy_pot_popup["active"] and greedy_pot_img:
+       ^^^^^^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'greedy_pot_popup' where it is not associated with a value
 
-01:53:17 [INFO]  Scanning JSON... Found 80 bolded fields.
-01:54:52 [INFO]  Scanning JSON... Found 80 bolded fields.
-01:56:20 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:00:10 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:00:49 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:03:19 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:04:32 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:07:03 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:08:16 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:12:17 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:14:19 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:14:43 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:18:29 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:19:56 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:27:58 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:29:31 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:37:09 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:39:02 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:40:48 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:42:13 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:44:01 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:47:30 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:48:27 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:53:28 [INFO]  Scanning JSON... Found 80 bolded fields.
-02:55:53 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:01:14 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:05:10 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:10:12 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:14:12 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:16:24 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:20:06 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:21:23 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:23:53 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:25:16 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:26:00 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:27:32 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:27:50 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:30:51 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:31:13 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:32:13 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:34:14 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:35:50 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:36:40 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:40:24 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:50:46 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:53:01 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:54:33 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:55:42 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:58:54 [INFO]  Scanning JSON... Found 80 bolded fields.
-03:59:25 [INFO]  Scanning JSON... Found 80 bolded fields.
-04:05:13 [INFO]  Scanning JSON... Found 80 bolded fields.
-04:05:55 [INFO]  Scanning JSON... Found 80 bolded fields.
-04:06:44 [INFO]  Scanning JSON... Found 80 bolded fields.
-04:10:46 [INFO]  Scanning JSON... Found 80 bolded fields.
-04:19:34 [INFO]  Scanning JSON... Found 80 bolded fields.
-04:24:08 [INFO]  Scanning JSON... Found 80 bolded fields.
-04:25:50 [INFO]  Scanning JSON... Found 80 bolded fields.
-04:27:40 [INFO]  Scanning JSON... Found 80 bolded fields.
-04:31:21 [INFO]  Scanning JSON... Found 80 bolded fields.
-04:32:52 [INFO]  Scanning JSON... Found 80 bolded fields.
-04:34:37 [INFO]  Scanning JSON... Found 80 bolded fields.
-04:36:20 [INFO]  Scanning JSON... Found 80 bolded fields.
-04:38:40 [INFO]  Scanning JSON... Found 80 bolded fields.
-04:40:27 [INFO]  Scanning JSON... Found 80 bolded fields.
-04:42:23 [INFO]  Scanning JSON... Found 80 bolded fields.
-04:46:41 [INFO]  Scanning JSON... Found 80 bolded fields.
-04:52:23 [INFO]  Scanning JSON... Found 80 bolded fields.
-04:54:46 [INFO]  Scanning JSON... Found 80 bolded fields.
-04:58:33 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:00:17 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:06:33 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:14:59 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:16:05 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:17:31 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:18:00 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:18:58 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:21:50 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:26:27 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:27:27 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:28:09 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:29:18 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:29:56 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:31:51 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:32:49 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:35:02 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:36:44 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:40:45 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:42:00 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:52:02 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:53:32 [INFO]  Scanning JSON... Found 80 bolded fields.
-05:57:16 [INFO]  Scanning JSON... Found 80 bolded fields.
-06:18:57 [ERROR] Traceback (most recent call last):
-  File "C:\Users\danie\Desktop\BACKUPs\THE GOD FILE - Python Project (Stable)\app.py", line 524, in safe_main
-    with open(CARDS_JSON, 'r') as f: cards_raw = json.load(f)['cards']
-         ~~~~^^^^^^^^^^^^^^^^^
-FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\danie\\Desktop\\BACKUPs\\cards.json'
+21:01:41 [ERROR] Traceback (most recent call last):
+  File "C:\Users\danie\Desktop\BACKUPs\THE GOD FILE - Python Project (Stable)\app.py", line 961, in safe_main
+    if greedy_pot_popup["active"] and greedy_pot_img:
+       ^^^^^^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'greedy_pot_popup' where it is not associated with a value
 
-06:19:54 [INFO]  Scanning JSON... Found 80 bolded fields.
-06:21:02 [ERROR] Traceback (most recent call last):
-  File "C:\Users\danie\Desktop\BACKUPs\THE GOD FILE - Python Project (Stable)\app.py", line 524, in safe_main
-    with open(CARDS_JSON, 'r') as f: cards_raw = json.load(f)['cards']
-         ~~~~^^^^^^^^^^^^^^^^^
-FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\danie\\Desktop\\BACKUPs\\cards.json'
+21:02:31 [INFO]  Scanning JSON... Found 80 bolded fields.
+21:06:33 [INFO]  Scanning JSON... Found 80 bolded fields.
+21:10:53 [INFO]  Scanning JSON... Found 80 bolded fields.
+21:13:16 [INFO]  Scanning JSON... Found 80 bolded fields.
+21:16:39 [INFO]  Scanning JSON... Found 80 bolded fields.
+21:18:32 [INFO]  Scanning JSON... Found 80 bolded fields.
+21:33:57 [INFO]  Scanning JSON... Found 80 bolded fields.
+21:34:46 [ERROR] Traceback (most recent call last):
+  File "C:\Users\danie\Desktop\BACKUPs\THE GOD FILE - Python Project (Stable)\app.py", line 1238, in safe_main
+    if f.mode == 'normal' and f.orientation == 'upright': game.force_draw(2)
+                                                          ~~~~~~~~~~~~~~~^^^
+  File "C:\Users\danie\Desktop\BACKUPs\THE GOD FILE - Python Project (Stable)\app.py", line 694, in force_draw
+    self.draw_queue.append(self.deck.pop(0))
+    ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'bool' object has no attribute 'append'
 
-06:22:55 [INFO]  Scanning JSON... Found 80 bolded fields.
-13:30:21 [INFO]  Scanning JSON... Found 80 bolded fields.
-13:58:42 [INFO]  Scanning JSON... Found 80 bolded fields.
-15:37:15 [INFO]  Scanning JSON... Found 80 bolded fields.
-15:42:12 [INFO]  Scanning JSON... Found 80 bolded fields.
-15:44:12 [INFO]  Scanning JSON... Found 80 bolded fields.
-15:44:46 [INFO]  Scanning JSON... Found 80 bolded fields.
-15:45:55 [INFO]  Scanning JSON... Found 80 bolded fields.
-15:48:19 [INFO]  Scanning JSON... Found 80 bolded fields.
-15:51:12 [INFO]  Scanning JSON... Found 80 bolded fields.
-15:53:01 [INFO]  Scanning JSON... Found 80 bolded fields.
-15:57:22 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:07:41 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:10:12 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:12:08 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:15:37 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:17:07 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:18:36 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:21:42 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:24:17 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:26:54 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:27:56 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:29:31 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:30:35 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:31:36 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:34:37 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:35:34 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:37:03 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:38:09 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:40:05 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:40:22 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:42:28 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:46:44 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:48:05 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:52:59 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:55:23 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:56:35 [INFO]  Scanning JSON... Found 80 bolded fields.
-16:57:35 [INFO]  Scanning JSON... Found 80 bolded fields.
-17:00:35 [INFO]  Scanning JSON... Found 80 bolded fields.
-17:04:36 [INFO]  Scanning JSON... Found 80 bolded fields.
-17:06:44 [INFO]  Scanning JSON... Found 80 bolded fields.
-17:06:59 [INFO]  Scanning JSON... Found 80 bolded fields.
-17:13:22 [INFO]  Scanning JSON... Found 80 bolded fields.
-17:18:25 [INFO]  Scanning JSON... Found 80 bolded fields.
-17:20:36 [INFO]  Scanning JSON... Found 80 bolded fields.
-17:28:37 [INFO]  Scanning JSON... Found 80 bolded fields.
-17:34:45 [INFO]  Scanning JSON... Found 80 bolded fields.
-17:35:45 [INFO]  Scanning JSON... Found 80 bolded fields.
-17:52:32 [INFO]  Scanning JSON... Found 80 bolded fields.
-17:52:59 [ERROR] Traceback (most recent call last):
-  File "C:\Users\danie\Desktop\BACKUPs\THE GOD FILE - Python Project (Stable)\app.py", line 1850, in safe_main
-    rest_menu_btn.rect = pygame.Rect(vz_rect.x + (vz_rect.w - _rest_sz) // 2, vz_rect.y - _rest_sz - _btn_gap, _rest_sz, _rest_sz)
-    ^^^^^^^^^^^^^
-NameError: name 'rest_menu_btn' is not defined. Did you mean: 'reset_major_btn'?
-
-17:55:19 [INFO]  Scanning JSON... Found 80 bolded fields.
-17:55:40 [ERROR] Traceback (most recent call last):
-  File "C:\Users\danie\Desktop\BACKUPs\THE GOD FILE - Python Project (Stable)\app.py", line 1850, in safe_main
-    rest_menu_btn.rect = pygame.Rect(vz_rect.x + (vz_rect.w - _rest_sz) // 2, vz_rect.y - _rest_sz - _btn_gap, _rest_sz, _rest_sz)
-    ^^^^^^^^^^^^^
-NameError: name 'rest_menu_btn' is not defined. Did you mean: 'reset_major_btn'?
-
-17:56:02 [INFO]  Scanning JSON... Found 80 bolded fields.
-18:01:20 [INFO]  Scanning JSON... Found 80 bolded fields.
-18:03:09 [INFO]  Scanning JSON... Found 80 bolded fields.
-18:05:12 [INFO]  Scanning JSON... Found 80 bolded fields.
-18:07:56 [INFO]  Scanning JSON... Found 80 bolded fields.
-18:11:15 [INFO]  Scanning JSON... Found 80 bolded fields.
-18:13:58 [INFO]  Scanning JSON... Found 80 bolded fields.
-18:15:30 [INFO]  Scanning JSON... Found 80 bolded fields.
-18:18:43 [INFO]  Scanning JSON... Found 80 bolded fields.
-18:21:55 [INFO]  Scanning JSON... Found 80 bolded fields.
+21:36:22 [INFO]  Scanning JSON... Found 80 bolded fields.
+21:47:06 [INFO]  Scanning JSON... Found 80 bolded fields.
+21:50:09 [INFO]  Scanning JSON... Found 80 bolded fields.
+21:56:59 [INFO]  Scanning JSON... Found 80 bolded fields.
