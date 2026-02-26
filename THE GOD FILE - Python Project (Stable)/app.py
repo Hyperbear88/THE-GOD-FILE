@@ -100,11 +100,15 @@ HAND_GRID_SPACING_Y = 515
 MAIN_MENU_MUSIC = resource_path(os.path.join("audio", "main menu.mp3"))
 BUTTON_PRESS_SOUND = resource_path(os.path.join("audio", "button-press.mp3"))
 TURNPAGE_SOUND = resource_path(os.path.join("audio", "turnpage.mp3"))
+MAJOR_PROMOTION_SOUND = resource_path(os.path.join("audio", "MFortune_promotion.mp3"))
+FORTUNE_PROMOTION_SOUND = resource_path(os.path.join("audio", "fortune_promotion.mp3"))
 
 IMAGES_DIR = resource_path("images")
 CARDS_JSON = resource_path("cards.json")
 DECK_BACK_IMAGE = "21-Tarot_Back.png"
 VANISHED_CARD_IMAGE = "Vanished.png"
+DECK_PILE_IMAGE = "Deck_Pile.png"
+VANISH_PILE_IMAGE = "Vanish_Pile.png"
 SHUFFLE_SOUND = resource_path(os.path.join("audio", "shuffle.wav"))
 VIDEOS_DIR = resource_path("videos")
 MENU_BG_IMAGE = "Teller_Room.png"
@@ -324,6 +328,23 @@ def load_image_safe(path, size, name="Unknown"):
     surf.fill((30, 35, 45))
     pygame.draw.rect(surf, (255, 255, 255, 40), surf.get_rect(), 2, border_radius=18)
     return surf
+
+def fade_edges_to_alpha(surf, feather=26):
+    """Return a copy with alpha faded near the edges."""
+    out = surf.copy().convert_alpha()
+    w, h = out.get_size()
+    feather = max(1, int(feather))
+    for x in range(w):
+        dx = min(x, w - 1 - x)
+        fx = clamp(dx / feather, 0.0, 1.0)
+        for y in range(h):
+            dy = min(y, h - 1 - y)
+            fy = clamp(dy / feather, 0.0, 1.0)
+            edge_factor = min(fx, fy)
+            if edge_factor < 1.0:
+                r, g, b, a = out.get_at((x, y))
+                out.set_at((x, y), (r, g, b, int(a * edge_factor)))
+    return out
 
 def draw_d20_static(surf, center, radius, value, font, is_reveal=False):
     pts = []
@@ -1032,24 +1053,59 @@ def safe_main():
         
         hand_tex, view_tex, preview_tex_hd, preview_bgs, thumb_tex, total_steps, cur_step = {}, {}, {}, {}, {}, len(cards_raw) * 4 + 2, 0
         def _asset_pct(step): return (step / max(1, total_steps)) * 0.9
+        _loading_pct_cur = 0.0
+        def _animate_loading_step(target_pct, status, thumb=None, duration=1.0):
+            nonlocal _loading_pct_cur
+            start_pct = _loading_pct_cur
+            target_pct = max(start_pct, target_pct)
+            _st = time.time()
+            while True:
+                _el = time.time() - _st
+                _t = clamp(_el / max(0.01, duration), 0.0, 1.0)
+                # Smoothstep for fluid progress motion.
+                _ts = _t * _t * (3.0 - 2.0 * _t)
+                _cur = start_pct + (target_pct - start_pct) * _ts
+                draw_loading_screen(_cur, status, thumb)
+                for _ev in pygame.event.get():
+                    if _ev.type == pygame.QUIT:
+                        pygame.quit()
+                        return False
+                if _t >= 1.0:
+                    break
+            _loading_pct_cur = target_pct
+            return True
         THUMB_H, THUMB_W = 185, 132
         for c in cards_raw:
             cid, cname, img_path = c['id'], c['name'], os.path.join(IMAGES_DIR, c['image'])
-            hand_tex[cid] = load_image_safe(img_path, (HAND_CARD_W, HAND_CARD_H), cname); cur_step += 1; draw_loading_screen(_asset_pct(cur_step), f"Hand Texture: {cname}", hand_tex[cid])
-            view_tex[cid] = load_image_safe(img_path, (VIEW_CARD_W, VIEW_CARD_H), cname); cur_step += 1; draw_loading_screen(_asset_pct(cur_step), f"Grid Texture: {cname}", hand_tex[cid])
+            hand_tex[cid] = load_image_safe(img_path, (HAND_CARD_W, HAND_CARD_H), cname); cur_step += 1
+            if not _animate_loading_step(_asset_pct(cur_step), f"Hand Texture: {cname}", hand_tex[cid], duration=0.25): return
+            view_tex[cid] = load_image_safe(img_path, (VIEW_CARD_W, VIEW_CARD_H), cname); cur_step += 1
+            if not _animate_loading_step(_asset_pct(cur_step), f"Grid Texture: {cname}", hand_tex[cid], duration=0.25): return
             thumb_tex[cid] = pygame.transform.smoothscale(hand_tex[cid], (THUMB_W, THUMB_H))
             prev_h, prev_w = int(H * 0.80), int(int(H * 0.80) * (HAND_CARD_W / HAND_CARD_H))
-            preview_tex_hd[cid] = load_image_safe(img_path, (prev_w, prev_h), cname); cur_step += 1; draw_loading_screen(_asset_pct(cur_step), f"HD View: {cname}", hand_tex[cid])
-            found = next((f for f in os.listdir(IMAGES_DIR) if f.lower().startswith(f"{cid}-") and f.lower().endswith("_bg.png")), None); preview_bgs[cid] = pygame.transform.smoothscale(pygame.image.load(os.path.join(IMAGES_DIR, found)).convert(), (W, H)) if found else pygame.Surface((W,H)); cur_step += 1; draw_loading_screen(_asset_pct(cur_step), f"Backdrop: {cname}", hand_tex[cid])
+            preview_tex_hd[cid] = load_image_safe(img_path, (prev_w, prev_h), cname); cur_step += 1
+            if not _animate_loading_step(_asset_pct(cur_step), f"HD View: {cname}", hand_tex[cid], duration=0.25): return
+            found = next((f for f in os.listdir(IMAGES_DIR) if f.lower().startswith(f"{cid}-") and f.lower().endswith("_bg.png")), None); preview_bgs[cid] = pygame.transform.smoothscale(pygame.image.load(os.path.join(IMAGES_DIR, found)).convert(), (W, H)) if found else pygame.Surface((W,H)); cur_step += 1
+            if not _animate_loading_step(_asset_pct(cur_step), f"Backdrop: {cname}", hand_tex[cid], duration=0.25): return
         
         menu_bg, normal_bg, deck_back_sm, v_face_hand = load_image_safe(os.path.join(IMAGES_DIR, MENU_BG_IMAGE), (W, H)), load_image_safe(os.path.join(IMAGES_DIR, NORMAL_BG_IMAGE), (W, H)), load_image_safe(os.path.join(IMAGES_DIR, DECK_BACK_IMAGE), (160, 224)), load_image_safe(os.path.join(IMAGES_DIR, VANISHED_CARD_IMAGE), (HAND_CARD_W, HAND_CARD_H))
-        cur_step += 1; draw_loading_screen(_asset_pct(cur_step), "Interface Textures", v_face_hand)
+        deck_pile_frame = load_image_safe(os.path.join(IMAGES_DIR, DECK_PILE_IMAGE), (210, 310))
+        vanish_pile_frame = load_image_safe(os.path.join(IMAGES_DIR, VANISH_PILE_IMAGE), (210, 310))
+        _pile_tint = pygame.Surface((210, 310), pygame.SRCALPHA)
+        _pile_tint.fill((60, 60, 70, 75))
+        deck_pile_frame.blit(_pile_tint, (0, 0))
+        vanish_pile_frame.blit(_pile_tint, (0, 0))
+        deck_pile_frame = fade_edges_to_alpha(deck_pile_frame, feather=26)
+        vanish_pile_frame = fade_edges_to_alpha(vanish_pile_frame, feather=26)
+        cur_step += 1
+        if not _animate_loading_step(_asset_pct(cur_step), "Interface Textures", v_face_hand, duration=0.25): return
         # Release loading bg video so the file can be reopened later
         if _loading_bg_video["cap"] is not None:
             _loading_bg_video["cap"].release()
             _loading_bg_video["cap"] = None
         v_face_view, v_face_deck = pygame.transform.smoothscale(v_face_hand, (VIEW_CARD_W, VIEW_CARD_H)), pygame.transform.smoothscale(v_face_hand, (160, 224))
-        cur_step += 1; draw_loading_screen(_asset_pct(cur_step), "Finalizing Visual Assets", v_face_hand)
+        cur_step += 1
+        if not _animate_loading_step(_asset_pct(cur_step), "Finalizing Visual Assets", v_face_hand, duration=0.25): return
         
         # Last 10%: options/settings load stage over 10 seconds
         user_settings = load_user_settings()
@@ -1099,6 +1155,8 @@ def safe_main():
                 return None
         _sfx_button_press = _load_sfx(BUTTON_PRESS_SOUND)
         _sfx_turnpage = _load_sfx(TURNPAGE_SOUND)
+        _sfx_major_promo = _load_sfx(MAJOR_PROMOTION_SOUND)
+        _sfx_fortune_promo = _load_sfx(FORTUNE_PROMOTION_SOUND)
 
         # UI BUTTONS
         ui_x, ui_w = PADDING+PANEL_INNER_PAD, PANEL_W-PANEL_INNER_PAD*2
@@ -1153,15 +1211,20 @@ def safe_main():
         except: Button.click_channel = None
         Button.sfx_enabled = sfx_enabled
         game.sfx_channel = Button.click_channel
-        def play_turnpage_sfx():
-            if game.audio_enabled and game.sfx_enabled and _sfx_turnpage is not None:
+        def play_sfx(sound_obj, priority=False):
+            if game.audio_enabled and game.sfx_enabled and sound_obj is not None:
                 try:
                     if game.sfx_channel is not None:
-                        if not game.sfx_channel.get_busy():
-                            game.sfx_channel.play(_sfx_turnpage)
+                        if priority:
+                            game.sfx_channel.stop()
+                            game.sfx_channel.play(sound_obj)
+                        elif not game.sfx_channel.get_busy():
+                            game.sfx_channel.play(sound_obj)
                     else:
-                        _sfx_turnpage.play()
+                        sound_obj.play()
                 except: pass
+        def play_turnpage_sfx():
+            play_sfx(_sfx_turnpage)
         
         screen_mode, running, scroll_y, preview_cid, card_fire_particles = "menu", True, 0, None, []
         preview_state = {'mode': 'normal', 'orientation': 'upright'}
@@ -1751,9 +1814,11 @@ def safe_main():
                                 game.save_state()
                                 if zone == game.hand:
                                     if h['id'] in MAJOR_FORTUNE_IDS and game.level >= 17 and len(game.major_zone) < 1:
+                                        play_sfx(_sfx_major_promo, priority=True)
                                         game.hand.remove(h); h['mode'] = 'major'; game.major_zone.append(h)
                                         game.add_history(f"{game.cards[h['id']]['name']} moved to Major Zone.", [h['id']])
                                     elif game.level >= 6 and len(game.fortune_zone) < 1 and h['id'] not in MAJOR_FORTUNE_IDS:
+                                        play_sfx(_sfx_fortune_promo, priority=True)
                                         game.hand.remove(h); h['mode'] = 'fortune'; game.fortune_zone.append(h)
                                         game.add_history(f"{game.cards[h['id']]['name']} moved to Fortune Zone.", [h['id']])
                                 else:
@@ -1842,6 +1907,7 @@ def safe_main():
                                 gx, gy = VIEW_START_X+(i%6)*CELL_W, VIEW_START_Y+(i//6)*CELL_H-scroll_y+160
                                 if pygame.Rect(gx, gy, VIEW_CARD_W, VIEW_CARD_H).collidepoint(e.pos):
                                     if screen_mode == "ppf_selection":
+                                        play_sfx(_sfx_fortune_promo, priority=True)
                                         game.save_state()
                                         game.fortune_zone.append({"id": cid, "mode": "fortune", "orientation": "upright", "flip": 0.0, "scroll_up": 0, "scroll_inv": 0, "max_sc_up": 0, "max_sc_inv": 0, "is_vanishing": False, "tapped": False, "ppf_added": True})
                                         game.ppf_charges -= 1
@@ -1849,6 +1915,7 @@ def safe_main():
                                         game.rebuild_deck()
                                         screen_mode = "normal"
                                     elif screen_mode == "major_selection":
+                                        play_sfx(_sfx_major_promo, priority=True)
                                         game.save_state()
                                         game.major_zone.append({"id": cid, "mode": "major", "orientation": "upright", "flip": 0.0, "scroll_up": 0, "scroll_inv": 0, "max_sc_up": 0, "max_sc_inv": 0, "is_vanishing": False, "tapped": False, "major_added": True})
                                         game.major_fortune_used_this_week = True
@@ -2211,14 +2278,17 @@ def safe_main():
                         reset_major_btn.rect = pygame.Rect(_rm_x + 5, _cur_y, _btn_w, _rm_item_h)
                         reset_major_btn.draw(screen, f_tiny, dt)
                 
-                for r, lbl in [(vz_rect, "Vanished Pile"), (mz_rect, "Main Deck")]:
-                    draw_round_rect(screen, r, (5,8,15,220), 20)
-                    _hdr = pygame.Rect(r.x + 8, r.y + 8, r.w - 16, 34)
-                    draw_round_rect(screen, _hdr, (30, 22, 16, 180), 10)
-                    pygame.draw.rect(screen, (200, 165, 96, 210), _hdr, 1, 10)
-                    pygame.draw.rect(screen, (255,255,255,255), r, 2, 20)
-                    txt = f_small.render(lbl, True, (255, 255, 255))
-                    screen.blit(txt, (r.centerx - txt.get_width()//2, r.y + 14))
+                screen.blit(vanish_pile_frame, vz_rect.topleft)
+                screen.blit(deck_pile_frame, mz_rect.topleft)
+                _vz_lbl = f_small.render("Vanished Pile", True, GOLD)
+                _mz_lbl = f_small.render("Main Deck", True, GOLD)
+                _title_h = 30
+                _vz_title_box = pygame.Rect(vz_rect.x + 10, vz_rect.y + 12, vz_rect.w - 20, _title_h)
+                _mz_title_box = pygame.Rect(mz_rect.x + 10, mz_rect.y + 12, mz_rect.w - 20, _title_h)
+                draw_round_rect(screen, _vz_title_box, (0, 0, 0, 165), 8)
+                draw_round_rect(screen, _mz_title_box, (0, 0, 0, 165), 8)
+                screen.blit(_vz_lbl, (_vz_title_box.centerx - _vz_lbl.get_width() // 2, _vz_title_box.centery - _vz_lbl.get_height() // 2))
+                screen.blit(_mz_lbl, (_mz_title_box.centerx - _mz_lbl.get_width() // 2, _mz_title_box.centery - _mz_lbl.get_height() // 2))
 
                 deck_x, deck_y = mz_rect.x+25, mz_rect.y+48
                 deck_w, deck_h = 160, 224

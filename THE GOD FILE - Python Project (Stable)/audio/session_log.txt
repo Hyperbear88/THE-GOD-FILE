@@ -1,0 +1,19 @@
+01:23:59 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:51:45 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:52:29 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:56:59 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:40:49 [INFO]  Scanning JSON... Found 80 bolded fields.
+06:21:28 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:39:54 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:39:54 [ERROR] Traceback (most recent call last):
+  File "C:\Users\danie\Desktop\BACKUPs\THE GOD FILE - Python Project (Stable)\app.py", line 969, in safe_main
+    hand_tex[cid] = load_image_safe(img_path, (HAND_CARD_W, HAND_CARD_H), cname); cur_step += 1; draw_loading_screen(cur_step/total_steps, f"Hand Texture: {cname}", hand_tex[cid])
+                                                                                                 ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\danie\Desktop\BACKUPs\THE GOD FILE - Python Project (Stable)\app.py", line 772, in draw_loading_screen
+    _render_loading_frame(_loading_display_pct, status, thumb)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\danie\Desktop\BACKUPs\THE GOD FILE - Python Project (Stable)\app.py", line 882, in _render_loading_frame
+    if random.random() < 0.6:
+       ^^^^^^
+NameError: cannot access free variable 'random' where it is not associated with a value in enclosing scope. Did you forget to import 'random'?
+
