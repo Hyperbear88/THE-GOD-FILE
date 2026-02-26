@@ -369,6 +369,31 @@ class FireParticle:
             p_s = pygame.Surface((self.size*2, self.size*2), pygame.SRCALPHA); pygame.draw.circle(p_s, (*self.color, alpha), (self.size, self.size), self.size)
             surf.blit(p_s, (self.x - self.size, self.y - self.size))
 
+class TokenFizzle:
+    """Lightweight vanish animation for Draw of Fate tokens — no replacement image."""
+    def __init__(self, surf, pos, w, h):
+        self.surf, self.pos, self.w, self.h = surf, pos, w, h
+        self.progress, self.done, self.particles = 0.0, False, []
+    def update(self, dt):
+        if self.progress < 1.0:
+            self.progress += dt * 1.2
+            if self.progress > 1.0: self.progress = 1.0
+            by = self.pos[1] + int((1.0 - self.progress) * self.h)
+            for _ in range(3): self.particles.append(FireParticle((self.pos[0], self.pos[0] + self.w), by, random.choice([(20,20,20), (255,100,20), (200,50,10)])))
+        else:
+            self.done = True
+        for p in self.particles[:]:
+            p.update()
+            if p.life <= 0: self.particles.remove(p)
+    def draw(self, surf):
+        bh = int((1.0 - self.progress) * self.h)
+        if bh > 0:
+            surf.blit(self.surf, self.pos, (0, 0, self.w, bh))
+            er = pygame.Rect(self.pos[0] - 2, self.pos[1] + bh - 3, self.w + 4, 6)
+            draw_round_rect(surf, er.inflate(2, 2), (180, 40, 10, 100), 3)
+            pygame.draw.rect(surf, (255, 140, 20), er, border_radius=2)
+        for p in self.particles: p.draw(surf)
+
 class VanishFizzle:
     def __init__(self, card_id, start_surf, end_surf, pos, mode, orientation, game_ref):
         self.card_id, self.start_surf, self.end_surf, self.pos, self.mode, self.orientation, self.game = card_id, start_surf, end_surf, pos, mode, orientation, game_ref; self.progress, self.delay_timer, self.done, self.particles = 0.0, 0.5, False, []
@@ -548,8 +573,10 @@ class Game:
         self.major_fortune_used_this_week, self.shuffle_anim_timer = False, 0.0
         self.seer_slots_filled_today = 0
         self.draw_of_fate_uses = 0
+        self.draw_of_fate_current = 0
         self.rebuild_deck(); self.shuffle_deck(play_sound=False)
         self.draw_of_fate_uses = self.get_draw_of_fate_uses_by_level()
+        self.draw_of_fate_current = self.draw_of_fate_uses
 
     def get_base_limit(self): return 3 if self.level >= 12 else (2 if self.level >= 6 else 1)
     def get_draw_of_fate_uses_by_level(self):
@@ -567,12 +594,12 @@ class Game:
         self.toast_msg, self.toast_timer = text, TOAST_DURATION
         
     def save_state(self): 
-        self.history.append({"deck": list(self.deck), "hand": [copy.deepcopy(h) for h in self.hand], "fortune_zone": [copy.deepcopy(f) for f in self.fortune_zone], "major_zone": [copy.deepcopy(f) for f in self.major_zone], "vanished": list(self.vanished), "stacked": self.stacked, "f3": list(self.first_three_ids), "cd": self.days_until_major, "days": self.days_passed, "limit": self.hand_limit, "table": list(self.seer_dice_table), "history": [copy.copy(e) for e in self.history_log], "level": self.level, "ppf": self.ppf_charges, "used_major": list(self.used_major_ids), "major_cooldown": self.major_fortune_used_this_week, "seer_filled": self.seer_slots_filled_today, "draw_of_fate": self.draw_of_fate_uses})
+        self.history.append({"deck": list(self.deck), "hand": [copy.deepcopy(h) for h in self.hand], "fortune_zone": [copy.deepcopy(f) for f in self.fortune_zone], "major_zone": [copy.deepcopy(f) for f in self.major_zone], "vanished": list(self.vanished), "stacked": self.stacked, "f3": list(self.first_three_ids), "cd": self.days_until_major, "days": self.days_passed, "limit": self.hand_limit, "table": list(self.seer_dice_table), "history": [copy.copy(e) for e in self.history_log], "level": self.level, "ppf": self.ppf_charges, "used_major": list(self.used_major_ids), "major_cooldown": self.major_fortune_used_this_week, "seer_filled": self.seer_slots_filled_today, "draw_of_fate": self.draw_of_fate_uses, "draw_of_fate_cur": self.draw_of_fate_current})
         if len(self.history) > 50: self.history.pop(0)
         
     def undo(self):
         if not self.history: return
-        s = self.history.pop(); self.deck, self.hand, self.fortune_zone, self.major_zone, self.vanished, self.stacked, self.first_three_ids, self.days_until_major, self.days_passed, self.hand_limit, self.seer_dice_table, self.history_log, self.level, self.ppf_charges, self.used_major_ids, self.major_fortune_used_this_week, self.seer_slots_filled_today, self.draw_of_fate_uses = s["deck"], s["hand"], s.get("fortune_zone", []), s.get("major_zone", []), s["vanished"], s["stacked"], s["f3"], s["cd"], s["days"], s["limit"], s["table"], s.get("history", []), s.get("level", 1), s.get("ppf", 3), s.get("used_major", []), s.get("major_cooldown", False), s.get("seer_filled", 0), s.get("draw_of_fate", 0)
+        s = self.history.pop(); self.deck, self.hand, self.fortune_zone, self.major_zone, self.vanished, self.stacked, self.first_three_ids, self.days_until_major, self.days_passed, self.hand_limit, self.seer_dice_table, self.history_log, self.level, self.ppf_charges, self.used_major_ids, self.major_fortune_used_this_week, self.seer_slots_filled_today, self.draw_of_fate_uses, self.draw_of_fate_current = s["deck"], s["hand"], s.get("fortune_zone", []), s.get("major_zone", []), s["vanished"], s["stacked"], s["f3"], s["cd"], s["days"], s["limit"], s["table"], s.get("history", []), s.get("level", 1), s.get("ppf", 3), s.get("used_major", []), s.get("major_cooldown", False), s.get("seer_filled", 0), s.get("draw_of_fate", 0), s.get("draw_of_fate_cur", 0)
         self.add_history("Undo: Reverted to previous state.")
 
     def rebuild_deck(self):
@@ -597,6 +624,7 @@ class Game:
         self.seer_slots_filled_today = 0
         self.hand_limit = self.get_base_limit()
         self.draw_of_fate_uses = self.get_draw_of_fate_uses_by_level()
+        self.draw_of_fate_current = self.draw_of_fate_uses
         self.vanished = []
         self.rebuild_deck()
         if self.days_passed >= 7:
@@ -610,7 +638,8 @@ class Game:
     def short_rest(self):
         self.save_state()
         self.draw_of_fate_uses = self.get_draw_of_fate_uses_by_level()
-        self.add_history(f"Short Rest: Draw of Fate restored to {self.draw_of_fate_uses} use(s).")
+        self.draw_of_fate_current = self.draw_of_fate_uses
+        self.add_history(f"Short Rest: Channel Divinity restored to {self.draw_of_fate_uses} use(s).")
     
     def mulligan_card(self, card_obj):
         if card_obj in self.fortune_zone or card_obj in self.major_zone:
@@ -740,6 +769,8 @@ def safe_main():
         _img_history = _load_btn_img("History_Button.png")
         _img_turn_undead = _load_btn_img("Turn_Undead_Button.png")
         _img_destroy_undead = _load_btn_img("Destroy_Undead_Button.png")
+        _img_settings = _load_btn_img("Settings_Menu_Image.png")
+        _img_dof_token = _load_btn_img("Draw_of_Fate_Token.png")
 
         # UI BUTTONS
         ui_x, ui_w = PADDING+PANEL_INNER_PAD, PANEL_W-PANEL_INNER_PAD*2
@@ -759,7 +790,7 @@ def safe_main():
         quit_btn = Button((W-160, PADDING + 45, 140, 35), "Exit game", danger=True)
         menu_btn = Button((W-160, PADDING + 85, 140, 35), "Main Menu", warning=True)
         history_btn = Button((W-240, H-810, 210, 270), "View History", primary=True, image=_img_history)
-        hamburger_btn = Button((W-50, PADDING, 35, 35), "\u2630")
+        hamburger_btn = Button((W-50, PADDING, 35, 35), "\u2630", image=_img_settings)
         top_menu_open = False
         exit_view_btn = Button((PADDING, PADDING, 160, 45), "Exit View", primary=True)
         
@@ -774,6 +805,8 @@ def safe_main():
         prophet_remaining_draws, current_roll_anim = 0, None
         previous_viewer_mode = None
         history_overlay_open, history_scroll = False, 0
+        dof_token_fizzles = []
+        _prev_dof_uses = game.draw_of_fate_uses
         history_sb_dragging = False
         grid_sb_dragging = False
         preview_sb_dragging = False  
@@ -887,7 +920,7 @@ def safe_main():
             dt_box_w, dt_box_h = PANEL_W - 120, 90
             dt_box_x = PADDING + (PANEL_W - dt_box_w) // 2
             dt_box_y = H - dt_box_h - 35
-            return pygame.Rect(dt_box_x, dt_box_y - 215, dt_box_w, 34)
+            return pygame.Rect(dt_box_x, dt_box_y - 275, dt_box_w, 34)
 
         while running:
             dt = clock.tick(FPS)/1000.0; m_pos = pygame.mouse.get_pos(); 
@@ -969,7 +1002,10 @@ def safe_main():
                     game.fizzles.remove(f); game.rebuild_deck()
             
             cur_h_count = len([c for c in game.hand if not c['is_vanishing']])
-            btn_d1.disabled = (cur_h_count >= game.get_base_limit())
+            btn_d1.disabled = (cur_h_count >= game.get_base_limit()) or (game.level >= 2 and game.draw_of_fate_current < 1)
+            stack_btn.disabled = (game.level >= 2 and game.draw_of_fate_current < 1)
+            turn_undead_btn.disabled = (game.draw_of_fate_current < 1)
+            destroy_undead_btn.disabled = (game.draw_of_fate_current < 2)
             ppf_btn.text = f"PP&F ({game.ppf_charges}/3)"
             ppf_btn.disabled = (game.ppf_charges <= 0 or game.level < 6 or len(game.fortune_zone) >= 1)
             major_btn.disabled = (game.major_fortune_used_this_week or len(game.major_zone) > 0 or game.level < 17)
@@ -987,10 +1023,11 @@ def safe_main():
                         selected_level = menu_lvl_dd.get_selected()
                         game.level = selected_level
                         game.draw_of_fate_uses = game.get_draw_of_fate_uses_by_level()
+                        game.draw_of_fate_current = game.draw_of_fate_uses
                         draw_of_fate_slider.set_value(game.draw_of_fate_uses)
                         lvl_change_dd.selected_index = game.level - 1
                     if start_game_btn.handle_event(e):
-                        game = Game(cards_raw); game.level = menu_lvl_dd.get_selected(); lvl_change_dd.selected_index = game.level - 1; game.hand_limit = game.get_base_limit(); game.draw_of_fate_uses = game.get_draw_of_fate_uses_by_level(); draw_of_fate_slider.set_value(game.draw_of_fate_uses)
+                        game = Game(cards_raw); game.level = menu_lvl_dd.get_selected(); lvl_change_dd.selected_index = game.level - 1; game.hand_limit = game.get_base_limit(); game.draw_of_fate_uses = game.get_draw_of_fate_uses_by_level(); game.draw_of_fate_current = game.draw_of_fate_uses; draw_of_fate_slider.set_value(game.draw_of_fate_uses)
                         if game.level >= 17: total = game.long_rest(skip_draw=True); prophet_remaining_draws = total - 1; screen_mode, scroll_y = "prophet_selection", 0
                         else: game.long_rest(); screen_mode = "normal"
                     if menu_quit_btn.handle_event(e): running = False
@@ -1145,12 +1182,13 @@ def safe_main():
                             menu_lvl_dd.selected_index = game.level - 1
                     if game.level >= 2 and draw_of_fate_slider.handle_event(e):
                         game.draw_of_fate_uses = draw_of_fate_slider.value
-                    if btn_d1.handle_event(e): game.save_state(); game.initiate_bulk_draw(1)
-                    if stack_btn.handle_event(e): screen_mode, scroll_y = "stack_selection", 0
+                        game.draw_of_fate_current = min(game.draw_of_fate_current, game.draw_of_fate_uses)
+                    if btn_d1.handle_event(e): game.save_state(); game.draw_of_fate_current = max(0, game.draw_of_fate_current - 1); game.initiate_bulk_draw(1)
+                    if stack_btn.handle_event(e): game.save_state(); game.draw_of_fate_current = max(0, game.draw_of_fate_current - 1); screen_mode, scroll_y = "stack_selection", 0
                     if game.level >= 6 and ppf_btn.handle_event(e) and not ppf_btn.disabled: screen_mode, scroll_y = "ppf_selection", 0
                     if game.level >= 2 and short_rest_btn.handle_event(e): game.short_rest(); draw_of_fate_slider.set_value(game.draw_of_fate_uses)
-                    if game.level >= 2 and turn_undead_btn.handle_event(e): game.save_state(); game.add_history("Used Turn Undead.")
-                    if game.level >= 2 and destroy_undead_btn.handle_event(e): game.save_state(); game.add_history("Used Destroy Undead.")
+                    if game.level >= 2 and turn_undead_btn.handle_event(e): game.save_state(); game.draw_of_fate_current = max(0, game.draw_of_fate_current - 1); game.add_history("Used Turn Undead.")
+                    if game.level >= 2 and destroy_undead_btn.handle_event(e): game.save_state(); game.draw_of_fate_current = max(0, game.draw_of_fate_current - 2); game.add_history("Used Destroy Undead.")
                     if rest_btn.handle_event(e):
                         if game.level >= 17: total = game.long_rest(skip_draw=True); prophet_remaining_draws = total - 1; screen_mode, scroll_y = "prophet_selection", 0
                         else: game.long_rest()
@@ -1218,7 +1256,10 @@ def safe_main():
                             # 1. Left Click Logic
                             if e.button == 1:
                                 if mbr and mbr.collidepoint(e.pos):
+                                    if game.level >= 2 and game.draw_of_fate_current < 1:
+                                        break
                                     game.mulligan_card(h)
+                                    if game.level >= 2: game.draw_of_fate_current = max(0, game.draw_of_fate_current - 1)
                                     break
                                 elif vbr and vbr.collidepoint(e.pos):
                                     if ((zone == game.fortune_zone and h['mode'] == 'fortune') or (zone == game.major_zone and h['mode'] == 'major')) and not h.get('tapped'):
@@ -1391,6 +1432,29 @@ def safe_main():
                     divider_box = pygame.Rect(fate_rect.x + 2, fate_rect.y - 105, fate_rect.w - 4, 60)
                     draw_round_rect(screen, divider_box, (20, 25, 40, 220), 12)
                     pygame.draw.rect(screen, GOLD, divider_box, 1, 12)
+                    # Draw of Fate tokens inside the box
+                    _tok_pad = 4
+                    _tok_gap = 4
+                    _tok_h = divider_box.h - _tok_pad * 2
+                    _tok_w = (divider_box.w - _tok_pad * 2 - 5 * _tok_gap) // 6
+                    _tok_y = divider_box.y + _tok_pad
+                    # Detect charge decrease and spawn fizzle
+                    if game.draw_of_fate_current < _prev_dof_uses and _img_dof_token:
+                        _tok_img_fz = pygame.transform.smoothscale(_img_dof_token, (_tok_w, _tok_h))
+                        for _fi in range(_prev_dof_uses - 1, game.draw_of_fate_current - 1, -1):
+                            _fx = divider_box.x + _tok_pad + _fi * (_tok_w + _tok_gap)
+                            dof_token_fizzles.append(TokenFizzle(_tok_img_fz, (_fx, _tok_y), _tok_w, _tok_h))
+                    _prev_dof_uses = game.draw_of_fate_current
+                    # Draw remaining tokens
+                    if _img_dof_token and game.draw_of_fate_current > 0:
+                        _tok_img = pygame.transform.smoothscale(_img_dof_token, (_tok_w, _tok_h))
+                        for _ti in range(game.draw_of_fate_current):
+                            screen.blit(_tok_img, (divider_box.x + _tok_pad + _ti * (_tok_w + _tok_gap), _tok_y))
+                    # Update and draw token fizzles
+                    for _tf in dof_token_fizzles[:]: 
+                        _tf.update(dt)
+                        _tf.draw(screen)
+                        if _tf.done: dof_token_fizzles.remove(_tf)
                     label = f_small.render("Draw of Fate", True, GOLD)
                     screen.blit(label, (fate_rect.centerx - label.get_width() // 2, divider_box.y - 24))
                     uses_label = f_small.render("Channel Divinity Uses:", True, GOLD)
@@ -1398,6 +1462,11 @@ def safe_main():
                     draw_of_fate_slider.draw(screen, f_small)
                     turn_undead_btn.draw(screen, f_tiny, dt)
                     destroy_undead_btn.draw(screen, f_tiny, dt)
+                    # Labels under Turn/Destroy Undead
+                    _tu_lbl = f_small.render("Turn Undead", True, GOLD)
+                    screen.blit(_tu_lbl, (turn_undead_btn.rect.centerx - _tu_lbl.get_width() // 2, turn_undead_btn.rect.bottom + 4))
+                    _du_lbl = f_small.render("Destroy Undead", True, GOLD)
+                    screen.blit(_du_lbl, (destroy_undead_btn.rect.centerx - _du_lbl.get_width() // 2, destroy_undead_btn.rect.bottom + 4))
                     btn_d1.draw(screen, f_tiny, dt)
                     stack_btn.draw(screen, f_tiny, dt)
                 if game.level >= 6:
@@ -1407,7 +1476,7 @@ def safe_main():
                     dt_box = pygame.Rect(dt_box_x, dt_box_y, dt_box_w, dt_box_h)
                     title_surf = f_small.render("SEER DICE TABLE", True, PINK_D20)
                     title_x = dt_box.centerx - title_surf.get_width() // 2
-                    screen.blit(title_surf, (title_x, dt_box.y - 26))
+                    screen.blit(title_surf, (title_x, dt_box.y - 32))
                     draw_round_rect(screen, dt_box, (10, 15, 25, 240), 15)
                     pygame.draw.rect(screen, PINK_D20, dt_box, 1, 15)
                     dice_count = len(game.seer_dice_table)
@@ -1484,9 +1553,15 @@ def safe_main():
                         # Card Buttons
                         if zone == game.hand:
                             mbr, vbr = pygame.Rect(x+15, y+HAND_CARD_H+8, 110, 30), pygame.Rect(x+135, y+HAND_CARD_H+8, 110, 30)
-                            draw_round_rect(screen, mbr, (50, 70, 40, 100) if mbr.collidepoint(m_pos) else (30, 40, 25, 160), 15)
-                            pygame.draw.rect(screen, (100, 200, 100, 100), mbr, 1, 15)
-                            screen.blit(f_tiny.render("MULL", True, (200, 255, 200)), f_tiny.render("MULL", True, (0,0,0)).get_rect(center=mbr.center))
+                            _mull_disabled = (game.level >= 2 and game.draw_of_fate_current < 1)
+                            if _mull_disabled:
+                                draw_round_rect(screen, mbr, (20, 20, 20, 160), 15)
+                                pygame.draw.rect(screen, (60, 60, 60, 100), mbr, 1, 15)
+                                screen.blit(f_tiny.render("MULL", True, (100, 100, 100)), f_tiny.render("MULL", True, (0,0,0)).get_rect(center=mbr.center))
+                            else:
+                                draw_round_rect(screen, mbr, (50, 70, 40, 100) if mbr.collidepoint(m_pos) else (30, 40, 25, 160), 15)
+                                pygame.draw.rect(screen, (100, 200, 100, 100), mbr, 1, 15)
+                                screen.blit(f_tiny.render("MULL", True, (200, 255, 200)), f_tiny.render("MULL", True, (0,0,0)).get_rect(center=mbr.center))
                             
                             draw_round_rect(screen, vbr, (100, 40, 40, 100) if vbr.collidepoint(m_pos) else (45, 25, 25, 160), 15)
                             pygame.draw.rect(screen, (200, 100, 100, 100), vbr, 1, 15)
@@ -1797,6 +1872,7 @@ def safe_main():
                 exit_view_btn.draw(screen, f_small, dt)
 
             if current_roll_anim: current_roll_anim.draw(screen, f_seer_dice_sim, f_seer_massive)
+            
             if game.toast_timer > 0:
                 t_surf = f_small.render(game.toast_msg, True, (255,255,255))
                 pygame.draw.rect(screen, (0,0,0,180), (W//2-200, 20, 400, 40), border_radius=10)
