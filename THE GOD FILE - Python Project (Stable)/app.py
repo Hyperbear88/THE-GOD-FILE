@@ -734,6 +734,22 @@ def safe_main():
         _loading_font_title = pygame.font.SysFont("Times New Roman", 38, True)
         _loading_font_pct = pygame.font.SysFont("Times New Roman", 24, True)
         _loading_particles = []   # list of [x, y, vx, vy, life, max_life, size, color]
+        # Loading screen background video
+        _loading_bg_video = {"cap": None, "fps": 30.0, "frame_interval": 1.0/30.0, "accum": 0.0, "frame_surface": None}
+        try:
+            import cv2 as _cv2_load
+            _lbg_path = os.path.join(VIDEOS_DIR, "Fortune_Card_Menu.mp4")
+            if os.path.isfile(_lbg_path):
+                _lbg_cap = _cv2_load.VideoCapture(_lbg_path)
+                if _lbg_cap.isOpened():
+                    _lbg_fps = _lbg_cap.get(_cv2_load.CAP_PROP_FPS)
+                    if not _lbg_fps or _lbg_fps <= 1: _lbg_fps = 30.0
+                    _loading_bg_video["cap"] = _lbg_cap
+                    _loading_bg_video["fps"] = _lbg_fps
+                    _loading_bg_video["frame_interval"] = 1.0 / _lbg_fps
+        except Exception:
+            pass
+        _loading_last_time = [pygame.time.get_ticks() / 1000.0]
 
         def draw_loading_screen(pct, status, thumb=None):
             nonlocal _loading_display_pct
@@ -752,15 +768,51 @@ def safe_main():
         def _render_loading_frame(pct, status, thumb):
             screen.fill((8, 6, 18))
             t = pygame.time.get_ticks() / 1000.0
-            # --- Mystical background ambience ---
-            for _si in range(3):
-                _sx = W // 2 + int(math.sin(t * 0.3 + _si * 2.1) * W * 0.35)
-                _sy = H // 3 + int(math.cos(t * 0.25 + _si * 1.7) * H * 0.15)
-                _sr = 120 + int(math.sin(t * 0.5 + _si) * 40)
-                _glow = pygame.Surface((_sr * 2, _sr * 2), pygame.SRCALPHA)
-                _gc = [(40, 20, 80, 18), (80, 40, 20, 12), (20, 40, 80, 15)][_si]
-                pygame.draw.circle(_glow, _gc, (_sr, _sr), _sr)
-                screen.blit(_glow, (_sx - _sr, _sy - _sr))
+            # --- Video background ---
+            _dt_load = t - _loading_last_time[0]
+            _loading_last_time[0] = t
+            if _loading_bg_video["cap"] is not None:
+                _loading_bg_video["accum"] += _dt_load
+                while _loading_bg_video["accum"] >= _loading_bg_video["frame_interval"]:
+                    _loading_bg_video["accum"] -= _loading_bg_video["frame_interval"]
+                    try:
+                        import cv2
+                        ret, frame = _loading_bg_video["cap"].read()
+                    except Exception:
+                        ret, frame = False, None
+                    if not ret:
+                        try:
+                            import cv2
+                            _loading_bg_video["cap"].set(cv2.CAP_PROP_POS_FRAMES, 0)
+                            ret, frame = _loading_bg_video["cap"].read()
+                        except Exception:
+                            ret, frame = False, None
+                        if not ret:
+                            break
+                    try:
+                        import cv2
+                        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                        fh_v, fw_v = frame.shape[:2]
+                        surface = pygame.image.frombuffer(frame.tobytes(), (fw_v, fh_v), "RGB")
+                        _loading_bg_video["frame_surface"] = pygame.transform.smoothscale(surface.convert(), (W, H))
+                    except Exception:
+                        pass
+            if _loading_bg_video["frame_surface"] is not None:
+                screen.blit(_loading_bg_video["frame_surface"], (0, 0))
+                # Dark overlay so UI remains readable
+                _dark_ov = pygame.Surface((W, H), pygame.SRCALPHA)
+                _dark_ov.fill((0, 0, 0, 180))
+                screen.blit(_dark_ov, (0, 0))
+            else:
+                # Fallback mystical background ambience
+                for _si in range(3):
+                    _sx = W // 2 + int(math.sin(t * 0.3 + _si * 2.1) * W * 0.35)
+                    _sy = H // 3 + int(math.cos(t * 0.25 + _si * 1.7) * H * 0.15)
+                    _sr = 120 + int(math.sin(t * 0.5 + _si) * 40)
+                    _glow = pygame.Surface((_sr * 2, _sr * 2), pygame.SRCALPHA)
+                    _gc = [(40, 20, 80, 18), (80, 40, 20, 12), (20, 40, 80, 15)][_si]
+                    pygame.draw.circle(_glow, _gc, (_sr, _sr), _sr)
+                    screen.blit(_glow, (_sx - _sr, _sy - _sr))
 
             bw, bh = 640, 36
             bx, by = (W - bw) // 2, 160
@@ -856,16 +908,16 @@ def safe_main():
             log_top = by + bh + 60
             row_h = 50
             max_visible = min(len(_loading_log), 10)
-            visible = _loading_log[-max_visible:]
+            visible = list(reversed(_loading_log[-max_visible:]))
             for _li, (_entry_text, _entry_thumb) in enumerate(visible):
                 _ly = log_top + _li * row_h
                 if _ly + row_h > H - 10:
                     break
-                # Fade: older entries are dimmer
-                fade = max(0.35, (_li + 1) / max_visible) if max_visible > 1 else 1.0
+                # Fade: newest (top) is brightest, older entries fade
+                fade = max(0.1, ((max_visible - _li) / max_visible) ** 2) if max_visible > 1 else 1.0
                 # Row background
                 _row_bg = pygame.Surface((bw + 80, row_h - 4), pygame.SRCALPHA)
-                pygame.draw.rect(_row_bg, (20, 15, 40, int(120 * fade)), (0, 0, bw + 80, row_h - 4), border_radius=8)
+                pygame.draw.rect(_row_bg, (20, 15, 40, int(210 * fade)), (0, 0, bw + 80, row_h - 4), border_radius=8)
                 screen.blit(_row_bg, (log_left, _ly))
                 # Gold left border accent
                 pygame.draw.rect(screen, (int(235 * fade), int(190 * fade), int(60 * fade)), (log_left, _ly + 4, 3, row_h - 12), border_radius=2)
@@ -915,6 +967,10 @@ def safe_main():
             found = next((f for f in os.listdir(IMAGES_DIR) if f.lower().startswith(f"{cid}-") and f.lower().endswith("_bg.png")), None); preview_bgs[cid] = pygame.transform.smoothscale(pygame.image.load(os.path.join(IMAGES_DIR, found)).convert(), (W, H)) if found else pygame.Surface((W,H)); cur_step += 1; draw_loading_screen(cur_step/total_steps, f"Backdrop: {cname}", hand_tex[cid])
         
         menu_bg, normal_bg, deck_back_sm, v_face_hand = load_image_safe(os.path.join(IMAGES_DIR, MENU_BG_IMAGE), (W, H)), load_image_safe(os.path.join(IMAGES_DIR, NORMAL_BG_IMAGE), (W, H)), load_image_safe(os.path.join(IMAGES_DIR, DECK_BACK_IMAGE), (160, 224)), load_image_safe(os.path.join(IMAGES_DIR, VANISHED_CARD_IMAGE), (HAND_CARD_W, HAND_CARD_H))
+        # Release loading bg video so the file can be reopened later
+        if _loading_bg_video["cap"] is not None:
+            _loading_bg_video["cap"].release()
+            _loading_bg_video["cap"] = None
         v_face_view, v_face_deck = pygame.transform.smoothscale(v_face_hand, (VIEW_CARD_W, VIEW_CARD_H)), pygame.transform.smoothscale(v_face_hand, (160, 224))
         
         glow_gold, glow_purple, game = make_glow(HAND_CARD_W, HAND_CARD_H, GOLD), make_glow(HAND_CARD_W, HAND_CARD_H, PURPLE_TAP), Game(cards_raw)
