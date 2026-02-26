@@ -98,6 +98,8 @@ VIEW_START_X, VIEW_START_Y = 80, 120
 HAND_GRID_SPACING_X = 290
 HAND_GRID_SPACING_Y = 515 
 MAIN_MENU_MUSIC = resource_path(os.path.join("audio", "main menu.mp3"))
+BUTTON_PRESS_SOUND = resource_path(os.path.join("audio", "button-press.mp3"))
+TURNPAGE_SOUND = resource_path(os.path.join("audio", "turnpage.mp3"))
 
 IMAGES_DIR = resource_path("images")
 CARDS_JSON = resource_path("cards.json")
@@ -298,8 +300,12 @@ def make_glow(w, h, color):
     return s
 
 def safe_init():
+    try: pygame.mixer.pre_init(44100, -16, 2, 128)
+    except: pass
     pygame.init()
     try: pygame.mixer.init()
+    except: pass
+    try: pygame.mixer.set_num_channels(32)
     except: pass
     info = pygame.display.Info()
     w, h = info.current_w, info.current_h
@@ -458,6 +464,10 @@ class VanishFizzle:
 # 6. UI CLASSES
 # ----------------------------
 class Button:
+    click_sound = None
+    click_channel = None
+    sfx_enabled = True
+
     def __init__(self, rect, text, primary=False, danger=False, warning=False, gold=False, disabled=False, fire=False, green=False, image=None, image_height_mult=1.0, fantasy=False):
         self.rect, self.text, self.primary, self.danger, self.warning, self.gold, self.disabled, self.fire, self.green = pygame.Rect(rect), text, primary, danger, warning, gold, disabled, fire, green; self.hover, self.particles = False, [FireParticle((self.rect.left, self.rect.right), self.rect.top) for _ in range(15)] if fire else []; self.image = image; self.image_height_mult = image_height_mult; self.fantasy = fantasy
     def draw(self, surf, font, dt):
@@ -506,7 +516,16 @@ class Button:
     def handle_event(self, e):
         if self.disabled: return False
         if e.type == pygame.MOUSEMOTION: self.hover = self.rect.collidepoint(e.pos)
-        return e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and self.rect.collidepoint(e.pos)
+        clicked = e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and self.rect.collidepoint(e.pos)
+        if clicked and Button.sfx_enabled and Button.click_sound is not None:
+            try:
+                if Button.click_channel is not None:
+                    if not Button.click_channel.get_busy():
+                        Button.click_channel.play(Button.click_sound)
+                else:
+                    Button.click_sound.play()
+            except: pass
+        return clicked
 
 class Dropdown:
     def __init__(self, rect, items, max_visible=8, fantasy=False):
@@ -624,6 +643,7 @@ class Game:
         self.draw_of_fate_current = 0
         self.audio_enabled = True
         self.sfx_enabled = True
+        self.sfx_channel = None
         self.rebuild_deck(); self.shuffle_deck(play_sound=False)
         self.draw_of_fate_uses = self.get_draw_of_fate_uses_by_level()
         self.draw_of_fate_current = self.draw_of_fate_uses
@@ -666,7 +686,13 @@ class Game:
         self.stacked = None 
         if trigger_anim: self.shuffle_anim_timer = SHUFFLE_ANIM_DURATION
         if play_sound and self.audio_enabled and self.sfx_enabled: 
-            try: pygame.mixer.Sound(SHUFFLE_SOUND).play()
+            try:
+                s = pygame.mixer.Sound(SHUFFLE_SOUND)
+                if self.sfx_channel is not None:
+                    if not self.sfx_channel.get_busy():
+                        self.sfx_channel.play(s)
+                else:
+                    s.play()
             except: pass
 
     def long_rest(self, skip_draw=False):
@@ -798,7 +824,7 @@ def safe_main():
                     _loading_bg_video["frame_interval"] = 1.0 / _lbg_fps
         except Exception:
             pass
-        _loading_last_time = [pygame.time.get_ticks() / 1000.0]
+        _loading_last_time = [pygame.time.get_ticks() / 200.0]
 
         def draw_loading_screen(pct, status, thumb=None):
             nonlocal _loading_display_pct
@@ -1027,7 +1053,7 @@ def safe_main():
         
         # Last 10%: options/settings load stage over 10 seconds
         user_settings = load_user_settings()
-        _settings_stage_seconds = 10.0
+        _settings_stage_seconds = 5.0
         _settings_start = time.time()
         while True:
             _elapsed = time.time() - _settings_start
@@ -1066,6 +1092,13 @@ def safe_main():
         _img_dof_token = _load_btn_img("Draw_of_Fate_Token.png")
         _img_side_panel = _load_btn_img("Side_Panel_Image.png")
         _img_rest = _load_btn_img("Rest_Button.png")
+        def _load_sfx(path):
+            try:
+                return pygame.mixer.Sound(path) if os.path.exists(path) else None
+            except Exception:
+                return None
+        _sfx_button_press = _load_sfx(BUTTON_PRESS_SOUND)
+        _sfx_turnpage = _load_sfx(TURNPAGE_SOUND)
 
         # UI BUTTONS
         ui_x, ui_w = PADDING+PANEL_INNER_PAD, PANEL_W-PANEL_INNER_PAD*2
@@ -1115,12 +1148,27 @@ def safe_main():
         settings_music_dd.selected_index = 0 if menu_music_enabled else 1
         game.audio_enabled = audio_enabled
         game.sfx_enabled = sfx_enabled
+        Button.click_sound = _sfx_button_press
+        try: Button.click_channel = pygame.mixer.Channel(0)
+        except: Button.click_channel = None
+        Button.sfx_enabled = sfx_enabled
+        game.sfx_channel = Button.click_channel
+        def play_turnpage_sfx():
+            if game.audio_enabled and game.sfx_enabled and _sfx_turnpage is not None:
+                try:
+                    if game.sfx_channel is not None:
+                        if not game.sfx_channel.get_busy():
+                            game.sfx_channel.play(_sfx_turnpage)
+                    else:
+                        _sfx_turnpage.play()
+                except: pass
         
         screen_mode, running, scroll_y, preview_cid, card_fire_particles = "menu", True, 0, None, []
         preview_state = {'mode': 'normal', 'orientation': 'upright'}
         preview_scrolls = {"current": 0, "max": 0}
         prophet_remaining_draws, current_roll_anim = 0, None
         previous_viewer_mode = None
+        _hover_card_token = None
         history_overlay_open, history_scroll = False, 0
         dof_token_fizzles = []
         _prev_dof_uses = game.draw_of_fate_uses
@@ -1365,7 +1413,7 @@ def safe_main():
                         draw_of_fate_slider.set_value(game.draw_of_fate_uses)
                         lvl_change_dd.selected_index = game.level - 1
                     if start_game_btn.handle_event(e):
-                        game = Game(cards_raw); game.level = menu_lvl_dd.get_selected(); lvl_change_dd.selected_index = game.level - 1; game.hand_limit = game.get_base_limit(); game.draw_of_fate_uses = game.get_draw_of_fate_uses_by_level(); game.draw_of_fate_current = game.draw_of_fate_uses; draw_of_fate_slider.set_value(game.draw_of_fate_uses); game.audio_enabled = audio_enabled; game.sfx_enabled = sfx_enabled
+                        game = Game(cards_raw); game.level = menu_lvl_dd.get_selected(); lvl_change_dd.selected_index = game.level - 1; game.hand_limit = game.get_base_limit(); game.draw_of_fate_uses = game.get_draw_of_fate_uses_by_level(); game.draw_of_fate_current = game.draw_of_fate_uses; draw_of_fate_slider.set_value(game.draw_of_fate_uses); game.audio_enabled = audio_enabled; game.sfx_enabled = sfx_enabled; game.sfx_channel = Button.click_channel
                         if game.level >= 17: total = game.long_rest(skip_draw=True); prophet_remaining_draws = total - 1; screen_mode, scroll_y = "prophet_selection", 0
                         else: game.long_rest(); screen_mode = "normal"
                     if settings_btn.handle_event(e):
@@ -1392,6 +1440,7 @@ def safe_main():
                     if settings_fx_btn.handle_event(e):
                         sfx_enabled = not sfx_enabled
                         game.sfx_enabled = sfx_enabled
+                        Button.sfx_enabled = sfx_enabled
                         save_user_settings({"menu_music_enabled": menu_music_enabled, "menu_music_volume": menu_music_volume, "audio_enabled": audio_enabled, "sfx_enabled": sfx_enabled, "menu_videos_enabled": menu_videos_enabled, "card_videos_enabled": card_videos_enabled})
                     if settings_menu_video_btn.handle_event(e):
                         menu_videos_enabled = not menu_videos_enabled
@@ -1453,7 +1502,7 @@ def safe_main():
                                 spell_box_x = start_x + (prev_w + gap) * 2
                                 for i, (label, url) in enumerate(links):
                                     if pygame.Rect(spell_box_x + 10, start_y + 85 + i * 65, spell_w - 20, 50).collidepoint(e.pos): webbrowser.open(url)
-                        elif e.button == 2: preview_state['orientation'] = "inverted" if preview_state['orientation'] == "upright" else "upright"
+                        elif e.button == 2: preview_state['orientation'] = "inverted" if preview_state['orientation'] == "upright" else "upright"; play_turnpage_sfx()
                         elif e.button == 3: preview_state['mode'] = ("major" if preview_cid in MAJOR_FORTUNE_IDS else "fortune") if preview_state['mode'] == "normal" else "normal"
                     if e.type == pygame.MOUSEWHEEL:
                         cd = game.cards[preview_cid]
@@ -1469,6 +1518,27 @@ def safe_main():
                             preview_scrolls['current'] = clamp(preview_scrolls['current'] - e.y*30, 0, preview_scrolls['max'])
                 
                 elif screen_mode == "normal":
+                    if e.type == pygame.MOUSEMOTION:
+                        _new_hover = None
+                        for _zone_name, _zone, _sy, _sx in (
+                            [( "hand", h, 80, PANEL_W+60) for h in game.hand] +
+                            [( "fortune", f, 80+HAND_GRID_SPACING_Y, PANEL_W+60) for f in game.fortune_zone] +
+                            [( "major", m, 80+HAND_GRID_SPACING_Y, PANEL_W+60+HAND_GRID_SPACING_X) for m in game.major_zone]
+                        ):
+                            if _zone.get('is_vanishing') or _zone.get('tapped'):
+                                continue
+                            _list_ref = game.hand if _zone_name == "hand" else (game.fortune_zone if _zone_name == "fortune" else game.major_zone)
+                            try:
+                                _idx = _list_ref.index(_zone)
+                            except ValueError:
+                                continue
+                            _hx, _hy = _sx + (_idx % 4) * HAND_GRID_SPACING_X, _sy + (_idx // 4) * HAND_GRID_SPACING_Y
+                            if pygame.Rect(_hx, _hy, HAND_CARD_W, HAND_CARD_H).collidepoint(e.pos):
+                                _new_hover = (_zone_name, _zone.get('id'), _idx)
+                                break
+                        if _new_hover is not None and _new_hover != _hover_card_token:
+                            play_turnpage_sfx()
+                        _hover_card_token = _new_hover
                     # History overlay intercepts scroll and click-outside-to-close
                     if history_overlay_open:
                         _ho_w = (W - PADDING*4) // 4
@@ -1673,6 +1743,7 @@ def safe_main():
                                 h['orientation'] = 'inverted' if h['orientation'] == 'upright' else 'upright'
                                 h['scroll_up'] = 0
                                 h['scroll_inv'] = 0
+                                play_turnpage_sfx()
                                 break
                                 
                             # 3. Right Click Logic (Move between zones)
