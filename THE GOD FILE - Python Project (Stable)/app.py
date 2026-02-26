@@ -423,8 +423,8 @@ class VanishFizzle:
 # 6. UI CLASSES
 # ----------------------------
 class Button:
-    def __init__(self, rect, text, primary=False, danger=False, warning=False, gold=False, disabled=False, fire=False, green=False, image=None, image_height_mult=1.0):
-        self.rect, self.text, self.primary, self.danger, self.warning, self.gold, self.disabled, self.fire, self.green = pygame.Rect(rect), text, primary, danger, warning, gold, disabled, fire, green; self.hover, self.particles = False, [FireParticle((self.rect.left, self.rect.right), self.rect.top) for _ in range(15)] if fire else []; self.image = image; self.image_height_mult = image_height_mult
+    def __init__(self, rect, text, primary=False, danger=False, warning=False, gold=False, disabled=False, fire=False, green=False, image=None, image_height_mult=1.0, fantasy=False):
+        self.rect, self.text, self.primary, self.danger, self.warning, self.gold, self.disabled, self.fire, self.green = pygame.Rect(rect), text, primary, danger, warning, gold, disabled, fire, green; self.hover, self.particles = False, [FireParticle((self.rect.left, self.rect.right), self.rect.top) for _ in range(15)] if fire else []; self.image = image; self.image_height_mult = image_height_mult; self.fantasy = fantasy
     def draw(self, surf, font, dt):
         if self.image:
             img_h = int(self.rect.h * self.image_height_mult)
@@ -441,6 +441,11 @@ class Button:
                 surf.blit(img, self.rect.topleft)
             return
         if self.disabled: bg = (40, 40, 40)
+        elif self.fantasy and self.danger: bg = (110, 42, 36)
+        elif self.fantasy and self.warning: bg = (128, 94, 38)
+        elif self.fantasy and self.primary: bg = (88, 60, 34)
+        elif self.fantasy and self.gold: bg = (108, 82, 30)
+        elif self.fantasy: bg = (72, 50, 30)
         elif self.green: bg = (30, 90, 45)
         elif self.primary: bg = (35, 65, 110)
         elif self.danger: bg = (110, 45, 60)
@@ -459,17 +464,18 @@ class Button:
                 if p.life <= 0: p.reset((self.rect.left, self.rect.right), self.rect.top + 5)
                 p.draw(surf)
         draw_round_rect(surf, self.rect, bg, 12)
-        bc = GOLD if (self.gold and not self.disabled) else (RED_FIRE if (self.fire and not self.disabled) else ((80,80,80) if self.disabled else (255,255,255,40)))
+        bc = GOLD if (self.gold and not self.disabled) else (RED_FIRE if (self.fire and not self.disabled) else ((80,80,80) if self.disabled else ((212, 168, 96) if self.fantasy else (255,255,255,40))))
         pygame.draw.rect(surf, bc, self.rect, 2, 12)
-        surf.blit(font.render(self.text, True, (100,100,100) if self.disabled else (245,245,255)), font.render(self.text, True, (0,0,0)).get_rect(center=self.rect.center))
+        txt_col = (100,100,100) if self.disabled else ((248, 231, 199) if self.fantasy else (245,245,255))
+        surf.blit(font.render(self.text, True, txt_col), font.render(self.text, True, (0,0,0)).get_rect(center=self.rect.center))
     def handle_event(self, e):
         if self.disabled: return False
         if e.type == pygame.MOUSEMOTION: self.hover = self.rect.collidepoint(e.pos)
         return e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and self.rect.collidepoint(e.pos)
 
 class Dropdown:
-    def __init__(self, rect, items, max_visible=8):
-        self.rect, self.items, self.selected_index, self.is_open = pygame.Rect(rect), items, 0, False; self.scroll_offset, self.max_visible, self.item_h = 0, max_visible, 35
+    def __init__(self, rect, items, max_visible=8, fantasy=False):
+        self.rect, self.items, self.selected_index, self.is_open = pygame.Rect(rect), items, 0, False; self.scroll_offset, self.max_visible, self.item_h = 0, max_visible, 35; self.fantasy = fantasy
     def handle_event(self, e):
         if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
             if self.rect.collidepoint(e.pos): self.is_open = not self.is_open; return True
@@ -487,23 +493,25 @@ class Dropdown:
                 self.scroll_offset = clamp(self.scroll_offset - e.y, 0, max(0, len(self.items) - self.max_visible)); return True
         return False
     def draw_base(self, surf, font, is_cooldown=False):
-        draw_round_rect(surf, self.rect, (10, 15, 25), 8); pygame.draw.rect(surf, (255, 255, 255, 30), self.rect, 1, 8)
-        if is_cooldown: surf.blit(font.render("On Cooldown", True, (200, 100, 100)), (self.rect.x + 10, self.rect.y + 7))
-        elif self.items: idx = clamp(self.selected_index, 0, len(self.items)-1); surf.blit(font.render(str(self.items[idx][1]), True, (200, 200, 200)), (self.rect.x + 10, self.rect.y + 7))
-        else: surf.blit(font.render("Spent / Empty", True, (100, 100, 110)), (self.rect.x + 10, self.rect.y + 7))
+        _bg = (56, 40, 25) if self.fantasy else (10, 15, 25)
+        _bc = (212, 168, 96) if self.fantasy else (255, 255, 255, 30)
+        draw_round_rect(surf, self.rect, _bg, 8); pygame.draw.rect(surf, _bc, self.rect, 1, 8)
+        if is_cooldown: surf.blit(font.render("On Cooldown", True, (210, 120, 110) if self.fantasy else (200, 100, 100)), (self.rect.x + 10, self.rect.y + 7))
+        elif self.items: idx = clamp(self.selected_index, 0, len(self.items)-1); surf.blit(font.render(str(self.items[idx][1]), True, (238, 220, 182) if self.fantasy else (200, 200, 200)), (self.rect.x + 10, self.rect.y + 7))
+        else: surf.blit(font.render("Spent / Empty", True, (130, 116, 96) if self.fantasy else (100, 100, 110)), (self.rect.x + 10, self.rect.y + 7))
     def draw_menu(self, surf, font):
         if not self.is_open: return
-        visible_count = min(len(self.items), self.max_visible); menu_rect = pygame.Rect(self.rect.x, self.rect.bottom, self.rect.w, visible_count * self.item_h); pygame.draw.rect(surf, (20, 25, 40), menu_rect); pygame.draw.rect(surf, (255, 255, 255, 50), menu_rect, 1)
+        visible_count = min(len(self.items), self.max_visible); menu_rect = pygame.Rect(self.rect.x, self.rect.bottom, self.rect.w, visible_count * self.item_h); pygame.draw.rect(surf, (48, 34, 21) if self.fantasy else (20, 25, 40), menu_rect); pygame.draw.rect(surf, (212, 168, 96, 170) if self.fantasy else (255, 255, 255, 50), menu_rect, 1)
         
         for i in range(visible_count):
             idx = i + self.scroll_offset
             if idx >= len(self.items): break
             r = pygame.Rect(self.rect.x, self.rect.bottom + i * self.item_h, self.rect.w, self.item_h)
-            if r.collidepoint(pygame.mouse.get_pos()): pygame.draw.rect(surf, (40, 60, 100), r)
-            if idx == self.selected_index: pygame.draw.rect(surf, (60, 80, 150), r, 2)
-            txt = font.render(str(self.items[idx][1]), True, (255, 255, 255)); surf.blit(txt, (r.x + 15, r.y + (self.item_h // 2 - txt.get_height() // 2)))
+            if r.collidepoint(pygame.mouse.get_pos()): pygame.draw.rect(surf, (90, 67, 40) if self.fantasy else (40, 60, 100), r)
+            if idx == self.selected_index: pygame.draw.rect(surf, (204, 156, 82) if self.fantasy else (60, 80, 150), r, 2)
+            txt = font.render(str(self.items[idx][1]), True, (246, 230, 196) if self.fantasy else (255, 255, 255)); surf.blit(txt, (r.x + 15, r.y + (self.item_h // 2 - txt.get_height() // 2)))
         if len(self.items) > self.max_visible:
-            bw, bh = 4, visible_count * self.item_h; pygame.draw.rect(surf, (255, 255, 255, 20), (menu_rect.right - bw - 2, menu_rect.y, bw, bh)); pygame.draw.rect(surf, (100, 160, 255, 200), (menu_rect.right - bw - 2, menu_rect.y + int(bh * (self.scroll_offset / len(self.items))), bw, int(bh * (self.max_visible / len(self.items)))))
+            bw, bh = 4, visible_count * self.item_h; pygame.draw.rect(surf, (220, 185, 120, 40) if self.fantasy else (255, 255, 255, 20), (menu_rect.right - bw - 2, menu_rect.y, bw, bh)); pygame.draw.rect(surf, (214, 172, 98, 220) if self.fantasy else (100, 160, 255, 200), (menu_rect.right - bw - 2, menu_rect.y + int(bh * (self.scroll_offset / len(self.items))), bw, int(bh * (self.max_visible / len(self.items)))))
     def get_selected(self): return self.items[clamp(self.selected_index, 0, len(self.items)-1)][0] if self.items else 1
 
 class IntSlider:
@@ -1004,12 +1012,12 @@ def safe_main():
         ppf_btn = Button((ui_x, 115, ui_w, 45), f"PP&F (3/3)", gold=True)
         undo_btn = Button((ui_x, 165, ui_w, 45), "Undo Action", warning=True)
         major_btn = Button((ui_x, 235, ui_w, 45), "Use Major Fortune", danger=True, fire=True)
-        reset_major_btn = Button((ui_x, 285, ui_w, 35), "Reset Major Cooldown", warning=True)
+        reset_major_btn = Button((ui_x, 285, ui_w, 35), "Weekly", danger=True)
         btn_half_w = (ui_w - 10) // 2
         btn_d1 = Button((ui_x, 480, btn_half_w, 45), "Draw 1", True, image=_img_draw)
         stack_btn = Button((ui_x + btn_half_w + 10, 480, btn_half_w, 45), "Stack Top", primary=True, image=_img_stack)
-        short_rest_btn = Button((0, 0, 50, 50), "S", warning=True)
-        rest_btn = Button((0, 0, 50, 50), "L", gold=True)
+        short_rest_btn = Button((0, 0, 50, 50), "Short", warning=True)
+        rest_btn = Button((0, 0, 50, 50), "Long", gold=True)
         draw_of_fate_slider = IntSlider((ui_x + 35, H - 200, ui_w - 70, 34), 0, 6, game.draw_of_fate_uses)
         turn_undead_btn = Button((ui_x, H - 160, (ui_w - 10) // 2, 42), "Turn Undead", green=True, image=_img_turn_undead)
         destroy_undead_btn = Button((ui_x + (ui_w - 10) // 2 + 10, H - 160, (ui_w - 10) // 2, 42), "Destroy Undead", danger=True, image=_img_destroy_undead)
@@ -1023,9 +1031,9 @@ def safe_main():
         exit_view_btn = Button((PADDING, PADDING, 160, 45), "Exit View", primary=True)
         
         menu_box_rect = pygame.Rect(W//2 - 200, H//2 - 50, 400, 350)
-        menu_lvl_dd = Dropdown((menu_box_rect.x+50, menu_box_rect.y+100, 300, 45), [(i, i) for i in range(1, 21)])
-        start_game_btn = Button((menu_box_rect.x+50, menu_box_rect.y+170, 300, 50), "START GAME", primary=True)
-        menu_quit_btn = Button((menu_box_rect.x+50, menu_box_rect.y+240, 300, 50), "Exit game", danger=True)
+        menu_lvl_dd = Dropdown((menu_box_rect.x+50, menu_box_rect.y+100, 300, 45), [(i, i) for i in range(1, 21)], fantasy=True)
+        start_game_btn = Button((menu_box_rect.x+50, menu_box_rect.y+170, 300, 50), "START GAME", primary=True, fantasy=True)
+        menu_quit_btn = Button((menu_box_rect.x+50, menu_box_rect.y+240, 300, 50), "Exit game", danger=True, fantasy=True)
         
         screen_mode, running, scroll_y, preview_cid, card_fire_particles = "menu", True, 0, None, []
         preview_state = {'mode': 'normal', 'orientation': 'upright'}
@@ -1417,6 +1425,7 @@ def safe_main():
                     if game.level >= 2 and rest_menu_open and short_rest_btn.handle_event(e): game.short_rest(); rest_menu_open = False
                     if game.level >= 2 and turn_undead_btn.handle_event(e): game.save_state(); game.draw_of_fate_current = max(0, game.draw_of_fate_current - 1); game.add_history("Used Turn Undead.")
                     if game.level >= 2 and destroy_undead_btn.handle_event(e): game.save_state(); game.draw_of_fate_current = max(0, game.draw_of_fate_current - 2); game.add_history("Used Destroy Undead.")
+                    if game.level >= 17 and rest_menu_open and reset_major_btn.handle_event(e): game.major_fortune_used_this_week = False; rest_menu_open = False
                     if rest_menu_open and rest_btn.handle_event(e):
                         if game.level >= 17: total = game.long_rest(skip_draw=True); prophet_remaining_draws = total - 1; screen_mode, scroll_y = "prophet_selection", 0
                         else: game.long_rest()
@@ -1427,17 +1436,29 @@ def safe_main():
                     if rest_menu_btn.handle_event(e): rest_menu_open = not rest_menu_open
                     elif rest_menu_open and e.type == pygame.MOUSEBUTTONDOWN:
                         # Close rest menu if clicking outside it
-                        _rm_area = pygame.Rect(rest_menu_btn.rect.x, rest_menu_btn.rect.y - 90, rest_menu_btn.rect.w, 90 + rest_menu_btn.rect.h)
+                        _rm_item_h = 35
+                        _rm_gap = 5
+                        _rm_pad = 5
+                        _rm_count = 1 + (1 if game.level >= 2 else 0) + (1 if game.level >= 17 else 0)
+                        _rm_h = (_rm_pad * 2) + (_rm_count * _rm_item_h) + ((_rm_count - 1) * _rm_gap)
+                        _rm_y = rest_menu_btn.rect.y - _rm_h - 5
+                        _rm_area = pygame.Rect(rest_menu_btn.rect.x, _rm_y, rest_menu_btn.rect.w, (rest_menu_btn.rect.bottom - _rm_y))
                         if not _rm_area.collidepoint(e.pos): rest_menu_open = False
                     if hamburger_btn.handle_event(e): top_menu_open = not top_menu_open
                     elif top_menu_open:
+                        _menu_item_h = 35
+                        _menu_gap = 4
+                        _menu_pad = 8
+                        _menu_count = 2
+                        _menu_h = (_menu_pad * 2) + (_menu_count * _menu_item_h) + ((_menu_count - 1) * _menu_gap)
+                        _menu_bg_x = hamburger_btn.rect.right - 160
+                        _menu_bg_y = hamburger_btn.rect.bottom + 5
                         if quit_btn.handle_event(e): running = False
                         elif menu_btn.handle_event(e): screen_mode = "menu"; top_menu_open = False
                         elif e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
-                            _menu_area = pygame.Rect(W - 170, PADDING, 170, 135)
+                            _menu_area = pygame.Rect(_menu_bg_x, hamburger_btn.rect.y, 160, (_menu_bg_y - hamburger_btn.rect.y) + _menu_h)
                             if not _menu_area.collidepoint(e.pos): top_menu_open = False
                     if game.level >= 17:
-                        if reset_major_btn.handle_event(e): game.major_fortune_used_this_week = False
                         if not major_btn.disabled and major_btn.handle_event(e): screen_mode, scroll_y = "major_selection", 0
                     
                     if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
@@ -1619,8 +1640,28 @@ def safe_main():
             
             if screen_mode == "menu":
                 screen.blit(menu_bg, (0, 0))
-                draw_round_rect(screen, (menu_box_rect.x, menu_box_rect.y, 400, 350), (15, 20, 30, 200), 20)
-                screen.blit(f_preview_title.render("DIVINE SEER DOMAIN", True, GOLD), (W//2 - 220, menu_box_rect.y - 120))
+                # Fantasy-style vignette + ornate frame
+                _vignette = pygame.Surface((W, H), pygame.SRCALPHA)
+                _vignette.fill((10, 6, 14, 95))
+                screen.blit(_vignette, (0, 0))
+                _frame_outer = pygame.Rect(menu_box_rect.x - 24, menu_box_rect.y - 26, 448, 404)
+                _frame_mid = _frame_outer.inflate(-10, -10)
+                _frame_inner = menu_box_rect.copy()
+                draw_round_rect(screen, _frame_outer, (36, 20, 12, 215), 24)
+                pygame.draw.rect(screen, (120, 86, 42, 220), _frame_outer, 3, 24)
+                draw_round_rect(screen, _frame_mid, (22, 15, 10, 215), 22)
+                pygame.draw.rect(screen, (184, 138, 66, 220), _frame_mid, 2, 22)
+                draw_round_rect(screen, _frame_inner, (18, 14, 24, 220), 20)
+                pygame.draw.rect(screen, (235, 190, 60, 150), _frame_inner, 1, 20)
+                for _cx, _cy in [(_frame_outer.x + 22, _frame_outer.y + 22), (_frame_outer.right - 22, _frame_outer.y + 22), (_frame_outer.x + 22, _frame_outer.bottom - 22), (_frame_outer.right - 22, _frame_outer.bottom - 22)]:
+                    pygame.draw.circle(screen, (235, 190, 60, 230), (_cx, _cy), 7, 2)
+                    pygame.draw.circle(screen, (130, 86, 32, 200), (_cx, _cy), 3)
+                _title_shadow = f_preview_title.render("DIVINE SEER DOMAIN", True, (25, 12, 6))
+                _title_main = f_preview_title.render("DIVINE SEER DOMAIN", True, GOLD)
+                screen.blit(_title_shadow, (W//2 - 218, menu_box_rect.y - 118))
+                screen.blit(_title_main, (W//2 - 220, menu_box_rect.y - 120))
+                _sub = f_small.render("Draw the veil. Read the fate.", True, (206, 176, 120))
+                screen.blit(_sub, (W//2 - _sub.get_width()//2, menu_box_rect.y - 72))
                 
                 f_choose_level = pygame.font.SysFont("georgia", 32, bold=True)
                 choose_lvl_surf = f_choose_level.render("Choose player level", True, (220, 210, 160))
@@ -1659,18 +1700,8 @@ def safe_main():
                 
                 if game.level >= 17:
                     major_btn.draw(screen, f_small, dt)
-                    reset_major_btn.draw(screen, f_tiny, dt)
 
-                # 2. TOP RIGHT BUTTONS
-                hamburger_btn.draw(screen, f_tiny, dt)
-                if top_menu_open:
-                    _menu_bg = pygame.Rect(W - 170, PADDING + 40, 160, 90)
-                    draw_round_rect(screen, _menu_bg, (18, 24, 38, 230), 10)
-                    pygame.draw.rect(screen, (255, 255, 255, 40), _menu_bg, 1, 10)
-                    menu_btn.draw(screen, f_tiny, dt)
-                    quit_btn.draw(screen, f_tiny, dt)
-                
-                # 3. SEER DICE TABLE
+                # 2. SEER DICE TABLE
                 if game.level >= 2:
                     fate_rect = get_draw_of_fate_rect()
                     divider_box = pygame.Rect(fate_rect.x + 2, fate_rect.y - 105, fate_rect.w - 4, 60)
@@ -1838,34 +1869,71 @@ def safe_main():
                             btn_color = (220, 230, 255) if h.get('tapped') else (240, 240, 240)
                             screen.blit(f_tiny.render(btn_label, True, btn_color), f_tiny.render(btn_label, True, (0,0,0)).get_rect(center=vbr.center))
 
-                # 7. DECK & VANISHED PILE
-                vz_rect = pygame.Rect(W-460, H-340, 210, 310)
-                mz_rect = pygame.Rect(W-240, H-340, 210, 310)
+                # 6. DECK & VANISHED PILE
+                _pile_w, _pile_h = 210, 310
+                _pile_y = H - 340
+                vz_rect = pygame.Rect(W - 460, _pile_y, _pile_w, _pile_h)
+                mz_rect = pygame.Rect(W - 240, _pile_y, _pile_w, _pile_h)
                 _hist_sz = 150
                 _rest_sz = 100
+                _menu_sz = 100
                 _btn_gap = 10
                 # History button directly above deck
                 history_btn.rect = pygame.Rect(mz_rect.x + (mz_rect.w - _hist_sz) // 2, mz_rect.y - _hist_sz - _btn_gap, _hist_sz, _hist_sz)
                 history_btn.draw(screen, f_tiny, dt)
-                # Rest button next to vanished pile (above it)
-                rest_menu_btn.rect = pygame.Rect(vz_rect.x + (vz_rect.w - _rest_sz) // 2, vz_rect.y - _rest_sz - _btn_gap, _rest_sz, _rest_sz)
+                # Settings menu back to top-right
+                _controls_y = vz_rect.bottom - _rest_sz
+                _controls_x = vz_rect.x - ((_rest_sz * 2) + _btn_gap)
+                hamburger_btn.rect = pygame.Rect(W-50, PADDING, 35, 35)
+                hamburger_btn.draw(screen, f_tiny, dt)
+                if top_menu_open:
+                    _menu_item_h = 35
+                    _menu_gap = 4
+                    _menu_pad = 8
+                    _menu_count = 2
+                    _menu_h = (_menu_pad * 2) + (_menu_count * _menu_item_h) + ((_menu_count - 1) * _menu_gap)
+                    _menu_bg = pygame.Rect(hamburger_btn.rect.right - 160, hamburger_btn.rect.bottom + 5, 160, _menu_h)
+                    draw_round_rect(screen, _menu_bg, (18, 24, 38, 230), 10)
+                    pygame.draw.rect(screen, (255, 255, 255, 40), _menu_bg, 1, 10)
+                    _menu_item_w = _menu_bg.w - 20
+                    menu_btn.rect = pygame.Rect(_menu_bg.x + 10, _menu_bg.y + _menu_pad, _menu_item_w, _menu_item_h)
+                    quit_btn.rect = pygame.Rect(_menu_bg.x + 10, menu_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
+                    menu_btn.draw(screen, f_tiny, dt)
+                    quit_btn.draw(screen, f_tiny, dt)
+                rest_menu_btn.rect = pygame.Rect(_controls_x + _menu_sz + _btn_gap, _controls_y, _rest_sz, _rest_sz)
                 rest_menu_btn.draw(screen, f_tiny, dt)
                 if rest_menu_open:
                     _rm_x = rest_menu_btn.rect.x
-                    _rm_y = rest_menu_btn.rect.y - 90
-                    _rm_bg = pygame.Rect(_rm_x, _rm_y, _rest_sz, 85)
+                    _rm_item_h = 35
+                    _rm_gap = 5
+                    _rm_pad = 5
+                    _rm_count = 1 + (1 if game.level >= 2 else 0) + (1 if game.level >= 17 else 0)
+                    _rm_h = (_rm_pad * 2) + (_rm_count * _rm_item_h) + ((_rm_count - 1) * _rm_gap)
+                    _rm_y = rest_menu_btn.rect.y - _rm_h - 5
+                    _rm_bg = pygame.Rect(_rm_x, _rm_y, _rest_sz, _rm_h)
                     draw_round_rect(screen, _rm_bg, (18, 24, 38, 235), 10)
                     pygame.draw.rect(screen, GOLD, _rm_bg, 1, 10)
-                    short_rest_btn.rect = pygame.Rect(_rm_x + 5, _rm_y + 5, _rest_sz - 10, 35)
-                    rest_btn.rect = pygame.Rect(_rm_x + 5, _rm_y + 45, _rest_sz - 10, 35)
-                    if game.level >= 2: short_rest_btn.draw(screen, f_tiny, dt)
+                    _btn_w = _rest_sz - 10
+                    _cur_y = _rm_y + _rm_pad
+                    if game.level >= 2:
+                        short_rest_btn.rect = pygame.Rect(_rm_x + 5, _cur_y, _btn_w, _rm_item_h)
+                        short_rest_btn.draw(screen, f_tiny, dt)
+                        _cur_y += _rm_item_h + _rm_gap
+                    rest_btn.rect = pygame.Rect(_rm_x + 5, _cur_y, _btn_w, _rm_item_h)
                     rest_btn.draw(screen, f_tiny, dt)
+                    _cur_y += _rm_item_h + _rm_gap
+                    if game.level >= 17:
+                        reset_major_btn.rect = pygame.Rect(_rm_x + 5, _cur_y, _btn_w, _rm_item_h)
+                        reset_major_btn.draw(screen, f_tiny, dt)
                 
                 for r, lbl in [(vz_rect, "Vanished Pile"), (mz_rect, "Main Deck")]:
                     draw_round_rect(screen, r, (5,8,15,220), 20)
+                    _hdr = pygame.Rect(r.x + 8, r.y + 8, r.w - 16, 34)
+                    draw_round_rect(screen, _hdr, (30, 22, 16, 180), 10)
+                    pygame.draw.rect(screen, (200, 165, 96, 210), _hdr, 1, 10)
                     pygame.draw.rect(screen, (255,255,255,255), r, 2, 20)
                     txt = f_small.render(lbl, True, (255, 255, 255))
-                    screen.blit(txt, (r.centerx - txt.get_width()//2, r.y + 12))
+                    screen.blit(txt, (r.centerx - txt.get_width()//2, r.y + 14))
 
                 deck_x, deck_y = mz_rect.x+25, mz_rect.y+48
                 deck_w, deck_h = 160, 224
