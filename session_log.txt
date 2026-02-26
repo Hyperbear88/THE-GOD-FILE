@@ -113,3 +113,5 @@ FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\danie\\Deskt
 
 06:22:55 [INFO]  Scanning JSON... Found 80 bolded fields.
 13:30:21 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:58:42 [INFO]  Scanning JSON... Found 80 bolded fields.
+15:37:15 [INFO]  Scanning JSON... Found 80 bolded fields.
