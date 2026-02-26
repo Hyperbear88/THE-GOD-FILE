@@ -1,0 +1,115 @@
+01:34:55 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:36:27 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:37:14 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:50:47 [ERROR] Traceback (most recent call last):
+  File "C:\Users\danie\Desktop\BACKUPs\THE GOD FILE - Python Project (Stable)\app.py", line 530, in safe_main
+    with open(CARDS_JSON, 'r') as f: cards_raw = json.load(f)['cards']
+         ~~~~^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\danie\\Desktop\\BACKUPs\\cards.json'
+
+01:53:17 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:54:52 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:56:20 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:00:10 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:00:49 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:03:19 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:04:32 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:07:03 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:08:16 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:12:17 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:14:19 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:14:43 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:18:29 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:19:56 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:27:58 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:29:31 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:37:09 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:39:02 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:40:48 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:42:13 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:44:01 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:47:30 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:48:27 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:53:28 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:55:53 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:01:14 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:05:10 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:10:12 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:14:12 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:16:24 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:20:06 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:21:23 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:23:53 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:25:16 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:26:00 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:27:32 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:27:50 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:30:51 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:31:13 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:32:13 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:34:14 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:35:50 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:36:40 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:40:24 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:50:46 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:53:01 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:54:33 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:55:42 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:58:54 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:59:25 [INFO]  Scanning JSON... Found 80 bolded fields.
+04:05:13 [INFO]  Scanning JSON... Found 80 bolded fields.
+04:05:55 [INFO]  Scanning JSON... Found 80 bolded fields.
+04:06:44 [INFO]  Scanning JSON... Found 80 bolded fields.
+04:10:46 [INFO]  Scanning JSON... Found 80 bolded fields.
+04:19:34 [INFO]  Scanning JSON... Found 80 bolded fields.
+04:24:08 [INFO]  Scanning JSON... Found 80 bolded fields.
+04:25:50 [INFO]  Scanning JSON... Found 80 bolded fields.
+04:27:40 [INFO]  Scanning JSON... Found 80 bolded fields.
+04:31:21 [INFO]  Scanning JSON... Found 80 bolded fields.
+04:32:52 [INFO]  Scanning JSON... Found 80 bolded fields.
+04:34:37 [INFO]  Scanning JSON... Found 80 bolded fields.
+04:36:20 [INFO]  Scanning JSON... Found 80 bolded fields.
+04:38:40 [INFO]  Scanning JSON... Found 80 bolded fields.
+04:40:27 [INFO]  Scanning JSON... Found 80 bolded fields.
+04:42:23 [INFO]  Scanning JSON... Found 80 bolded fields.
+04:46:41 [INFO]  Scanning JSON... Found 80 bolded fields.
+04:52:23 [INFO]  Scanning JSON... Found 80 bolded fields.
+04:54:46 [INFO]  Scanning JSON... Found 80 bolded fields.
+04:58:33 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:00:17 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:06:33 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:14:59 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:16:05 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:17:31 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:18:00 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:18:58 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:21:50 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:26:27 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:27:27 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:28:09 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:29:18 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:29:56 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:31:51 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:32:49 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:35:02 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:36:44 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:40:45 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:42:00 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:52:02 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:53:32 [INFO]  Scanning JSON... Found 80 bolded fields.
+05:57:16 [INFO]  Scanning JSON... Found 80 bolded fields.
+06:18:57 [ERROR] Traceback (most recent call last):
+  File "C:\Users\danie\Desktop\BACKUPs\THE GOD FILE - Python Project (Stable)\app.py", line 524, in safe_main
+    with open(CARDS_JSON, 'r') as f: cards_raw = json.load(f)['cards']
+         ~~~~^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\danie\\Desktop\\BACKUPs\\cards.json'
+
+06:19:54 [INFO]  Scanning JSON... Found 80 bolded fields.
+06:21:02 [ERROR] Traceback (most recent call last):
+  File "C:\Users\danie\Desktop\BACKUPs\THE GOD FILE - Python Project (Stable)\app.py", line 524, in safe_main
+    with open(CARDS_JSON, 'r') as f: cards_raw = json.load(f)['cards']
+         ~~~~^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\danie\\Desktop\\BACKUPs\\cards.json'
+
+06:22:55 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:30:21 [INFO]  Scanning JSON... Found 80 bolded fields.
