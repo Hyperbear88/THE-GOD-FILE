@@ -562,8 +562,8 @@ class Button:
     click_channel = None
     sfx_enabled = True
 
-    def __init__(self, rect, text, primary=False, danger=False, warning=False, gold=False, disabled=False, fire=False, green=False, image=None, image_height_mult=1.0, fantasy=False):
-        self.rect, self.text, self.primary, self.danger, self.warning, self.gold, self.disabled, self.fire, self.green = pygame.Rect(rect), text, primary, danger, warning, gold, disabled, fire, green; self.hover, self.particles = False, [FireParticle((self.rect.left, self.rect.right), self.rect.top) for _ in range(15)] if fire else []; self.image = image; self.image_height_mult = image_height_mult; self.fantasy = fantasy
+    def __init__(self, rect, text, primary=False, danger=False, warning=False, gold=False, disabled=False, fire=False, green=False, cyan=False, pink=False, image=None, image_height_mult=1.0, fantasy=False):
+        self.rect, self.text, self.primary, self.danger, self.warning, self.gold, self.disabled, self.fire, self.green, self.cyan, self.pink = pygame.Rect(rect), text, primary, danger, warning, gold, disabled, fire, green, cyan, pink; self.hover, self.particles = False, [FireParticle((self.rect.left, self.rect.right), self.rect.top) for _ in range(15)] if fire else []; self.image = image; self.image_height_mult = image_height_mult; self.fantasy = fantasy
     def draw(self, surf, font, dt):
         if self.image:
             img_h = int(self.rect.h * self.image_height_mult)
@@ -580,11 +580,15 @@ class Button:
                 surf.blit(img, self.rect.topleft)
             return
         if self.disabled: bg = (40, 40, 40)
+        elif self.fantasy and self.pink: bg = (112, 44, 102)
+        elif self.fantasy and self.cyan: bg = (32, 92, 112)
         elif self.fantasy and self.danger: bg = (110, 42, 36)
         elif self.fantasy and self.warning: bg = (128, 94, 38)
         elif self.fantasy and self.primary: bg = (88, 60, 34)
         elif self.fantasy and self.gold: bg = (108, 82, 30)
         elif self.fantasy: bg = (72, 50, 30)
+        elif self.pink: bg = (118, 50, 110)
+        elif self.cyan: bg = (35, 100, 120)
         elif self.green: bg = (30, 90, 45)
         elif self.primary: bg = (35, 65, 110)
         elif self.danger: bg = (110, 45, 60)
@@ -603,7 +607,13 @@ class Button:
                 if p.life <= 0: p.reset((self.rect.left, self.rect.right), self.rect.top + 5)
                 p.draw(surf)
         draw_round_rect(surf, self.rect, bg, 12)
-        bc = GOLD if (self.gold and not self.disabled) else (RED_FIRE if (self.fire and not self.disabled) else ((80,80,80) if self.disabled else ((212, 168, 96) if self.fantasy else (255,255,255,40))))
+        bc = (
+            (236, 126, 194) if (self.pink and not self.disabled) else
+            ((120, 232, 255) if (self.cyan and not self.disabled) else
+             (GOLD if (self.gold and not self.disabled) else
+              (RED_FIRE if (self.fire and not self.disabled) else
+               ((80,80,80) if self.disabled else ((212, 168, 96) if self.fantasy else (255,255,255,40))))))
+        )
         pygame.draw.rect(surf, bc, self.rect, 2, 12)
         txt_col = (100,100,100) if self.disabled else ((248, 231, 199) if self.fantasy else (245,245,255))
         surf.blit(font.render(self.text, True, txt_col), font.render(self.text, True, (0,0,0)).get_rect(center=self.rect.center))

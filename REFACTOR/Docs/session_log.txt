@@ -56,3 +56,83 @@ TypeError: Button.__init__() got an unexpected keyword argument 'blue'
 16:13:55 [INFO]  Scanning JSON... Found 80 bolded fields.
 16:15:57 [INFO]  Scanning JSON... Found 80 bolded fields.
 17:12:39 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:43:26 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:44:12 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:50:35 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:51:22 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:51:57 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:53:09 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:53:09 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:53:09 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:53:26 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:53:38 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:02:41 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:05:32 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:07:47 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+19:07:48 [INFO]  Loading video backend: imageio
+19:07:48 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:12:37 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+19:12:37 [INFO]  Loading video backend: imageio
+19:12:37 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:21:23 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+19:21:23 [INFO]  Loading video backend: imageio
+19:21:23 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:39:00 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+19:39:01 [INFO]  Loading video backend: imageio
+19:39:01 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:45:22 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+19:45:23 [INFO]  Loading video backend: imageio
+19:45:23 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:47:33 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+19:47:33 [INFO]  Loading video backend: imageio
+19:47:33 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:49:55 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+19:49:55 [INFO]  Loading video backend: imageio
+19:49:55 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:56:24 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+19:56:24 [INFO]  Loading video backend: imageio
+19:56:24 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:58:22 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+19:58:22 [INFO]  Loading video backend: imageio
+19:58:22 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:03:01 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+20:03:01 [INFO]  Loading video backend: imageio
+20:03:01 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:08:59 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+20:08:59 [INFO]  Loading video backend: imageio
+20:08:59 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:11:51 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+20:11:51 [INFO]  Loading video backend: imageio
+20:11:51 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:14:46 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+20:14:46 [INFO]  Loading video backend: imageio
+20:14:46 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:18:50 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+20:18:50 [INFO]  Loading video backend: imageio
+20:18:50 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:21:14 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+20:21:14 [INFO]  Loading video backend: imageio
+20:21:14 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:22:56 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+20:22:56 [INFO]  Loading video backend: imageio
+20:22:56 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:26:25 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+20:26:25 [INFO]  Loading video backend: imageio
+20:26:25 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:28:57 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+20:28:57 [INFO]  Loading video backend: imageio
+20:28:57 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:32:13 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+20:32:13 [INFO]  Loading video backend: imageio
+20:32:13 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:34:13 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+20:34:14 [INFO]  Loading video backend: imageio
+20:34:14 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:49:05 [INFO]  Loading video backend: cv2
+20:49:05 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:59:00 [INFO]  Loading video backend: cv2
+20:59:00 [INFO]  Scanning JSON... Found 80 bolded fields.
+21:25:29 [INFO]  Loading video backend: cv2
+21:25:29 [INFO]  Scanning JSON... Found 80 bolded fields.
+21:28:50 [INFO]  Loading video backend: cv2
+21:28:50 [INFO]  Scanning JSON... Found 80 bolded fields.

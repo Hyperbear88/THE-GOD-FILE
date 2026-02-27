@@ -17,21 +17,59 @@ def safe_main():
         _loading_font_pct = pygame.font.SysFont("Times New Roman", 24, True)
         _loading_particles = []   # list of [x, y, vx, vy, life, max_life, size, color]
         # Loading screen background video
-        _loading_bg_video = {"cap": None, "fps": 30.0, "frame_interval": 1.0/30.0, "accum": 0.0, "frame_surface": None}
-        try:
-            import cv2 as _cv2_load
-            _lbg_path = os.path.join(VIDEOS_DIR, "Fortune_Card_Menu.mp4")
-            if os.path.isfile(_lbg_path):
-                _lbg_cap = _cv2_load.VideoCapture(_lbg_path)
+        _loading_bg_video = {
+            "backend": None,  # "cv2" | "imageio" | None
+            "path": os.path.join(VIDEOS_DIR, "Fortune_Card_Menu.mp4"),
+            "cap": None,
+            "reader": None,
+            "fps": 30.0,
+            "frame_interval": 1.0 / 30.0,
+            "accum": 0.0,
+            "frame_surface": None,
+        }
+
+        def _open_loading_bg_video():
+            if not os.path.isfile(_loading_bg_video["path"]):
+                log_event(f"Loading video not found: {_loading_bg_video['path']}", is_error=True)
+                return
+
+            try:
+                import cv2 as _cv2_load
+                _lbg_cap = _cv2_load.VideoCapture(_loading_bg_video["path"])
                 if _lbg_cap.isOpened():
                     _lbg_fps = _lbg_cap.get(_cv2_load.CAP_PROP_FPS)
-                    if not _lbg_fps or _lbg_fps <= 1: _lbg_fps = 30.0
+                    if not _lbg_fps or _lbg_fps <= 1:
+                        _lbg_fps = 30.0
+                    _loading_bg_video["backend"] = "cv2"
                     _loading_bg_video["cap"] = _lbg_cap
                     _loading_bg_video["fps"] = _lbg_fps
                     _loading_bg_video["frame_interval"] = 1.0 / _lbg_fps
-        except Exception:
-            pass
-        _loading_last_time = [pygame.time.get_ticks() / 200.0]
+                    log_event("Loading video backend: cv2")
+                    return
+            except Exception as _cv2_ex:
+                log_event(f"cv2 unavailable for loading video: {_cv2_ex}", is_error=True)
+
+            try:
+                import imageio.v2 as _iio
+                _reader = _iio.get_reader(_loading_bg_video["path"], format="ffmpeg")
+                _meta = _reader.get_meta_data() or {}
+                _lbg_fps = float(_meta.get("fps", 30.0) or 30.0)
+                if _lbg_fps <= 1:
+                    _lbg_fps = 30.0
+                _loading_bg_video["backend"] = "imageio"
+                _loading_bg_video["reader"] = _reader
+                _loading_bg_video["fps"] = _lbg_fps
+                _loading_bg_video["frame_interval"] = 1.0 / _lbg_fps
+                log_event("Loading video backend: imageio")
+                return
+            except Exception as _iio_ex:
+                log_event(f"imageio unavailable for loading video: {_iio_ex}", is_error=True)
+
+            log_event("Loading video disabled: no usable backend found.", is_error=True)
+
+        _open_loading_bg_video()
+        # Keep units consistent with render-time timestamps (seconds).
+        _loading_last_time = [pygame.time.get_ticks() / 1000.0]
 
         def draw_loading_screen(pct, status, thumb=None):
             nonlocal _loading_display_pct
@@ -52,31 +90,52 @@ def safe_main():
             t = pygame.time.get_ticks() / 1000.0
             # --- Video background ---
             _dt_load = t - _loading_last_time[0]
+            if _dt_load < 0:
+                _dt_load = 0
             _loading_last_time[0] = t
-            if _loading_bg_video["cap"] is not None:
+            if _loading_bg_video["backend"] is not None:
                 _loading_bg_video["accum"] += _dt_load
                 while _loading_bg_video["accum"] >= _loading_bg_video["frame_interval"]:
                     _loading_bg_video["accum"] -= _loading_bg_video["frame_interval"]
-                    try:
-                        import cv2
-                        ret, frame = _loading_bg_video["cap"].read()
-                    except Exception:
-                        ret, frame = False, None
-                    if not ret:
+                    ret, frame = False, None
+                    if _loading_bg_video["backend"] == "cv2" and _loading_bg_video["cap"] is not None:
                         try:
                             import cv2
-                            _loading_bg_video["cap"].set(cv2.CAP_PROP_POS_FRAMES, 0)
                             ret, frame = _loading_bg_video["cap"].read()
+                            if not ret:
+                                _loading_bg_video["cap"].set(cv2.CAP_PROP_POS_FRAMES, 0)
+                                ret, frame = _loading_bg_video["cap"].read()
                         except Exception:
                             ret, frame = False, None
-                        if not ret:
-                            break
+                    elif _loading_bg_video["backend"] == "imageio" and _loading_bg_video["reader"] is not None:
+                        try:
+                            frame = _loading_bg_video["reader"].get_next_data()
+                            ret = frame is not None
+                        except Exception:
+                            ret = False
+                            try:
+                                _loading_bg_video["reader"].close()
+                            except Exception:
+                                pass
+                            try:
+                                import imageio.v2 as _iio
+                                _loading_bg_video["reader"] = _iio.get_reader(_loading_bg_video["path"], format="ffmpeg")
+                                frame = _loading_bg_video["reader"].get_next_data()
+                                ret = frame is not None
+                            except Exception:
+                                ret, frame = False, None
+                    if not ret:
+                        break
                     try:
-                        import cv2
-                        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                        if _loading_bg_video["backend"] == "cv2":
+                            import cv2
+                            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                         fh_v, fw_v = frame.shape[:2]
-                        surface = pygame.image.frombuffer(frame.tobytes(), (fw_v, fh_v), "RGB")
-                        _loading_bg_video["frame_surface"] = pygame.transform.smoothscale(surface.convert(), (W, H))
+                        if len(frame.shape) >= 3 and frame.shape[2] == 4:
+                            surface = pygame.image.frombuffer(frame.tobytes(), (fw_v, fh_v), "RGBA").convert_alpha()
+                        else:
+                            surface = pygame.image.frombuffer(frame.tobytes(), (fw_v, fh_v), "RGB").convert()
+                        _loading_bg_video["frame_surface"] = pygame.transform.smoothscale(surface, (W, H))
                     except Exception:
                         pass
             if _loading_bg_video["frame_surface"] is not None:
@@ -187,7 +246,7 @@ def safe_main():
 
             # --- Feature log with thumbnails ---
             log_left = bx - 40
-            log_top = by + bh + 60
+            log_top = by + bh + 110
             row_h = 50
             max_visible = min(len(_loading_log), 10)
             visible = list(reversed(_loading_log[-max_visible:]))
@@ -236,6 +295,151 @@ def safe_main():
         with open(CARDS_JSON, 'r') as f: cards_raw = json.load(f)['cards']
         results = find_bold_markdown(cards_raw)
         log_event(f"Scanning JSON... Found {len(results)} bolded fields.")
+        fortune_spell_entries = []
+        fortune_glossary_terms = []
+        _spell_library_data_path = os.path.join(DOCS_DIR, "spell_library_data.json")
+        try:
+            _raw_spells = []
+            _spell_payload = None
+            _offline_spell_path = docs_or_resource_path("spell_library_data.json")
+            if os.path.exists(_offline_spell_path):
+                with open(_offline_spell_path, "r", encoding="utf-8") as _sf:
+                    _spell_payload = json.load(_sf)
+            else:
+                with open(docs_or_resource_path("glossary.json"), "r", encoding="utf-8") as _gf:
+                    _spell_payload = json.load(_gf)
+            _raw_spells = _spell_payload.get("spells", []) if isinstance(_spell_payload, dict) else []
+            fortune_spell_entries = []
+            for _s in _raw_spells:
+                if not isinstance(_s, dict):
+                    continue
+                _name = str(_s.get("name", "")).strip()
+                if not _name:
+                    continue
+                _url = str(_s.get("url", "")).strip()
+                _lv = _s.get("level", None)
+                _lv = _lv if isinstance(_lv, int) and 0 <= _lv <= 9 else None
+                _school = str(_s.get("school", "Unknown") or "Unknown").strip() or "Unknown"
+                _classes = sorted({
+                    str(_c).strip().title()
+                    for _c in (_s.get("classes") or [])
+                    if str(_c).strip()
+                })
+                fortune_spell_entries.append({
+                    "name": _name,
+                    "url": _url,
+                    "level": _lv,
+                    "school": _school,
+                    "classes": _classes,
+                })
+            fortune_spell_entries.sort(key=lambda _s: _s["name"].lower())
+        except Exception as _ex:
+            log_event(f"Could not load spell list glossary.json: {_ex}", is_error=True)
+            fortune_spell_entries = []
+
+        def _norm_spell_name(_s):
+            return re.sub(r"[^a-z0-9]+", "", str(_s).lower())
+
+        _spell_meta_cache = {}
+        _spell_meta_cache_path = os.path.join(DOCS_DIR, "spell_metadata_cache.json")
+        try:
+            if os.path.exists(_spell_meta_cache_path):
+                with open(_spell_meta_cache_path, "r", encoding="utf-8") as _cf:
+                    _loaded_cache = json.load(_cf)
+                if isinstance(_loaded_cache, dict):
+                    _spell_meta_cache = _loaded_cache
+        except Exception as _ex:
+            log_event(f"Could not read spell metadata cache: {_ex}", is_error=True)
+        _spell_meta_cache_dirty = False
+        _spell_library_data_dirty = not os.path.exists(_spell_library_data_path)
+        for _sp in fortune_spell_entries:
+            _nm_key = _norm_spell_name(_sp.get("name", ""))
+            if not _nm_key:
+                continue
+            _sp_level = _sp.get("level", None)
+            _sp_school = str(_sp.get("school", "Unknown") or "Unknown")
+            _sp_classes = [str(_c).strip() for _c in (_sp.get("classes") or []) if str(_c).strip()]
+            _has_meta = (isinstance(_sp_level, int) and 0 <= _sp_level <= 9) or (_sp_school != "Unknown") or bool(_sp_classes)
+            if _has_meta and _nm_key not in _spell_meta_cache:
+                _spell_meta_cache[_nm_key] = {
+                    "url": str(_sp.get("url", "")).strip(),
+                    "level": _sp_level if isinstance(_sp_level, int) and 0 <= _sp_level <= 9 else None,
+                    "school": _sp_school,
+                    "classes": sorted({str(_c).strip().title() for _c in _sp_classes if str(_c).strip()}),
+                    "source": "offline",
+                }
+
+        def _clean_html_text(_s):
+            _t = re.sub(r"<[^>]+>", "", str(_s))
+            return re.sub(r"\s+", " ", _t).strip()
+
+        def _parse_aidedd_spell_meta_from_html(_html):
+            _level = None
+            _school = "Unknown"
+            _classes = []
+
+            _ecole = None
+            _m_ecole = re.search(r"<div class=['\"]ecole['\"]>(.*?)</div>", _html, re.I | re.S)
+            if _m_ecole:
+                _ecole = _clean_html_text(_m_ecole.group(1))
+            _ecole_l = (_ecole or "").lower()
+
+            # Old pages: "level 2 - transmutation"
+            _m_old = re.search(r"level\s*(\d+|cantrip)\s*[-–]\s*([a-zA-Z]+)", _ecole_l, re.I)
+            if _m_old:
+                _lv = _m_old.group(1).strip().lower()
+                _level = 0 if _lv == "cantrip" else int(_lv)
+                _school = _m_old.group(2).strip().title()
+
+            # New pages: "Level 2 Abjuration (Bard, Cleric, ...)"
+            _m_new = re.search(r"level\s*(\d+)\s+([a-zA-Z]+)\s*\(([^)]*)\)", _ecole or "", re.I)
+            if _m_new:
+                _level = int(_m_new.group(1))
+                _school = _m_new.group(2).strip().title()
+                _cls_txt = _m_new.group(3).strip()
+                if _cls_txt:
+                    _classes.extend([_c.strip().title() for _c in _cls_txt.split(",") if _c.strip()])
+
+            _m_new_cantrip = re.search(r"(cantrip)\s+([a-zA-Z]+)\s*\(([^)]*)\)", _ecole or "", re.I)
+            if _m_new_cantrip:
+                _level = 0
+                _school = _m_new_cantrip.group(2).strip().title()
+                _cls_txt = _m_new_cantrip.group(3).strip()
+                if _cls_txt:
+                    _classes.extend([_c.strip().title() for _c in _cls_txt.split(",") if _c.strip()])
+
+            # Old pages: classes in spans class='classe'
+            for _m_cls in re.finditer(r"class=['\"]classe['\"]>([^<]+)<", _html, re.I):
+                _cn = _clean_html_text(_m_cls.group(1)).title()
+                if _cn:
+                    _classes.append(_cn)
+
+            _classes = sorted({c for c in _classes if c})
+            if not (isinstance(_level, int) and 0 <= _level <= 9):
+                _level = None
+            if not _school:
+                _school = "Unknown"
+            return _level, _school, _classes
+
+        fortune_spell_class_options = ["all"]
+        fortune_spell_school_options = ["all"]
+
+        def _collect_bold_terms(_node, _acc):
+            if isinstance(_node, dict):
+                for _v in _node.values():
+                    _collect_bold_terms(_v, _acc)
+            elif isinstance(_node, list):
+                for _v in _node:
+                    _collect_bold_terms(_v, _acc)
+            elif isinstance(_node, str):
+                for _m in re.findall(r"\*\*(.*?)\*\*", _node):
+                    _t = str(_m).strip()
+                    if _t:
+                        _acc.add(_t)
+
+        _term_set = set()
+        _collect_bold_terms(cards_raw, _term_set)
+        fortune_glossary_terms = sorted(_term_set, key=lambda _t: _t.lower())
         
         _menu_element_files = [
             "Draw_Button_Image.png",
@@ -247,6 +451,8 @@ def safe_main():
             "Draw_of_Fate_Token.png",
             "Side_Panel_Image.png",
             "Rest_Button.png",
+            "Fortune_Card_Stamp.png",
+            "Major_Fortune_Card_Stamp.png",
         ]
         preloaded_ui_images = {}
         hand_tex, view_tex, preview_tex_hd, preview_bgs, thumb_tex, total_steps, cur_step = {}, {}, {}, {}, {}, len(cards_raw) * 4 + 3 + len(_menu_element_files), 0
@@ -301,6 +507,12 @@ def safe_main():
         if _loading_bg_video["cap"] is not None:
             _loading_bg_video["cap"].release()
             _loading_bg_video["cap"] = None
+        if _loading_bg_video["reader"] is not None:
+            try:
+                _loading_bg_video["reader"].close()
+            except Exception:
+                pass
+            _loading_bg_video["reader"] = None
         v_face_view, v_face_deck = pygame.transform.smoothscale(v_face_hand, (VIEW_CARD_W, VIEW_CARD_H)), pygame.transform.smoothscale(v_face_hand, (160, 224))
         cur_step += 1
         if not _animate_loading_step(_asset_pct(cur_step), "Finalizing Visual Assets", v_face_hand, duration=0.1): return
@@ -345,10 +557,6 @@ def safe_main():
             surf.blit(top_box, (margin, 10))
             bottom_box = pygame.Rect(margin, (h // 2) + 6, box_w, top_h)
             rich_renderer.draw_rich_box(surf, bottom_box, cd.get(f"{mode_key}_upright", "..."), 0, show_scrollbar=False)
-            _mode_lbl = f_rich_bold.render(("MAJOR MODE" if mode == "major" else "FORTUNE MODE"), True, (255, 230, 170))
-            _lbl_bg = pygame.Rect((w - _mode_lbl.get_width()) // 2 - 4, h - _mode_lbl.get_height() - 8, _mode_lbl.get_width() + 8, _mode_lbl.get_height() + 4)
-            draw_round_rect(surf, _lbl_bg, (0, 0, 0, 170), 6)
-            surf.blit(_mode_lbl, (_lbl_bg.x + 4, _lbl_bg.y + 2))
             return surf
 
         _prep_total = max(1, len(game.ids))
@@ -364,14 +572,99 @@ def safe_main():
         cur_step += 1
         if not _animate_loading_step(_asset_pct(cur_step), "Preparing Fortune Selection", _prep_thumb, duration=0.1): return
 
-        # Last 10%: options/settings must always be last
+        # Last 10%: spells + options/settings
+        _spell_total = max(1, len(fortune_spell_entries))
+        for _i, _sp in enumerate(fortune_spell_entries, start=1):
+            _nm_key = _norm_spell_name(_sp.get("name", ""))
+            _url = str(_sp.get("url", "")).strip()
+            _cached = _spell_meta_cache.get(_nm_key) if isinstance(_spell_meta_cache, dict) else None
+            _prev_level = _sp.get("level", None)
+            _prev_school = str(_sp.get("school", "Unknown") or "Unknown")
+            _prev_classes = sorted({str(_c).strip().title() for _c in (_sp.get("classes") or []) if str(_c).strip()})
+            _level = _prev_level if isinstance(_prev_level, int) and 0 <= _prev_level <= 9 else None
+            _school = _prev_school if _prev_school else "Unknown"
+            _classes = _prev_classes
+            _need_fetch = not ((isinstance(_level, int) and 0 <= _level <= 9) or (_school != "Unknown") or bool(_classes))
+            if isinstance(_cached, dict):
+                _c_url = str(_cached.get("url", "")).strip()
+                _c_level = _cached.get("level", None)
+                _c_school = str(_cached.get("school", "Unknown") or "Unknown")
+                _c_classes = [str(_c).strip() for _c in (_cached.get("classes") or []) if str(_c).strip()]
+                if _c_url == _url and (_c_level is None or isinstance(_c_level, int)) and _c_school and isinstance(_c_classes, list):
+                    _level = _c_level if isinstance(_c_level, int) and 0 <= _c_level <= 9 else None
+                    _school = _c_school
+                    _classes = _c_classes
+                    _need_fetch = False
+            if _need_fetch and _url:
+                try:
+                    import urllib.request as _urlrq
+                    _html = _urlrq.urlopen(_url, timeout=8).read().decode("utf-8", "ignore")
+                    _level, _school, _classes = _parse_aidedd_spell_meta_from_html(_html)
+                    _spell_meta_cache[_nm_key] = {
+                        "url": _url,
+                        "level": _level,
+                        "school": _school,
+                        "classes": _classes,
+                        "source": "aidedd",
+                    }
+                    _spell_meta_cache_dirty = True
+                except Exception:
+                    pass
+
+            _sp["level"] = _level if isinstance(_level, int) and 0 <= _level <= 9 else None
+            _sp["school"] = _school if _school else "Unknown"
+            _sp["classes"] = sorted({str(_c).strip().title() for _c in _classes}) if isinstance(_classes, list) else []
+            if _sp["level"] != _prev_level or _sp["school"] != _prev_school or _sp["classes"] != _prev_classes:
+                _spell_library_data_dirty = True
+
+            _frac = _i / _spell_total
+            draw_loading_screen(0.9 + (_frac * 0.05), f"Loading spells... {int(_frac * 100)}%")
+            for _ev in pygame.event.get():
+                if _ev.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+
+        if _spell_meta_cache_dirty:
+            try:
+                with open(_spell_meta_cache_path, "w", encoding="utf-8") as _cf:
+                    json.dump(_spell_meta_cache, _cf, indent=2)
+            except Exception as _ex:
+                log_event(f"Could not write spell metadata cache: {_ex}", is_error=True)
+
+        if _spell_library_data_dirty or not os.path.exists(_spell_library_data_path):
+            try:
+                _spells_out = [
+                    {
+                        "name": str(_s.get("name", "")).strip(),
+                        "url": str(_s.get("url", "")).strip(),
+                        "level": (_s.get("level") if isinstance(_s.get("level"), int) and 0 <= _s.get("level") <= 9 else None),
+                        "school": str(_s.get("school", "Unknown") or "Unknown"),
+                        "classes": sorted({str(_c).strip().title() for _c in (_s.get("classes") or []) if str(_c).strip()}),
+                    }
+                    for _s in fortune_spell_entries
+                    if isinstance(_s, dict) and str(_s.get("name", "")).strip()
+                ]
+                _spells_out.sort(key=lambda _s: _s["name"].lower())
+                with open(_spell_library_data_path, "w", encoding="utf-8") as _sf:
+                    json.dump({
+                        "generated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                        "source": "offline_spell_library",
+                        "spells": _spells_out,
+                    }, _sf, indent=2)
+            except Exception as _ex:
+                log_event(f"Could not write offline spell library data: {_ex}", is_error=True)
+
+        fortune_spell_class_options = ["all"] + sorted({c for _s in fortune_spell_entries for c in (_s.get("classes") or [])}, key=lambda x: x.lower())
+        fortune_spell_school_options = ["all"] + sorted({str(_s.get("school", "Unknown")) for _s in fortune_spell_entries}, key=lambda x: x.lower())
+
+        # Final 5%: options/settings
         user_settings = load_user_settings()
-        _settings_stage_seconds = 5.0
+        _settings_stage_seconds = 2.5
         _settings_start = time.time()
         while True:
             _elapsed = time.time() - _settings_start
             _frac = clamp(_elapsed / _settings_stage_seconds, 0.0, 1.0)
-            draw_loading_screen(0.9 + (_frac * 0.1), f"Loading options... {int(_frac * 100)}%")
+            draw_loading_screen(0.95 + (_frac * 0.05), f"Loading options... {int(_frac * 100)}%")
             for _ev in pygame.event.get():
                 if _ev.type == pygame.QUIT:
                     pygame.quit()
@@ -396,6 +689,21 @@ def safe_main():
         _img_dof_token = _load_btn_img("Draw_of_Fate_Token.png")
         _img_side_panel = _load_btn_img("Side_Panel_Image.png")
         _img_rest = _load_btn_img("Rest_Button.png")
+        _img_fortune_stamp = _load_btn_img("Fortune_Card_Stamp.png")
+        _img_major_stamp = _load_btn_img("Major_Fortune_Card_Stamp.png")
+
+        def _draw_promotion_stamp(_card_rect, _is_major=False):
+            _src = _img_major_stamp if _is_major else _img_fortune_stamp
+            if _src is None:
+                return
+            _stamp_h = max(26, int(_card_rect.h * 0.22))
+            _scale = _stamp_h / max(1, _src.get_height())
+            _stamp_w = max(26, int(_src.get_width() * _scale))
+            _stamp = pygame.transform.smoothscale(_src, (_stamp_w, _stamp_h))
+            _sx = _card_rect.right - _stamp_w - 6
+            _sy = _card_rect.y + 6
+            screen.blit(_stamp, (_sx, _sy))
+
         def _load_sfx(path):
             try:
                 return pygame.mixer.Sound(path) if os.path.exists(path) else None
@@ -453,9 +761,12 @@ def safe_main():
             Button((fortune_setup_box.x + 40 + i * 220, fortune_setup_box.y + 108, 200, 50), f"Loadout {i+1}", primary=True, fantasy=True)
             for i in range(3)
         ]
-        fortune_clear_btn = Button((fortune_setup_box.centerx - 320, fortune_setup_box.bottom - 72, 210, 46), "Clear Loadout", danger=True, fantasy=True)
-        fortune_save_btn = Button((fortune_setup_box.centerx - 95, fortune_setup_box.bottom - 72, 210, 46), "Save Setup", primary=True, fantasy=True)
+        fortune_clear_btn = Button((fortune_setup_box.x + 40, fortune_setup_box.bottom - 72, 210, 46), "Clear Loadout", danger=True, fantasy=True)
+        fortune_save_btn = Button((fortune_setup_box.x + 265, fortune_setup_box.bottom - 72, 210, 46), "Save Setup", primary=True, fantasy=True)
         fortune_back_btn = Button((fortune_setup_box.centerx + 130, fortune_setup_box.bottom - 72, 210, 46), "Main Menu", warning=True, fantasy=True)
+        fortune_glossary_btn = Button((fortune_setup_box.right - 470, fortune_setup_box.bottom - 72, 210, 46), "Glossary", cyan=True, fantasy=True)
+        fortune_spell_library_btn = Button((fortune_setup_box.right - 245, fortune_setup_box.bottom - 72, 210, 46), "Spell Library", pink=True, fantasy=True)
+        fortune_view_back_btn = Button((fortune_setup_box.x + 40, fortune_setup_box.bottom - 72, 210, 46), "Back to Loadout", warning=True, fantasy=True)
         fortune_lvl_dd = FantasyLevelStepper((fortune_setup_box.right - 270, fortune_setup_box.y + 24, 230, 46), 1, 20, game.level)
         fortune_card_buttons = []
         fortune_section_headers = []
@@ -510,6 +821,13 @@ def safe_main():
         preview_scrolls = {"current": 0, "max": 0}
         prophet_remaining_draws, current_roll_anim = 0, None
         previous_viewer_mode = None
+        fortune_spell_list_scroll = 0
+        fortune_glossary_scroll = 0
+        fortune_spell_search = ""
+        fortune_spell_filter = "all"
+        fortune_spell_class_filter = "all"
+        fortune_spell_school_filter = "all"
+        fortune_spell_search_active = False
         _hover_card_token = None
         history_overlay_open, history_scroll = False, 0
         dof_token_fizzles = []
@@ -757,13 +1075,14 @@ def safe_main():
             card_w = 168
             card_h = 242
             gap_x = 44
-            gap_y = 52
+            gap_y = 94
             cols = min(5, max(1, (clip.w + gap_x) // (card_w + gap_x)))
             base_x = clip.x + 8
             return clip, card_w, card_h, gap_x, gap_y, cols, base_x
 
         def _fortune_checkbox_rect(card_rect):
-            return pygame.Rect(card_rect.centerx - 7, card_rect.bottom + 4, 14, 14)
+            _size = 24
+            return pygame.Rect(card_rect.centerx - (_size // 2), card_rect.bottom + 18, _size, _size)
 
         def _fortune_max_scroll():
             _build_fortune_card_buttons()
@@ -817,6 +1136,67 @@ def safe_main():
                     _x = base_x + _col * (card_w + gap_x)
                     _y = clip.y + content_y + _row * (card_h + gap_y) - fortune_scroll_y
                     fortune_card_buttons.append((_cid, pygame.Rect(_x, _y, card_w, card_h), "major"))
+
+        def _build_spell_grid_layout(panel_rect, spells, scroll_y):
+            cols = 4
+            gap_x = 10
+            gap_y = 10
+            pad = 10
+            header_h = 28
+            item_h = 44
+            item_w = max(120, int((panel_rect.w - pad * 2 - gap_x * (cols - 1)) / cols))
+            ordered_levels = [
+                (0, "Cantrips"),
+                (1, "Level 1"),
+                (2, "Level 2"),
+                (3, "Level 3"),
+                (4, "Level 4"),
+                (5, "Level 5"),
+                (6, "Level 6"),
+                (7, "Level 7"),
+                (8, "Level 8"),
+                (9, "Level 9"),
+                (None, "Unknown Level"),
+            ]
+            _items = []
+            y = panel_rect.y + pad - scroll_y
+            for _lvl, _lbl in ordered_levels:
+                _group = [s for s in spells if s.get("level") == _lvl]
+                if not _group:
+                    continue
+                _items.append(("header", pygame.Rect(panel_rect.x + pad, y, panel_rect.w - pad * 2, header_h), _lbl, None))
+                y += header_h + 6
+                for i, _sp in enumerate(_group):
+                    col = i % cols
+                    row = i // cols
+                    rx = panel_rect.x + pad + col * (item_w + gap_x)
+                    ry = y + row * (item_h + gap_y)
+                    _items.append(("spell", pygame.Rect(rx, ry, item_w, item_h), _sp.get("name", ""), _sp))
+                rows = (len(_group) + cols - 1) // cols
+                y += rows * (item_h + gap_y) + 12
+            total_h = max(0, y - (panel_rect.y + pad - scroll_y))
+            return _items, total_h
+
+        def _spell_top_controls_layout():
+            top_margin = 40
+            top_gap = 12
+            search_rect = pygame.Rect(fortune_setup_box.x + top_margin, fortune_setup_box.y + 118, 0, 38)
+            search_w = max(260, int((fortune_setup_box.w - (top_margin * 2) - top_gap) * 0.44))
+            search_rect.w = search_w
+            filter_y = fortune_setup_box.y + 118
+            filter_labels = {"all": "All", "cantrip": "0", "1_3": "1-3", "4_6": "4-6", "7_9": "7-9", "unknown": "?"}
+            filter_order = ["all", "cantrip", "1_3", "4_6", "7_9", "unknown"]
+            available_w = fortune_setup_box.right - top_margin - (search_rect.right + top_gap)
+            filter_gap = 8
+            filter_w = max(52, int((available_w - (filter_gap * (len(filter_order) - 1))) / len(filter_order)))
+            filter_h = 38
+            filter_start_x = search_rect.right + top_gap
+            filter_rects = {}
+            for i, k in enumerate(filter_order):
+                filter_rects[k] = pygame.Rect(filter_start_x + (filter_w + filter_gap) * i, filter_y, filter_w, filter_h)
+            class_rect = pygame.Rect(fortune_setup_box.x + top_margin, search_rect.bottom + 8, (fortune_setup_box.w - top_margin * 2 - 10) // 2, 34)
+            school_rect = pygame.Rect(class_rect.right + 10, class_rect.y, class_rect.w, 34)
+            return search_rect, filter_rects, filter_labels, class_rect, school_rect
 
         def _get_mode_back_surface(cid, mode, w, h):
             key = (cid, mode, w, h)
@@ -958,15 +1338,24 @@ def safe_main():
             
             for e in pygame.event.get():
                 if current_roll_anim: continue 
-                if e.type == pygame.QUIT: running = False
+                if e.type == pygame.QUIT:
+                    running = False
                 if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
                     if screen_mode == "fool_video":
                         stop_card_video(play_action=True)
-                    rest_menu_open = False
-                    top_menu_open = False
-                    history_overlay_open = False
-                    screen_mode = "menu"
-                    continue
+                        screen_mode = "normal"
+                        continue
+                    if screen_mode in ("fortune_spell_list_view", "fortune_glossary_view"):
+                        screen_mode = "fortune_setup"
+                        continue
+                    # Only allow Escape to open menu if NOT in Normal View
+                    if screen_mode not in ("normal", "fool_video"):
+                        rest_menu_open = False
+                        top_menu_open = False
+                        history_overlay_open = False
+                        screen_mode = "menu"
+                        continue
+                    # In Normal View, Escape does nothing
                 if screen_mode == "fool_video":
                     continue
                 
@@ -1103,9 +1492,103 @@ def safe_main():
                         game.enforce_fortune_selection()
                     if fortune_save_btn.handle_event(e):
                         _persist_fortune_setup()
+                    if fortune_glossary_btn.handle_event(e):
+                        fortune_glossary_scroll = 0
+                        screen_mode = "fortune_glossary_view"
+                    if fortune_spell_library_btn.handle_event(e):
+                        fortune_spell_list_scroll = 0
+                        fortune_spell_search = ""
+                        fortune_spell_filter = "all"
+                        fortune_spell_class_filter = "all"
+                        fortune_spell_school_filter = "all"
+                        fortune_spell_search_active = False
+                        screen_mode = "fortune_spell_list_view"
                     if fortune_back_btn.handle_event(e):
                         game.normalize_fortune_loadouts()
                         screen_mode = "menu"
+
+                elif screen_mode == "fortune_spell_list_view":
+                    _search_rect, _filter_rects, _filter_labels, _class_rect, _school_rect = _spell_top_controls_layout()
+                    _spell_panel = pygame.Rect(fortune_setup_box.x + 40, _class_rect.bottom + 8, fortune_setup_box.w - 80, fortune_setup_box.h - ((_class_rect.bottom + 8) - fortune_setup_box.y) - 110)
+                    _query = fortune_spell_search.strip().lower()
+                    _filtered_spells = []
+                    for _sp in fortune_spell_entries:
+                        _name = str(_sp.get("name", ""))
+                        _name_l = _name.lower()
+                        if _query and _query not in _name_l:
+                            continue
+                        _lvl = _sp.get("level")
+                        if fortune_spell_filter == "cantrip" and _lvl != 0:
+                            continue
+                        if fortune_spell_filter == "1_3" and not (isinstance(_lvl, int) and 1 <= _lvl <= 3):
+                            continue
+                        if fortune_spell_filter == "4_6" and not (isinstance(_lvl, int) and 4 <= _lvl <= 6):
+                            continue
+                        if fortune_spell_filter == "7_9" and not (isinstance(_lvl, int) and 7 <= _lvl <= 9):
+                            continue
+                        if fortune_spell_filter == "unknown" and _lvl is not None:
+                            continue
+                        if fortune_spell_class_filter != "all" and fortune_spell_class_filter not in (_sp.get("classes") or []):
+                            continue
+                        if fortune_spell_school_filter != "all" and fortune_spell_school_filter != str(_sp.get("school", "Unknown")):
+                            continue
+                        _filtered_spells.append(_sp)
+                    _layout_items, _layout_total_h = _build_spell_grid_layout(_spell_panel, _filtered_spells, fortune_spell_list_scroll)
+                    _spell_max_scroll = max(0, _layout_total_h - (_spell_panel.h - 20))
+                    fortune_spell_list_scroll = int(clamp(fortune_spell_list_scroll, 0, _spell_max_scroll))
+                    if e.type == pygame.MOUSEWHEEL and _spell_panel.collidepoint(m_pos):
+                        fortune_spell_list_scroll = int(clamp(fortune_spell_list_scroll - e.y * 40, 0, _spell_max_scroll))
+                    if e.type == pygame.KEYDOWN and fortune_spell_search_active:
+                        if e.key == pygame.K_BACKSPACE:
+                            fortune_spell_search = fortune_spell_search[:-1]
+                            fortune_spell_list_scroll = 0
+                        elif e.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_TAB):
+                            pass
+                        elif e.unicode and e.unicode.isprintable():
+                            if len(fortune_spell_search) < 48:
+                                fortune_spell_search += e.unicode
+                                fortune_spell_list_scroll = 0
+                    if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                        if _search_rect.collidepoint(e.pos):
+                            fortune_spell_search_active = True
+                        else:
+                            fortune_spell_search_active = False
+                            for _fm, _fr in _filter_rects.items():
+                                if _fr.collidepoint(e.pos):
+                                    fortune_spell_filter = _fm
+                                    fortune_spell_list_scroll = 0
+                                    break
+                            if _class_rect.collidepoint(e.pos):
+                                _cur_i = fortune_spell_class_options.index(fortune_spell_class_filter) if fortune_spell_class_filter in fortune_spell_class_options else 0
+                                _cur_i = (_cur_i + 1) % max(1, len(fortune_spell_class_options))
+                                fortune_spell_class_filter = fortune_spell_class_options[_cur_i]
+                                fortune_spell_list_scroll = 0
+                            elif _school_rect.collidepoint(e.pos):
+                                _cur_i = fortune_spell_school_options.index(fortune_spell_school_filter) if fortune_spell_school_filter in fortune_spell_school_options else 0
+                                _cur_i = (_cur_i + 1) % max(1, len(fortune_spell_school_options))
+                                fortune_spell_school_filter = fortune_spell_school_options[_cur_i]
+                                fortune_spell_list_scroll = 0
+                        if _spell_panel.collidepoint(e.pos):
+                            for _kind, _rect, _text, _spell_obj in _layout_items:
+                                if _kind != "spell":
+                                    continue
+                                if _rect.collidepoint(e.pos):
+                                    _url = _spell_obj.get("url", "")
+                                    if _url:
+                                        webbrowser.open(_url)
+                                    break
+                    if fortune_view_back_btn.handle_event(e):
+                        screen_mode = "fortune_setup"
+                        fortune_spell_search_active = False
+
+                elif screen_mode == "fortune_glossary_view":
+                    _glossary_panel = pygame.Rect(fortune_setup_box.x + 40, fortune_setup_box.y + 120, fortune_setup_box.w - 80, fortune_setup_box.h - 230)
+                    _row_h = 34
+                    _glossary_max_scroll = max(0, len(fortune_glossary_terms) * _row_h - (_glossary_panel.h - 20))
+                    if e.type == pygame.MOUSEWHEEL and _glossary_panel.collidepoint(m_pos):
+                        fortune_glossary_scroll = int(clamp(fortune_glossary_scroll - e.y * 36, 0, _glossary_max_scroll))
+                    if fortune_view_back_btn.handle_event(e):
+                        screen_mode = "fortune_setup"
                 
                 elif screen_mode == "preview_view":
                     if exit_view_btn.handle_event(e): 
@@ -1568,7 +2051,7 @@ def safe_main():
             # --- DRAWING ---
             screen.fill((10, 12, 18))
             # Play menu music in menu/settings if enabled
-            if screen_mode in ["menu", "settings", "slot_menu", "fortune_setup"] and menu_music_enabled and audio_enabled:
+            if screen_mode in ["menu", "settings", "slot_menu", "fortune_setup", "fortune_spell_list_view", "fortune_glossary_view"] and menu_music_enabled and audio_enabled:
                 try:
                     pygame.mixer.music.set_volume(menu_music_volume / 100.0)
                 except Exception:
@@ -1690,7 +2173,7 @@ def safe_main():
                 screen.blit(_title, (fortune_setup_box.centerx - _title.get_width() // 2, fortune_setup_box.y + 20))
                 _hint = f_fortune_small.render("SELECT THE ONLY CARDS THAT CAN BE PROMOTED TO FORTUNE / MAJOR FORTUNE", True, (228, 204, 156))
                 screen.blit(_hint, (fortune_setup_box.centerx - _hint.get_width() // 2, fortune_setup_box.y + 78))
-                _slots = f_fortune_body.render(f"SELECTED: {_fortune_slots_summary()}", True, (230, 215, 175))
+                _slots = f_fortune_body.render(_fortune_slots_summary(), True, (230, 215, 175))
                 screen.blit(_slots, (fortune_setup_box.x + 40, fortune_setup_box.y + 175))
                 fortune_lvl_dd.set_value(game.level)
                 fortune_lvl_dd.draw_base(screen, f_fortune_body)
@@ -1731,6 +2214,9 @@ def safe_main():
                     _face = _get_mode_back_surface(_cid, _mode, _rect.w, _rect.h) if _show_back else view_tex[_cid]
                     _art = pygame.transform.smoothscale(_face, (_rect.w, _rect.h))
                     screen.blit(_art, _rect.topleft)
+                    _show_stamp = (game.level >= 17) if _mode == "major" else (game.level >= 6)
+                    if _show_stamp:
+                        _draw_promotion_stamp(_rect, _is_major=(_mode == "major"))
                     draw_card_glitter(screen, _rect, pygame.time.get_ticks() / 1000.0, "red" if _mode == "major" else "gold")
                     _selected = (active_ld.get("major_id") == _cid) if _mode == "major" else (_cid in active_ld.get("fortune_ids", []))
                     _hover = _rect.collidepoint(m_pos)
@@ -1742,17 +2228,21 @@ def safe_main():
                     _edge = (255, 120, 120) if (_selected and _mode == "major") else (GOLD if _selected else ((225, 190, 120) if _hover else (120, 86, 62)))
                     pygame.draw.rect(screen, _edge, _rect, 3, 12)
                     _cb = _fortune_checkbox_rect(_rect)
-                    
-                    draw_round_rect(screen, _cb, (18, 26, 16, 210), 4)
-                    pygame.draw.rect(screen, (250, 230, 160), _cb, 1, 4)
+                    _cb_bg = (52, 24, 24, 228) if (_mode == "major" and _selected) else ((56, 44, 20, 228) if _selected else (18, 22, 18, 220))
+                    _cb_edge = (255, 140, 120) if _mode == "major" else ((255, 222, 132) if _selected else (232, 204, 146))
+                    draw_round_rect(screen, _cb, _cb_bg, 7)
+                    pygame.draw.rect(screen, _cb_edge, _cb, 2, 7)
                     if _selected:
-                        _p1 = (_cb.x + 2, _cb.centery)
-                        _p2 = (_cb.x + (_cb.w // 2), _cb.bottom - 3)
-                        _p3 = (_cb.right - 2, _cb.y + 2)
-                        pygame.draw.line(screen, (255, 226, 118), _p1, _p2, 2)
-                        pygame.draw.line(screen, (255, 226, 118), _p2, _p3, 2)
-                        _st = f_fortune_small.render("SELECTED", True, (255, 230, 170))
-                        screen.blit(_st, (_rect.x + 10, _rect.y + 10))
+                        _glow_r = _cb.inflate(10, 10)
+                        _glow_surf = pygame.Surface((_glow_r.w, _glow_r.h), pygame.SRCALPHA)
+                        pygame.draw.rect(_glow_surf, (255, 190, 110, 70) if _mode != "major" else (255, 120, 120, 70), _glow_surf.get_rect(), border_radius=9)
+                        screen.blit(_glow_surf, _glow_r.topleft)
+                        _p1 = (_cb.x + 5, _cb.centery)
+                        _p2 = (_cb.x + 10, _cb.bottom - 5)
+                        _p3 = (_cb.right - 5, _cb.y + 5)
+                        _tick_col = (255, 214, 102) if _mode != "major" else (255, 170, 160)
+                        pygame.draw.line(screen, _tick_col, _p1, _p2, 3)
+                        pygame.draw.line(screen, _tick_col, _p2, _p3, 3)
                 screen.set_clip(_clip_prev)
                 pygame.draw.rect(screen, (235, 190, 60, 80), _grid_clip, 1, 8)
                 draw_round_rect(screen, _right_top_title_r, (28, 22, 32, 220), 10)
@@ -1836,9 +2326,144 @@ def safe_main():
                 _ctrl = f_fortune_small.render("LEFT CLICK CARD/CHECKBOX: SELECT    HOVER CARD: FLIP", True, (220, 201, 154))
                 _bottom_text_y = _grid_clip.bottom + 12
                 screen.blit(_ctrl, (fortune_setup_box.centerx - _ctrl.get_width() // 2, _bottom_text_y))
+                fortune_glossary_btn.draw(screen, f_fortune_small, dt)
+                fortune_spell_library_btn.draw(screen, f_fortune_small, dt)
                 fortune_clear_btn.draw(screen, f_fortune_small, dt)
                 fortune_save_btn.draw(screen, f_fortune_small, dt)
                 fortune_back_btn.draw(screen, f_fortune_small, dt)
+
+            elif screen_mode == "fortune_spell_list_view":
+                _pink_edge = (236, 126, 194)
+                _pink_soft = (245, 188, 224)
+                _pink_bg = (44, 20, 44)
+                screen.blit(menu_bg, (0, 0))
+                _vignette = pygame.Surface((W, H), pygame.SRCALPHA)
+                _vignette.fill((10, 6, 14, 110))
+                screen.blit(_vignette, (0, 0))
+                _outer = fortune_setup_box.inflate(22, 24)
+                draw_round_rect(screen, _outer, (36, 20, 12, 220), 24)
+                pygame.draw.rect(screen, _pink_edge, _outer, 3, 24)
+                draw_round_rect(screen, fortune_setup_box, (18, 14, 24, 235), 20)
+                pygame.draw.rect(screen, _pink_edge, fortune_setup_box, 2, 20)
+                _title = f_fortune_title.render("SPELL LIST", True, _pink_soft)
+                screen.blit(_title, (fortune_setup_box.centerx - _title.get_width() // 2, fortune_setup_box.y + 20))
+                _hint = f_fortune_small.render("Search + filter at top. Click a spell to open its reference page.", True, (236, 208, 228))
+                screen.blit(_hint, (fortune_setup_box.centerx - _hint.get_width() // 2, fortune_setup_box.y + 82))
+                _search_rect, _filter_rects, _filter_labels, _class_rect, _school_rect = _spell_top_controls_layout()
+                draw_round_rect(screen, _search_rect, (20, 18, 30, 230), 10)
+                pygame.draw.rect(screen, _pink_soft if fortune_spell_search_active else _pink_edge, _search_rect, 2, 10)
+                _search_label = "Search spells..."
+                _search_txt = fortune_spell_search if fortune_spell_search else _search_label
+                _search_col = (244, 222, 238) if fortune_spell_search else (166, 138, 158)
+                _search_s = f_fortune_small.render(_search_txt, True, _search_col)
+                screen.blit(_search_s, (_search_rect.x + 12, _search_rect.centery - _search_s.get_height() // 2))
+                if fortune_spell_search_active and (pygame.time.get_ticks() // 500) % 2 == 0:
+                    _cx = _search_rect.x + 12 + _search_s.get_width() + 2
+                    pygame.draw.line(screen, _pink_soft, (_cx, _search_rect.y + 9), (_cx, _search_rect.bottom - 9), 2)
+                for _fm, _fr in _filter_rects.items():
+                    _active = (fortune_spell_filter == _fm)
+                    draw_round_rect(screen, _fr, _pink_bg if _active else (24, 20, 34, 220), 9)
+                    pygame.draw.rect(screen, _pink_soft if _active else _pink_edge, _fr, 2, 9)
+                    _lbl = _filter_labels[_fm]
+                    _ls = f_fortune_small.render(_lbl, True, (252, 228, 244) if _active else (228, 196, 214))
+                    screen.blit(_ls, (_fr.centerx - _ls.get_width() // 2, _fr.centery - _ls.get_height() // 2))
+
+                _class_txt = str(fortune_spell_class_filter if fortune_spell_class_filter != "all" else "All")
+                _school_txt = str(fortune_spell_school_filter if fortune_spell_school_filter != "all" else "All")
+                for _r, _label, _value in [(_class_rect, "Class", _class_txt), (_school_rect, "School", _school_txt)]:
+                    draw_round_rect(screen, _r, (24, 20, 34, 220), 9)
+                    pygame.draw.rect(screen, _pink_edge, _r, 2, 9)
+                    _t = f_fortune_small.render(f"{_label}: {_value}", True, (236, 208, 228))
+                    if _t.get_width() > _r.w - 16:
+                        _cut = max(4, int(len(f"{_label}: {_value}") * ((_r.w - 30) / max(1, _t.get_width()))))
+                        _s = f"{_label}: {_value}"[:_cut] + "..."
+                        _t = f_fortune_small.render(_s, True, (236, 208, 228))
+                    screen.blit(_t, (_r.x + 10, _r.centery - _t.get_height() // 2))
+
+                _panel = pygame.Rect(fortune_setup_box.x + 40, _class_rect.bottom + 8, fortune_setup_box.w - 80, fortune_setup_box.h - ((_class_rect.bottom + 8) - fortune_setup_box.y) - 110)
+                draw_round_rect(screen, _panel, (20, 18, 30, 225), 12)
+                pygame.draw.rect(screen, _pink_edge, _panel, 2, 12)
+                _query = fortune_spell_search.strip().lower()
+                _filtered_spells = []
+                for _sp in fortune_spell_entries:
+                    _name = str(_sp.get("name", ""))
+                    _name_l = _name.lower()
+                    if _query and _query not in _name_l:
+                        continue
+                    _lvl = _sp.get("level")
+                    if fortune_spell_filter == "cantrip" and _lvl != 0:
+                        continue
+                    if fortune_spell_filter == "1_3" and not (isinstance(_lvl, int) and 1 <= _lvl <= 3):
+                        continue
+                    if fortune_spell_filter == "4_6" and not (isinstance(_lvl, int) and 4 <= _lvl <= 6):
+                        continue
+                    if fortune_spell_filter == "7_9" and not (isinstance(_lvl, int) and 7 <= _lvl <= 9):
+                        continue
+                    if fortune_spell_filter == "unknown" and _lvl is not None:
+                        continue
+                    if fortune_spell_class_filter != "all" and fortune_spell_class_filter not in (_sp.get("classes") or []):
+                        continue
+                    if fortune_spell_school_filter != "all" and fortune_spell_school_filter != str(_sp.get("school", "Unknown")):
+                        continue
+                    _filtered_spells.append(_sp)
+                _layout_items, _layout_total_h = _build_spell_grid_layout(_panel, _filtered_spells, fortune_spell_list_scroll)
+                _clip = _panel.inflate(-14, -12)
+                _clip_prev = screen.get_clip()
+                screen.set_clip(_clip)
+                for _kind, _rr, _text, _spell_obj in _layout_items:
+                    if _rr.bottom < _clip.y or _rr.top > _clip.bottom:
+                        continue
+                    if _kind == "header":
+                        draw_round_rect(screen, _rr, (26, 22, 32, 220), 8)
+                        pygame.draw.rect(screen, _pink_edge, _rr, 1, 8)
+                        _hs = f_fortune_small.render(_text, True, _pink_soft)
+                        screen.blit(_hs, (_rr.x + 10, _rr.centery - _hs.get_height() // 2))
+                    else:
+                        _hover = _rr.collidepoint(m_pos)
+                        draw_round_rect(screen, _rr, _pink_bg if _hover else (24, 20, 34, 210), 8)
+                        pygame.draw.rect(screen, (236, 126, 194, 140), _rr, 1, 8)
+                        _txt = f_fortune_small.render(_text, True, (244, 222, 238))
+                        screen.blit(_txt, (_rr.x + 10, _rr.centery - _txt.get_height() // 2))
+                screen.set_clip(_clip_prev)
+                if not _filtered_spells:
+                    _none = f_fortune_small.render("No spells match your search/filter.", True, (244, 178, 206))
+                    screen.blit(_none, (_panel.centerx - _none.get_width() // 2, _panel.centery - _none.get_height() // 2))
+                fortune_view_back_btn.draw(screen, f_fortune_small, dt)
+
+            elif screen_mode == "fortune_glossary_view":
+                _cyan_edge = (102, 220, 255)
+                _cyan_soft = (186, 242, 255)
+                screen.blit(menu_bg, (0, 0))
+                _vignette = pygame.Surface((W, H), pygame.SRCALPHA)
+                _vignette.fill((10, 6, 14, 110))
+                screen.blit(_vignette, (0, 0))
+                _outer = fortune_setup_box.inflate(22, 24)
+                draw_round_rect(screen, _outer, (36, 20, 12, 220), 24)
+                pygame.draw.rect(screen, _cyan_edge, _outer, 3, 24)
+                draw_round_rect(screen, fortune_setup_box, (18, 14, 24, 235), 20)
+                pygame.draw.rect(screen, _cyan_edge, fortune_setup_box, 2, 20)
+                _title = f_fortune_title.render("GLOSSARY", True, _cyan_soft)
+                screen.blit(_title, (fortune_setup_box.centerx - _title.get_width() // 2, fortune_setup_box.y + 20))
+                _hint = f_fortune_small.render("Card rule keywords collected from highlighted terms", True, (206, 238, 248))
+                screen.blit(_hint, (fortune_setup_box.centerx - _hint.get_width() // 2, fortune_setup_box.y + 82))
+                _panel = pygame.Rect(fortune_setup_box.x + 40, fortune_setup_box.y + 120, fortune_setup_box.w - 80, fortune_setup_box.h - 230)
+                draw_round_rect(screen, _panel, (20, 18, 30, 225), 12)
+                pygame.draw.rect(screen, _cyan_edge, _panel, 2, 12)
+                _row_h = 34
+                _clip = _panel.inflate(-14, -12)
+                _clip_prev = screen.get_clip()
+                screen.set_clip(_clip)
+                for _i, _term in enumerate(fortune_glossary_terms):
+                    _ry = _clip.y + 2 + (_i * _row_h) - fortune_glossary_scroll
+                    _rr = pygame.Rect(_clip.x, _ry, _clip.w, _row_h - 4)
+                    if _rr.bottom < _clip.y or _rr.top > _clip.bottom:
+                        continue
+                    draw_round_rect(screen, _rr, (24, 20, 34, 210), 8)
+                    pygame.draw.rect(screen, (102, 220, 255, 130), _rr, 1, 8)
+                    _txt = f_fortune_small.render(_term, True, (214, 246, 255))
+                    screen.blit(_txt, (_rr.x + 12, _rr.centery - _txt.get_height() // 2))
+                screen.set_clip(_clip_prev)
+                fortune_view_back_btn.draw(screen, f_fortune_small, dt)
             
             elif screen_mode == "normal":
                 screen.blit(normal_bg, (0, 0))
@@ -2005,17 +2630,15 @@ def safe_main():
                             content = pygame.transform.rotate(hand_tex[h['id']], 180) if h['orientation']=="inverted" else hand_tex[h['id']]
                         
                         card_x = x + (HAND_CARD_W - sw) // 2
-                        screen.blit(pygame.transform.smoothscale(content, (sw, HAND_CARD_H)), (card_x, y))
+                        _draw_rect = pygame.Rect(card_x, y, sw, HAND_CARD_H)
+                        screen.blit(pygame.transform.smoothscale(content, (sw, HAND_CARD_H)), _draw_rect.topleft)
                         if zone == game.hand and game.is_card_promotion_enabled(h['id']):
-                            _stamp = pygame.Rect(card_x + HAND_CARD_W - 112, y + 8, 100, 26)
-                            draw_round_rect(screen, _stamp, (28, 54, 22, 210), 10)
-                            pygame.draw.rect(screen, (225, 210, 120), _stamp, 1, 10)
-                            _stxt = f_tiny.render("PROMOTABLE", True, (235, 230, 165))
-                            screen.blit(_stxt, _stxt.get_rect(center=_stamp.center))
+                            _is_major = game.can_promote_card(h['id'], to_major=True)
+                            _draw_promotion_stamp(_draw_rect, _is_major=_is_major)
                         if zone == game.fortune_zone:
-                            draw_card_glitter(screen, pygame.Rect(card_x, y, sw, HAND_CARD_H), pygame.time.get_ticks() / 1000.0, "gold")
+                            draw_card_glitter(screen, _draw_rect, pygame.time.get_ticks() / 1000.0, "gold")
                         elif zone == game.major_zone:
-                            draw_card_glitter(screen, pygame.Rect(card_x, y, sw, HAND_CARD_H), pygame.time.get_ticks() / 1000.0, "red")
+                            draw_card_glitter(screen, _draw_rect, pygame.time.get_ticks() / 1000.0, "red")
                         
                         # Card Buttons
                         if zone == game.hand:
