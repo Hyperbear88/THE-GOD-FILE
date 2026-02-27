@@ -609,9 +609,7 @@ class Button:
         surf.blit(font.render(self.text, True, txt_col), font.render(self.text, True, (0,0,0)).get_rect(center=self.rect.center))
     def handle_event(self, e):
         if self.disabled: return False
-        # Always update hover state on mouse motion
-        if e.type == pygame.MOUSEMOTION:
-            self.hover = self.rect.collidepoint(e.pos)
+        if e.type == pygame.MOUSEMOTION: self.hover = self.rect.collidepoint(e.pos)
         clicked = e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and self.rect.collidepoint(e.pos)
         if clicked and Button.sfx_enabled and Button.click_sound is not None:
             try:
@@ -1484,15 +1482,6 @@ def safe_main():
         cur_step += 1
         if not _animate_loading_step(_asset_pct(cur_step), "Finalizing Visual Assets", v_face_hand, duration=0.1): return
 
-
-        # Add Fortune Selector and Glossary to loading progress
-        fortune_selector_img = None
-        glossary_img = None
-        cur_step += 1
-        if not _animate_loading_step(_asset_pct(cur_step), "Fortune Selector", fortune_selector_img, duration=0.1): return
-        cur_step += 1
-        if not _animate_loading_step(_asset_pct(cur_step), "Glossary", glossary_img, duration=0.1): return
-
         for _fname in _menu_element_files:
             _fp = os.path.join(IMAGES_DIR, _fname)
             _img = None
@@ -1616,9 +1605,6 @@ def safe_main():
         fortune_menu_btn = Button((W-160, PADDING + 205, 140, 35), "Fortune Setup", gold=True)
         history_btn = Button((W-240, H-810, 210, 210), "View History", primary=True, image=_img_history)
         hamburger_btn = Button((W-50, PADDING, 35, 35), "\u2630", image=_img_settings)
-        # Add Glossary and Spell Library buttons for the hamburger menu
-        glossary_menu_btn = Button((0, 0, 140, 35), "Glossary", primary=True)
-        spell_menu_btn = Button((0, 0, 140, 35), "Spell Library", warning=True)
         rest_menu_btn = Button((W-240, H-810, 150, 150), "Rest", primary=True, image=_img_rest)
         rest_menu_open = False
         top_menu_open = False
@@ -1644,26 +1630,9 @@ def safe_main():
             Button((fortune_setup_box.x + 40 + i * 220, fortune_setup_box.y + 108, 200, 50), f"Loadout {i+1}", primary=True, fantasy=True)
             for i in range(3)
         ]
-        # Move the three buttons to the left
-        left_btn_y = fortune_setup_box.bottom - 72
-        left_btn_x = fortune_setup_box.x + 40
-        btn_gap = 18
-        fortune_clear_btn = Button((left_btn_x, left_btn_y, 210, 46), "Clear Loadout", danger=True, fantasy=True)
-        fortune_save_btn = Button((left_btn_x + 210 + btn_gap, left_btn_y, 210, 46), "Save Setup", primary=True, fantasy=True)
-        fortune_back_btn = Button((left_btn_x + (210 + btn_gap) * 2, left_btn_y, 210, 46), "Back", warning=True, fantasy=True)
-
-        # Add non-functional Glossary and Spell List buttons on the right
-        right_btn_y = fortune_setup_box.bottom - 72
-        right_btn_x = fortune_setup_box.right - 40 - 210 * 2 - btn_gap
-        glossary_btn = Button((right_btn_x, right_btn_y, 210, 46), "Glossary", primary=True, fantasy=True)
-        spell_list_btn = Button((right_btn_x + 210 + btn_gap, right_btn_y, 210, 46), "Spell Library", primary=True, fantasy=True)
-        # For multi-screen navigation, create additional buttons for use in Spell Library and Glossary screens
-        glossary_btn2 = Button((right_btn_x, right_btn_y, 210, 46), "Glossary", primary=True, fantasy=True)
-        spell_list_btn2 = Button((right_btn_x + 210 + btn_gap, right_btn_y, 210, 46), "Spell Library", primary=True, fantasy=True)
-        fortune_select_btn = Button((right_btn_x - 210 - btn_gap, right_btn_y, 210, 46), "Fortune Select", primary=True, fantasy=True)
-
-        # Glossary Back button (left side, for glossary screen)
-        glossary_back_btn = Button((fortune_setup_box.x + 40, fortune_setup_box.bottom - 72, 210, 46), "Back", warning=True, fantasy=True)
+        fortune_clear_btn = Button((fortune_setup_box.centerx - 320, fortune_setup_box.bottom - 72, 210, 46), "Clear Loadout", danger=True, fantasy=True)
+        fortune_save_btn = Button((fortune_setup_box.centerx - 95, fortune_setup_box.bottom - 72, 210, 46), "Save Setup", primary=True, fantasy=True)
+        fortune_back_btn = Button((fortune_setup_box.centerx + 130, fortune_setup_box.bottom - 72, 210, 46), "Main Menu", warning=True, fantasy=True)
         fortune_lvl_dd = FantasyLevelStepper((fortune_setup_box.right - 270, fortune_setup_box.y + 24, 230, 46), 1, 20, game.level)
         fortune_card_buttons = []
         fortune_section_headers = []
@@ -2253,12 +2222,7 @@ def safe_main():
                     if settings_exit_btn.handle_event(e):
                         running = False
 
-                elif screen_mode == "fortune_setup" or screen_mode == "the_glossary" or screen_mode == "spell_library":
-                    # If in glossary or spell library, allow ESC or BACKSPACE to return to normal view
-                    if screen_mode in ["the_glossary", "spell_library"]:
-                        if e.type == pygame.KEYDOWN and (e.key == pygame.K_ESCAPE or e.key == pygame.K_BACKSPACE):
-                            screen_mode = "normal"
-                            continue
+                elif screen_mode == "fortune_setup":
                     fortune_lvl_dd.set_value(game.level)
                     if fortune_lvl_dd.handle_event(e):
                         game.level = fortune_lvl_dd.get_selected()
@@ -2318,12 +2282,7 @@ def safe_main():
                         _persist_fortune_setup()
                     if fortune_back_btn.handle_event(e):
                         game.normalize_fortune_loadouts()
-                        screen_mode = fortune_setup_return_mode
-                    # Glossary/Fortune Selection button logic
-                    if screen_mode == "fortune_setup" and glossary_btn.handle_event(e):
-                        screen_mode = "the_glossary"
-                    elif screen_mode == "the_glossary" and glossary_btn.handle_event(e):
-                        screen_mode = "fortune_setup"
+                        screen_mode = "menu"
                 
                 elif screen_mode == "preview_view":
                     if exit_view_btn.handle_event(e): 
@@ -2543,22 +2502,12 @@ def safe_main():
                         _menu_item_h = 35
                         _menu_gap = 4
                         _menu_pad = 8
-                        _menu_count = 7  # Increased for new buttons
+                        _menu_count = 5
                         _menu_h = (_menu_pad * 2) + (_menu_count * _menu_item_h) + ((_menu_count - 1) * _menu_gap)
                         _menu_bg_x = hamburger_btn.rect.right - 160
                         _menu_bg_y = hamburger_btn.rect.bottom + 5
-                        # Position menu buttons
-                        btns = [menu_btn, save_btn, load_btn, fortune_menu_btn, glossary_menu_btn, spell_menu_btn, quit_btn]
-                        for i, btn in enumerate(btns):
-                            btn.rect.x = _menu_bg_x + _menu_pad
-                            btn.rect.y = _menu_bg_y + _menu_pad + i * (_menu_item_h + _menu_gap)
-                            btn.rect.w = 140
-                            btn.rect.h = _menu_item_h
-                        if quit_btn.handle_event(e):
-                            running = False
-                        elif menu_btn.handle_event(e):
-                            screen_mode = "menu"
-                            top_menu_open = False
+                        if quit_btn.handle_event(e): running = False
+                        elif menu_btn.handle_event(e): screen_mode = "menu"; top_menu_open = False
                         elif save_btn.handle_event(e):
                             slot_menu_mode = "save"
                             slot_menu_return_mode = "normal"
@@ -2574,16 +2523,9 @@ def safe_main():
                         elif fortune_menu_btn.handle_event(e):
                             _open_fortune_setup("normal")
                             top_menu_open = False
-                        elif glossary_menu_btn.handle_event(e):
-                            screen_mode = "the_glossary"
-                            top_menu_open = False
-                        elif spell_menu_btn.handle_event(e):
-                            screen_mode = "spell_library"
-                            top_menu_open = False
                         elif e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                             _menu_area = pygame.Rect(_menu_bg_x, hamburger_btn.rect.y, 160, (_menu_bg_y - hamburger_btn.rect.y) + _menu_h)
-                            if not _menu_area.collidepoint(e.pos):
-                                top_menu_open = False
+                            if not _menu_area.collidepoint(e.pos): top_menu_open = False
                     if game.level >= 17:
                         if not major_btn.disabled and major_btn.handle_event(e): screen_mode, scroll_y = "major_selection", 0
                     
@@ -2911,7 +2853,7 @@ def safe_main():
                 settings_exit_btn.draw(screen, f_small, dt)
                 settings_music_dd.draw_menu(screen, f_small)
 
-            elif screen_mode in ("fortune_setup", "the_glossary", "spell_library"):
+            elif screen_mode == "fortune_setup":
                 screen.blit(menu_bg, (0, 0))
                 _vignette = pygame.Surface((W, H), pygame.SRCALPHA)
                 _vignette.fill((10, 6, 14, 110))
@@ -2921,13 +2863,7 @@ def safe_main():
                 pygame.draw.rect(screen, (120, 86, 42, 220), _outer, 3, 24)
                 draw_round_rect(screen, fortune_setup_box, (18, 14, 24, 235), 20)
                 pygame.draw.rect(screen, (235, 190, 60, 180), fortune_setup_box, 2, 20)
-                # Use different title if in glossary mode
-                _fortune_title_text = (
-                    "GLOSSARY" if screen_mode == "the_glossary" else
-                    "SPELL LIBRARY" if screen_mode == "spell_library" else
-                    "FORTUNE CARD SELECTION"
-                )
-                _title = f_fortune_title.render(_fortune_title_text, True, GOLD)
+                _title = f_fortune_title.render("FORTUNE CARD SELECTION", True, GOLD)
                 screen.blit(_title, (fortune_setup_box.centerx - _title.get_width() // 2, fortune_setup_box.y + 20))
                 _hint = f_fortune_small.render("SELECT THE ONLY CARDS THAT CAN BE PROMOTED TO FORTUNE / MAJOR FORTUNE", True, (228, 204, 156))
                 screen.blit(_hint, (fortune_setup_box.centerx - _hint.get_width() // 2, fortune_setup_box.y + 78))
@@ -2983,7 +2919,7 @@ def safe_main():
                     _edge = (255, 120, 120) if (_selected and _mode == "major") else (GOLD if _selected else ((225, 190, 120) if _hover else (120, 86, 62)))
                     pygame.draw.rect(screen, _edge, _rect, 3, 12)
                     _cb = _fortune_checkbox_rect(_rect)
-                    mo
+                    
                     draw_round_rect(screen, _cb, (18, 26, 16, 210), 4)
                     pygame.draw.rect(screen, (250, 230, 160), _cb, 1, 4)
                     if _selected:
@@ -3079,97 +3015,7 @@ def safe_main():
                 screen.blit(_ctrl, (fortune_setup_box.centerx - _ctrl.get_width() // 2, _bottom_text_y))
                 fortune_clear_btn.draw(screen, f_fortune_small, dt)
                 fortune_save_btn.draw(screen, f_fortune_small, dt)
-                # In glossary mode, move Back button to the left and disable other actions
-                # Navigation buttons for each screen
-                if screen_mode == "the_glossary":
-                    # Show Fortune Select and Spell Library buttons
-                    fortune_select_btn.text = "Fortune Select"
-                    fortune_select_btn.rect.x = fortune_setup_box.right - 40 - 210 * 2 - 18
-                    spell_list_btn2.text = "Spell Library"
-                    spell_list_btn2.rect.x = fortune_setup_box.right - 40 - 210 - 18
-                    fortune_select_btn.draw(screen, f_fortune_small, dt)
-                    spell_list_btn2.draw(screen, f_fortune_small, dt)
-                elif screen_mode == "spell_library":
-                    # Show Fortune Select and Glossary buttons
-                    fortune_select_btn.text = "Fortune Select"
-                    fortune_select_btn.rect.x = fortune_setup_box.right - 40 - 210 * 2 - 18
-                    glossary_btn2.text = "Glossary"
-                    glossary_btn2.rect.x = fortune_setup_box.right - 40 - 210 - 18
-                    fortune_select_btn.draw(screen, f_fortune_small, dt)
-                    glossary_btn2.draw(screen, f_fortune_small, dt)
-                else:
-                    glossary_btn.text = "Glossary"
-                    glossary_btn.rect.x = fortune_setup_box.right - 40 - 210 * 2 - 18
-                    spell_list_btn.text = "Spell Library"
-                    spell_list_btn.rect.x = fortune_setup_box.right - 40 - 210 - 18
-                    fortune_back_btn.rect.x = fortune_setup_box.x + 40 + (210 + 18) * 2
-                    fortune_back_btn.draw(screen, f_fortune_small, dt)
-                    glossary_btn.draw(screen, f_fortune_small, dt)
-                    spell_list_btn.draw(screen, f_fortune_small, dt)
-
-                # --- Button event handling fix: gather events once, pass to all buttons ---
-                events = pygame.event.get()
-                mouse_motion = [e for e in events if e.type == pygame.MOUSEMOTION]
-                if mouse_motion:
-                    m_evt = mouse_motion[-1]
-                    # Main menu
-                    if screen_mode == "menu":
-                        start_game_btn.handle_event(m_evt)
-                        menu_load_btn.handle_event(m_evt)
-                        menu_fortune_btn.handle_event(m_evt)
-                        settings_btn.handle_event(m_evt)
-                        menu_quit_btn.handle_event(m_evt)
-                    # Fortune selector and variants
-                    if screen_mode == "fortune_setup":
-                        glossary_btn.handle_event(m_evt)
-                        spell_list_btn.handle_event(m_evt)
-                        fortune_back_btn.handle_event(m_evt)
-                    elif screen_mode == "the_glossary":
-                        fortune_select_btn.handle_event(m_evt)
-                        spell_list_btn2.handle_event(m_evt)
-                    elif screen_mode == "spell_library":
-                        fortune_select_btn.handle_event(m_evt)
-                        glossary_btn2.handle_event(m_evt)
-                for e in events:
-                    # Main menu
-                    if screen_mode == "menu":
-                        if start_game_btn.handle_event(e):
-                            _prev_loadouts = copy.deepcopy(game.fortune_loadouts)
-                            _prev_active = game.active_fortune_loadout
-                            game = Game(cards_raw); game.level = menu_lvl_dd.get_selected(); game.fortune_loadouts = _prev_loadouts; game.active_fortune_loadout = _prev_active; game.normalize_fortune_loadouts(); lvl_change_dd.selected_index = game.level - 1; game.hand_limit = game.get_base_limit(); game.draw_of_fate_uses = game.get_draw_of_fate_uses_by_level(); game.draw_of_fate_current = game.draw_of_fate_uses; draw_of_fate_slider.set_value(game.draw_of_fate_uses); game.audio_enabled = audio_enabled; game.sfx_enabled = sfx_enabled; game.sfx_channel = Button.click_channel
-                            if game.level >= 17: total = game.long_rest(skip_draw=True); prophet_remaining_draws = total - 1; screen_mode, scroll_y = "prophet_selection", 0
-                            else: game.long_rest(); screen_mode = "normal"
-                        if menu_load_btn.handle_event(e):
-                            slot_menu_mode = "load"
-                            slot_menu_return_mode = "menu"
-                            _refresh_slot_labels()
-                            screen_mode = "slot_menu"
-                        if settings_btn.handle_event(e):
-                            screen_mode = "settings"
-                        if menu_fortune_btn.handle_event(e):
-                            _open_fortune_setup("menu")
-                        if menu_quit_btn.handle_event(e):
-                            running = False
-                    # Fortune selector and variants
-                    if screen_mode == "fortune_setup":
-                        if glossary_btn.handle_event(e):
-                            screen_mode = "the_glossary"
-                        if spell_list_btn.handle_event(e):
-                            screen_mode = "spell_library"
-                        if fortune_back_btn.handle_event(e):
-                            game.normalize_fortune_loadouts()
-                            screen_mode = "menu"
-                    elif screen_mode == "the_glossary":
-                        if fortune_select_btn.handle_event(e):
-                            screen_mode = "fortune_setup"
-                        if spell_list_btn2.handle_event(e):
-                            screen_mode = "spell_library"
-                    elif screen_mode == "spell_library":
-                        if fortune_select_btn.handle_event(e):
-                            screen_mode = "fortune_setup"
-                        if glossary_btn2.handle_event(e):
-                            screen_mode = "the_glossary"
-
+                fortune_back_btn.draw(screen, f_fortune_small, dt)
             
             elif screen_mode == "normal":
                 screen.blit(normal_bg, (0, 0))
@@ -3394,16 +3240,22 @@ def safe_main():
                     _menu_item_h = 35
                     _menu_gap = 4
                     _menu_pad = 8
-                    _menu_count = 7  # Increased for new buttons
+                    _menu_count = 5
                     _menu_h = (_menu_pad * 2) + (_menu_count * _menu_item_h) + ((_menu_count - 1) * _menu_gap)
                     _menu_bg = pygame.Rect(hamburger_btn.rect.right - 160, hamburger_btn.rect.bottom + 5, 160, _menu_h)
                     draw_round_rect(screen, _menu_bg, (18, 24, 38, 230), 10)
                     pygame.draw.rect(screen, (255, 255, 255, 40), _menu_bg, 1, 10)
                     _menu_item_w = _menu_bg.w - 20
-                    btns = [menu_btn, save_btn, load_btn, fortune_menu_btn, glossary_menu_btn, spell_menu_btn, quit_btn]
-                    for i, btn in enumerate(btns):
-                        btn.rect = pygame.Rect(_menu_bg.x + 10, _menu_bg.y + _menu_pad + i * (_menu_item_h + _menu_gap), _menu_item_w, _menu_item_h)
-                        btn.draw(screen, f_tiny, dt)
+                    menu_btn.rect = pygame.Rect(_menu_bg.x + 10, _menu_bg.y + _menu_pad, _menu_item_w, _menu_item_h)
+                    save_btn.rect = pygame.Rect(_menu_bg.x + 10, menu_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
+                    load_btn.rect = pygame.Rect(_menu_bg.x + 10, save_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
+                    fortune_menu_btn.rect = pygame.Rect(_menu_bg.x + 10, load_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
+                    quit_btn.rect = pygame.Rect(_menu_bg.x + 10, fortune_menu_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
+                    menu_btn.draw(screen, f_tiny, dt)
+                    save_btn.draw(screen, f_tiny, dt)
+                    load_btn.draw(screen, f_tiny, dt)
+                    fortune_menu_btn.draw(screen, f_tiny, dt)
+                    quit_btn.draw(screen, f_tiny, dt)
                 rest_menu_btn.rect = pygame.Rect(_controls_x + _menu_sz + _btn_gap, _controls_y, _rest_sz, _rest_sz)
                 rest_menu_btn.draw(screen, f_tiny, dt)
                 if rest_menu_open:
