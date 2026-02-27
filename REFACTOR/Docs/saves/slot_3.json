@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "saved_at": "2026-02-27 22:49:03",
+  "screen_mode": "slot_menu",
+  "scroll_y": 0,
+  "history_overlay_open": false,
+  "history_scroll": 0,
+  "top_menu_open": false,
+  "rest_menu_open": false,
+  "game": {
+    "deck": [
+      8,
+      5,
+      6,
+      9,
+      3,
+      13,
+      20,
+      4,
+      7,
+      15,
+      12,
+      18,
+      10,
+      14,
+      19,
+      1,
+      17,
+      2,
+      11
+    ],
+    "hand": [
+      {
+        "id": 16,
+        "mode": "normal",
+        "orientation": "upright",
+        "flip": 0,
+        "scroll_up": 0,
+        "scroll_inv": 0,
+        "max_sc_up": 0,
+        "max_sc_inv": 0,
+        "is_vanishing": false,
+        "tapped": false
+      }
+    ],
+    "fortune_zone": [],
+    "major_zone": [],
+    "vanished": [],
+    "stacked": null,
+    "first_three_ids": [
+      16
+    ],
+    "seer_dice_table": [
+      16
+    ],
+    "days_until_major": 0,
+    "days_passed": 1,
+    "shuffle_time": 0.0,
+    "history_log": [
+      {
+        "text": "[22:48] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+        "card_ids": []
+      },
+      {
+        "text": "[22:48] Drew 1 card(s): The Star",
+        "card_ids": [
+          16
+        ]
+      }
+    ],
+    "history": [
+      {
+        "deck": [
+          14,
+          20,
+          8,
+          11,
+          13,
+          4,
+          10,
+          16,
+          15,
+          19,
+          12,
+          17,
+          5,
+          3,
+          9,
+          1,
+          18,
+          7,
+          2,
+          6
+        ],
+        "hand": [],
+        "fortune_zone": [],
+        "major_zone": [],
+        "vanished": [],
+        "stacked": null,
+        "f3": [],
+        "cd": 0,
+        "days": 0,
+        "limit": 1,
+        "table": [],
+        "history": [],
+        "level": 1,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": false,
+        "seer_filled": 0,
+        "draw_of_fate": 0,
+        "draw_of_fate_cur": 0,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      }
+    ],
+    "toast_msg": "Saved to slot 3",
+    "toast_timer": 1.2780000000000047,
+    "level": 1,
+    "used_major_ids": [],
+    "hand_limit": 1,
+    "ppf_charges": 3,
+    "draw_queue": [],
+    "draw_timer": -0.005000000000000053,
+    "is_drawing": false,
+    "major_fortune_used_this_week": false,
+    "shuffle_anim_timer": 0.0,
+    "seer_slots_filled_today": 1,
+    "draw_of_fate_uses": 0,
+    "draw_of_fate_current": 0,
+    "fortune_loadouts": [
+      {
+        "name": "Loadout 1",
+        "fortune_ids": [],
+        "major_id": null
+      },
+      {
+        "name": "Loadout 2",
+        "fortune_ids": [],
+        "major_id": null
+      },
+      {
+        "name": "Loadout 3",
+        "fortune_ids": [],
+        "major_id": null
+      }
+    ],
+    "active_fortune_loadout": 0
+  }
+}

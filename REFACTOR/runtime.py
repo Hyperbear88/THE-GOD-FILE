@@ -452,7 +452,7 @@ def safe_main():
             "Side_Panel_Image.png",
             "Rest_Button.png",
             "Fortune_Card_Stamp.png",
-            "Major_Fortune_Card_Stamp.png",
+            "Major_Fortune_Card Stamp.png",
         ]
         preloaded_ui_images = {}
         hand_tex, view_tex, preview_tex_hd, preview_bgs, thumb_tex, total_steps, cur_step = {}, {}, {}, {}, {}, len(cards_raw) * 4 + 3 + len(_menu_element_files), 0
@@ -690,9 +690,9 @@ def safe_main():
         _img_side_panel = _load_btn_img("Side_Panel_Image.png")
         _img_rest = _load_btn_img("Rest_Button.png")
         _img_fortune_stamp = _load_btn_img("Fortune_Card_Stamp.png")
-        _img_major_stamp = _load_btn_img("Major_Fortune_Card_Stamp.png")
+        _img_major_stamp = _load_btn_img("Major_Fortune_Card Stamp.png")
 
-        def _draw_promotion_stamp(_card_rect, _is_major=False):
+        def _draw_promotion_stamp(_card_rect, _is_major=False, _inverted=False):
             _src = _img_major_stamp if _is_major else _img_fortune_stamp
             if _src is None:
                 return
@@ -700,8 +700,13 @@ def safe_main():
             _scale = _stamp_h / max(1, _src.get_height())
             _stamp_w = max(26, int(_src.get_width() * _scale))
             _stamp = pygame.transform.smoothscale(_src, (_stamp_w, _stamp_h))
-            _sx = _card_rect.right - _stamp_w - 6
-            _sy = _card_rect.y + 6
+            if _inverted:
+                _stamp = pygame.transform.rotate(_stamp, 180)
+                _sx = _card_rect.x + 6
+                _sy = _card_rect.bottom - _stamp_h - 6
+            else:
+                _sx = _card_rect.right - _stamp_w - 6
+                _sy = _card_rect.y + 6
             screen.blit(_stamp, (_sx, _sy))
 
         def _load_sfx(path):
@@ -756,6 +761,10 @@ def safe_main():
         slot_back_btn = Button((slot_menu_box_rect.x + 160, slot_menu_box_rect.y + 430, 200, 45), "Back", warning=True, fantasy=True)
         slot_menu_mode = "load"
         slot_menu_return_mode = "menu"
+        confirm_dialog = None
+        confirm_box_rect = pygame.Rect(W//2 - 250, H//2 - 115, 500, 230)
+        confirm_no_btn = Button((confirm_box_rect.x + 55, confirm_box_rect.bottom - 68, 160, 42), "Decline", warning=True, fantasy=True)
+        confirm_yes_btn = Button((confirm_box_rect.right - 215, confirm_box_rect.bottom - 68, 160, 42), "Confirm", danger=True, fantasy=True)
         fortune_setup_box = pygame.Rect(50, 38, W - 100, H - 76)
         fortune_loadout_buttons = [
             Button((fortune_setup_box.x + 40 + i * 220, fortune_setup_box.y + 108, 200, 50), f"Loadout {i+1}", primary=True, fantasy=True)
@@ -770,6 +779,7 @@ def safe_main():
         fortune_lvl_dd = FantasyLevelStepper((fortune_setup_box.right - 270, fortune_setup_box.y + 24, 230, 46), 1, 20, game.level)
         fortune_card_buttons = []
         fortune_section_headers = []
+        fortune_card_states = {}
         f_fortune_title = pygame.font.SysFont("timesnewroman", 54, bold=True)
         f_fortune_header = pygame.font.SysFont("georgia", 30, bold=True)
         f_fortune_body = pygame.font.SysFont("georgia", 22, bold=True)
@@ -853,7 +863,7 @@ def safe_main():
                 if prefix.isdigit():
                     card_video_paths[int(prefix)] = os.path.join(VIDEOS_DIR, fname)
 
-        # Looping background video state for prophet_selection and deck screens
+        # Looping background video state for selection/deck/vanished screens
         def _open_loop_video(filename):
             path = os.path.join(VIDEOS_DIR, filename)
             state = {"cap": None, "fps": 30.0, "frame_interval": 1.0/30.0, "accum": 0.0, "frame_surface": None, "path": path, "attempted_open": False}
@@ -878,6 +888,7 @@ def safe_main():
 
         prophet_bg_video = _open_loop_video("Fortune_Card_Menu.mp4")
         deck_bg_video = _open_loop_video("Loopable_Deck.mp4")
+        vanished_bg_video = _open_loop_video("Vanished_BG.mp4")
 
         def execute_card_use_action(h, hx, hy):
             game.save_state()
@@ -980,6 +991,9 @@ def safe_main():
             for i, b in enumerate(slot_buttons, start=1):
                 b.text = _slot_button_label(i)
 
+        def _slot_has_data(slot_idx):
+            return _load_slot_payload(slot_idx) is not None
+
         def _build_save_payload():
             return {
                 "version": 1,
@@ -1056,6 +1070,13 @@ def safe_main():
             game.toast_msg = f"Fortune setup saved ({_fortune_slots_summary()})."
             game.toast_timer = TOAST_DURATION
 
+        def _fortune_loadout_has_data(loadout_idx):
+            try:
+                _ld = game.fortune_loadouts[loadout_idx]
+            except Exception:
+                return False
+            return bool(_ld.get("fortune_ids") or _ld.get("major_id") is not None)
+
         def _play_click_sfx():
             if Button.sfx_enabled and Button.click_sound is not None:
                 try:
@@ -1097,12 +1118,26 @@ def safe_main():
             content_h = max(0, (_bottom - clip.y) + fortune_scroll_y)
             return max(0, content_h - clip.h)
 
+        def _get_fortune_card_state(cid, mode):
+            _key = (cid, mode)
+            if _key not in fortune_card_states:
+                fortune_card_states[_key] = {
+                    "orientation": "upright",
+                    "scroll_up": 0,
+                    "scroll_inv": 0,
+                    "max_sc_up": 0,
+                    "max_sc_inv": 0,
+                }
+            return fortune_card_states[_key]
+
         def _build_fortune_card_buttons():
             nonlocal fortune_card_buttons, fortune_section_headers
             clip, card_w, card_h, gap_x, gap_y, cols, base_x = _fortune_grid_metrics()
             content_y = 0
             header_h = 30
-            section_gap = 22
+            _checkbox_probe = _fortune_checkbox_rect(pygame.Rect(0, 0, card_w, card_h))
+            checkbox_clearance = max(0, _checkbox_probe.bottom - card_h) + 14
+            section_gap = 28
             fortune_card_buttons = []
             fortune_section_headers = []
             _levels = [6, 9, 13]
@@ -1121,7 +1156,7 @@ def safe_main():
                         _y = clip.y + content_y + _row * (card_h + gap_y) - fortune_scroll_y
                         fortune_card_buttons.append((_cid, pygame.Rect(_x, _y, card_w, card_h), "fortune"))
                     _rows = math.ceil(len(_ids) / max(1, cols))
-                    content_y += _rows * card_h + max(0, _rows - 1) * gap_y
+                    content_y += _rows * card_h + max(0, _rows - 1) * gap_y + checkbox_clearance
                 content_y += section_gap
 
             _mj_unlocked = game.level >= 17
@@ -1136,6 +1171,14 @@ def safe_main():
                     _x = base_x + _col * (card_w + gap_x)
                     _y = clip.y + content_y + _row * (card_h + gap_y) - fortune_scroll_y
                     fortune_card_buttons.append((_cid, pygame.Rect(_x, _y, card_w, card_h), "major"))
+
+        def _get_selected_stamp_mode(cid):
+            _active_ld = game.get_active_fortune_loadout()
+            if _active_ld.get("major_id") == cid:
+                return "major"
+            if cid in _active_ld.get("fortune_ids", []):
+                return "fortune"
+            return None
 
         def _build_spell_grid_layout(panel_rect, spells, scroll_y):
             cols = 4
@@ -1219,6 +1262,40 @@ def safe_main():
             fortune_back_cache[key] = surf
             return surf
 
+        def _get_interactive_mode_back_surface(cid, mode, w, h, card_state):
+            mode_key = mode if mode in ["fortune", "major"] else "effect"
+            cd = game.cards[cid]
+            surf = pygame.Surface((w, h), pygame.SRCALPHA)
+            draw_round_rect(surf, (0, 0, w, h), (20, 25, 40, 255), 12)
+            pygame.draw.rect(surf, (180, 160, 100), (0, 0, w, h), 3, 12)
+            margin = 10
+            top_h = max(48, (h // 2) - 24)
+            box_w = w - margin * 2
+            top_box = pygame.Surface((box_w, top_h), pygame.SRCALPHA)
+            _upright = (card_state.get("orientation") == "upright")
+            # Upright: top box disabled, bottom box enabled.
+            # Inverted: card rotates 180 degrees, so original top box lands at bottom and becomes the enabled box.
+            card_state["max_sc_inv"] = rich_renderer.draw_rich_box(
+                top_box,
+                top_box.get_rect(),
+                cd.get(f"{mode_key}_inverted", "..."),
+                card_state.get("scroll_inv", 0) if not _upright else 0,
+                show_scrollbar=not _upright,
+            )
+            top_box = pygame.transform.rotate(top_box, 180)
+            surf.blit(top_box, (margin, 10))
+            bottom_box = pygame.Rect(margin, (h // 2) + 6, box_w, top_h)
+            card_state["max_sc_up"] = rich_renderer.draw_rich_box(
+                surf,
+                bottom_box,
+                cd.get(f"{mode_key}_upright", "..."),
+                card_state.get("scroll_up", 0) if _upright else 0,
+                show_scrollbar=_upright,
+            )
+            if not _upright:
+                surf = pygame.transform.rotate(surf, 180)
+            return surf
+
         def get_draw_of_fate_rect():
             dt_box_w, dt_box_h = PANEL_W - 120, 90
             dt_box_x = PADDING + (PANEL_W - dt_box_w) // 2
@@ -1268,6 +1345,8 @@ def safe_main():
                 _active_loop_videos = [prophet_bg_video]
             elif screen_mode == "deck":
                 _active_loop_videos = [deck_bg_video]
+            elif screen_mode == "vanish_view":
+                _active_loop_videos = [vanished_bg_video]
             for _bgv in _active_loop_videos:
                 if menu_videos_enabled:
                     _ensure_loop_video_open(_bgv)
@@ -1340,13 +1419,46 @@ def safe_main():
                 if current_roll_anim: continue 
                 if e.type == pygame.QUIT:
                     running = False
+                if confirm_dialog is not None:
+                    if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+                        confirm_dialog = None
+                        continue
+                    if confirm_yes_btn.handle_event(e):
+                        _action = confirm_dialog.get("on_confirm")
+                        confirm_dialog = None
+                        if callable(_action):
+                            _action()
+                        continue
+                    if confirm_no_btn.handle_event(e):
+                        confirm_dialog = None
+                        continue
+                    continue
                 if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
                     if screen_mode == "fool_video":
                         stop_card_video(play_action=True)
                         screen_mode = "normal"
                         continue
+                    if screen_mode == "preview_view":
+                        preview_sb_dragging = False
+                        preview_locked_mode = False
+                        if previous_viewer_mode:
+                            screen_mode = previous_viewer_mode
+                            previous_viewer_mode = None
+                        else:
+                            screen_mode = "normal"
+                        continue
                     if screen_mode in ("fortune_spell_list_view", "fortune_glossary_view"):
                         screen_mode = "fortune_setup"
+                        continue
+                    if screen_mode == "fortune_setup":
+                        game.normalize_fortune_loadouts()
+                        screen_mode = "normal" if fortune_setup_return_mode == "normal" else "menu"
+                        continue
+                    if screen_mode in ("deck", "vanish_view"):
+                        rest_menu_open = False
+                        top_menu_open = False
+                        history_overlay_open = False
+                        screen_mode = "normal"
                         continue
                     # Only allow Escape to open menu if NOT in Normal View
                     if screen_mode not in ("normal", "fool_video"):
@@ -1390,8 +1502,17 @@ def safe_main():
                     for _i, _btn in enumerate(slot_buttons, start=1):
                         if _btn.handle_event(e):
                             if slot_menu_mode == "save":
-                                _write_slot(_i)
-                                _refresh_slot_labels()
+                                def _do_slot_save(_slot_idx=_i):
+                                    _write_slot(_slot_idx)
+                                    _refresh_slot_labels()
+                                if _slot_has_data(_i):
+                                    confirm_dialog = {
+                                        "title": "Overwrite Save Slot?",
+                                        "message": f"Slot {_i} already has save data. This will overwrite it.",
+                                        "on_confirm": _do_slot_save,
+                                    }
+                                else:
+                                    _do_slot_save()
                             else:
                                 if _read_slot(_i):
                                     pass
@@ -1446,8 +1567,26 @@ def safe_main():
                         game.normalize_fortune_loadouts()
                         game.enforce_fortune_selection()
                     if e.type == pygame.MOUSEWHEEL:
-                        if _fortune_grid_clip_rect().collidepoint(m_pos):
-                            fortune_scroll_y = int(clamp(fortune_scroll_y - e.y * 50, 0, _fortune_max_scroll()))
+                        _consumed_card_scroll = False
+                        _grid_clip = _fortune_grid_clip_rect()
+                        if _grid_clip.collidepoint(m_pos):
+                            _build_fortune_card_buttons()
+                            for _cid, _rect, _mode in fortune_card_buttons:
+                                if _rect.collidepoint(m_pos):
+                                    _card_state = _get_fortune_card_state(_cid, _mode)
+                                    _top_half = m_pos[1] < _rect.y + (_rect.h // 2)
+                                    if _card_state.get("orientation") == "inverted" and _top_half:
+                                        pass
+                                    elif _top_half:
+                                        _card_state["scroll_inv"] = clamp(_card_state.get("scroll_inv", 0) - e.y * 25, 0, _card_state.get("max_sc_inv", 0))
+                                    else:
+                                        _scroll_key = "scroll_inv" if _card_state.get("orientation") == "inverted" else "scroll_up"
+                                        _max_key = "max_sc_inv" if _card_state.get("orientation") == "inverted" else "max_sc_up"
+                                        _card_state[_scroll_key] = clamp(_card_state.get(_scroll_key, 0) - e.y * 25, 0, _card_state.get(_max_key, 0))
+                                    _consumed_card_scroll = True
+                                    break
+                            if not _consumed_card_scroll:
+                                fortune_scroll_y = int(clamp(fortune_scroll_y - e.y * 50, 0, _fortune_max_scroll()))
                     for _idx, _btn in enumerate(fortune_loadout_buttons):
                         _btn.warning = (_idx == game.active_fortune_loadout)
                         _btn.primary = (_idx != game.active_fortune_loadout)
@@ -1486,12 +1625,29 @@ def safe_main():
                             preview_locked_mode = True
                             screen_mode = "preview_view"
                             break
+                        elif e.type == pygame.MOUSEBUTTONDOWN and e.button == 2 and _grid_clip.collidepoint(e.pos) and _rect.collidepoint(e.pos):
+                            _card_state = _get_fortune_card_state(_cid, _mode)
+                            _card_state["orientation"] = "inverted" if _card_state.get("orientation") == "upright" else "upright"
+                            _card_state["scroll_up"] = 0
+                            _card_state["scroll_inv"] = 0
+                            play_turnpage_sfx()
+                            break
                     if fortune_clear_btn.handle_event(e):
                         active_ld["fortune_ids"] = []
                         active_ld["major_id"] = None
                         game.enforce_fortune_selection()
                     if fortune_save_btn.handle_event(e):
-                        _persist_fortune_setup()
+                        _active_idx = game.active_fortune_loadout
+                        def _do_fortune_save():
+                            _persist_fortune_setup()
+                        if _fortune_loadout_has_data(_active_idx):
+                            confirm_dialog = {
+                                "title": "Overwrite Loadout?",
+                                "message": f"Loadout {_active_idx + 1} already has saved cards. This will overwrite that setup.",
+                                "on_confirm": _do_fortune_save,
+                            }
+                        else:
+                            _do_fortune_save()
                     if fortune_glossary_btn.handle_event(e):
                         fortune_glossary_scroll = 0
                         screen_mode = "fortune_glossary_view"
@@ -1505,7 +1661,7 @@ def safe_main():
                         screen_mode = "fortune_spell_list_view"
                     if fortune_back_btn.handle_event(e):
                         game.normalize_fortune_loadouts()
-                        screen_mode = "menu"
+                        screen_mode = "normal" if fortune_setup_return_mode == "normal" else "menu"
 
                 elif screen_mode == "fortune_spell_list_view":
                     _search_rect, _filter_rects, _filter_labels, _class_rect, _school_rect = _spell_top_controls_layout()
@@ -1948,6 +2104,10 @@ def safe_main():
 
                 elif screen_mode in ["deck", "vanish_view", "world_restore_view", "prophet_selection", "ppf_selection", "stack_selection", "major_selection"]:
                     if exit_view_btn.handle_event(e): screen_mode = "normal"; grid_sb_dragging = False
+                    if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE and screen_mode in ["deck", "vanish_view"]:
+                        screen_mode = "normal"
+                        grid_sb_dragging = False
+                        continue
                     # Grid scrollbar drag support
                     if e.type == pygame.MOUSEBUTTONUP and e.button == 1:
                         grid_sb_dragging = False
@@ -2211,14 +2371,16 @@ def safe_main():
                     screen.blit(_hs, (_hdr_box.x + 10, _hdr_box.centery - _hs.get_height() // 2))
                 for _cid, _rect, _mode in fortune_card_buttons:
                     _show_back = _rect.collidepoint(m_pos)
-                    _face = _get_mode_back_surface(_cid, _mode, _rect.w, _rect.h) if _show_back else view_tex[_cid]
+                    _card_state = _get_fortune_card_state(_cid, _mode)
+                    if _show_back:
+                        _face = _get_interactive_mode_back_surface(_cid, _mode, _rect.w, _rect.h, _card_state)
+                    else:
+                        _base_face = view_tex[_cid]
+                        _face = pygame.transform.rotate(_base_face, 180) if _card_state.get("orientation") == "inverted" else _base_face
                     _art = pygame.transform.smoothscale(_face, (_rect.w, _rect.h))
                     screen.blit(_art, _rect.topleft)
-                    _show_stamp = (game.level >= 17) if _mode == "major" else (game.level >= 6)
-                    if _show_stamp:
-                        _draw_promotion_stamp(_rect, _is_major=(_mode == "major"))
-                    draw_card_glitter(screen, _rect, pygame.time.get_ticks() / 1000.0, "red" if _mode == "major" else "gold")
                     _selected = (active_ld.get("major_id") == _cid) if _mode == "major" else (_cid in active_ld.get("fortune_ids", []))
+                    draw_card_glitter(screen, _rect, pygame.time.get_ticks() / 1000.0, "red" if _mode == "major" else "gold")
                     _hover = _rect.collidepoint(m_pos)
                     if _selected:
                         _sel_glow = pygame.Surface((_rect.w + 20, _rect.h + 20), pygame.SRCALPHA)
@@ -2227,6 +2389,8 @@ def safe_main():
                         screen.blit(_sel_glow, (_rect.x - 10, _rect.y - 10))
                     _edge = (255, 120, 120) if (_selected and _mode == "major") else (GOLD if _selected else ((225, 190, 120) if _hover else (120, 86, 62)))
                     pygame.draw.rect(screen, _edge, _rect, 3, 12)
+                    if _selected and not _hover:
+                        _draw_promotion_stamp(_rect, _is_major=(_mode == "major"), _inverted=(_card_state.get("orientation") == "inverted"))
                     _cb = _fortune_checkbox_rect(_rect)
                     _cb_bg = (52, 24, 24, 228) if (_mode == "major" and _selected) else ((56, 44, 20, 228) if _selected else (18, 22, 18, 220))
                     _cb_edge = (255, 140, 120) if _mode == "major" else ((255, 222, 132) if _selected else (232, 204, 146))
@@ -2326,6 +2490,7 @@ def safe_main():
                 _ctrl = f_fortune_small.render("LEFT CLICK CARD/CHECKBOX: SELECT    HOVER CARD: FLIP", True, (220, 201, 154))
                 _bottom_text_y = _grid_clip.bottom + 12
                 screen.blit(_ctrl, (fortune_setup_box.centerx - _ctrl.get_width() // 2, _bottom_text_y))
+                fortune_back_btn.text = "Back" if fortune_setup_return_mode == "normal" else "Main Menu"
                 fortune_glossary_btn.draw(screen, f_fortune_small, dt)
                 fortune_spell_library_btn.draw(screen, f_fortune_small, dt)
                 fortune_clear_btn.draw(screen, f_fortune_small, dt)
@@ -2579,7 +2744,11 @@ def safe_main():
 
                 # 5. ZONE LABELS
                 zone_x = PANEL_W + 60
-                screen.blit(f_hand_header.render("Hand Zone", True, (230,240,255)), (zone_x + 15, 38))
+                _hand_zone_box = pygame.Rect(zone_x, 33, 170, 36)
+                draw_round_rect(screen, _hand_zone_box, (10, 10, 10, 220), 8)
+                pygame.draw.rect(screen, (230, 240, 255), _hand_zone_box, 1, 8)
+                _hand_zone_s = f_hand_header.render("Hand Zone", True, (230,240,255))
+                screen.blit(_hand_zone_s, (_hand_zone_box.x + 14, _hand_zone_box.centery - _hand_zone_s.get_height() // 2))
                 if game.level >= 6:
                     draw_round_rect(screen, (zone_x, 38+HAND_GRID_SPACING_Y-5, 200, 32), (20,25,40,200), 8)
                     pygame.draw.rect(screen, GOLD, (zone_x, 38+HAND_GRID_SPACING_Y-5, 200, 32), 1, 8)
@@ -2632,9 +2801,9 @@ def safe_main():
                         card_x = x + (HAND_CARD_W - sw) // 2
                         _draw_rect = pygame.Rect(card_x, y, sw, HAND_CARD_H)
                         screen.blit(pygame.transform.smoothscale(content, (sw, HAND_CARD_H)), _draw_rect.topleft)
-                        if zone == game.hand and game.is_card_promotion_enabled(h['id']):
-                            _is_major = game.can_promote_card(h['id'], to_major=True)
-                            _draw_promotion_stamp(_draw_rect, _is_major=_is_major)
+                        _stamp_mode = _get_selected_stamp_mode(h['id'])
+                        if _stamp_mode and h['flip'] <= 0.01 and h['id'] not in game.vanished:
+                            _draw_promotion_stamp(_draw_rect, _is_major=(_stamp_mode == "major"), _inverted=(h.get('orientation') == "inverted"))
                         if zone == game.fortune_zone:
                             draw_card_glitter(screen, _draw_rect, pygame.time.get_ticks() / 1000.0, "gold")
                         elif zone == game.major_zone:
@@ -2965,6 +3134,7 @@ def safe_main():
                 _active_bg = None
                 if screen_mode == "prophet_selection": _active_bg = prophet_bg_video
                 elif screen_mode == "deck": _active_bg = deck_bg_video
+                elif screen_mode == "vanish_view": _active_bg = vanished_bg_video
                 if _active_bg and _active_bg["frame_surface"] is not None:
                     _fs = _active_bg["frame_surface"]
                     _fw, _fh = _fs.get_size()
@@ -3009,6 +3179,10 @@ def safe_main():
                     gx, gy = VIEW_START_X+(i%6)*CELL_W, VIEW_START_Y+(i//6)*CELL_H-scroll_y+160
                     if -VIEW_CARD_H < gy < H:
                         screen.blit(v_face_view if screen_mode=="vanish_view" else view_tex[cid], (gx, gy))
+                        if screen_mode != "vanish_view":
+                            _stamp_mode = _get_selected_stamp_mode(cid)
+                            if _stamp_mode:
+                                _draw_promotion_stamp(pygame.Rect(gx, gy, VIEW_CARD_W, VIEW_CARD_H), _is_major=(_stamp_mode == "major"), _inverted=False)
                         if screen_mode == "vanish_view":
                             name = game.cards[cid]["name"]
                             name_font = pygame.font.SysFont("timesnewroman", 18, bold=True)
@@ -3031,7 +3205,40 @@ def safe_main():
                 exit_view_btn.draw(screen, f_small, dt)
 
             if current_roll_anim: current_roll_anim.draw(screen, f_seer_dice_sim, f_seer_massive)
-            
+
+            if confirm_dialog is not None:
+                _ov = pygame.Surface((W, H), pygame.SRCALPHA)
+                _ov.fill((0, 0, 0, 150))
+                screen.blit(_ov, (0, 0))
+                _outer = confirm_box_rect.inflate(16, 18)
+                draw_round_rect(screen, _outer, (36, 20, 12, 230), 24)
+                pygame.draw.rect(screen, (120, 86, 42, 220), _outer, 3, 24)
+                draw_round_rect(screen, confirm_box_rect, (18, 14, 24, 240), 20)
+                pygame.draw.rect(screen, (235, 190, 60, 180), confirm_box_rect, 2, 20)
+                _ct = f_preview_title.render(str(confirm_dialog.get("title", "Confirm")), True, GOLD)
+                screen.blit(_ct, (_outer.centerx - _ct.get_width() // 2, confirm_box_rect.y + 20))
+                _msg = str(confirm_dialog.get("message", "Are you sure?"))
+                _words = _msg.split()
+                _lines = []
+                _cur = ""
+                _max_w = confirm_box_rect.w - 60
+                for _w in _words:
+                    _test = f"{_cur} {_w}".strip()
+                    if not _cur or f_small.size(_test)[0] <= _max_w:
+                        _cur = _test
+                    else:
+                        _lines.append(_cur)
+                        _cur = _w
+                if _cur:
+                    _lines.append(_cur)
+                _yy = confirm_box_rect.y + 82
+                for _line in _lines[:3]:
+                    _ls = f_small.render(_line, True, (225, 206, 170))
+                    screen.blit(_ls, (confirm_box_rect.centerx - _ls.get_width() // 2, _yy))
+                    _yy += _ls.get_height() + 8
+                confirm_yes_btn.draw(screen, f_small, dt)
+                confirm_no_btn.draw(screen, f_small, dt)
+
             if game.toast_timer > 0:
                 t_surf = f_small.render(game.toast_msg, True, (255,255,255))
                 pygame.draw.rect(screen, (0,0,0,180), (W//2-200, 20, 400, 40), border_radius=10)

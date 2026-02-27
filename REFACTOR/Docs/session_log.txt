@@ -136,3 +136,44 @@ TypeError: Button.__init__() got an unexpected keyword argument 'blue'
 21:25:29 [INFO]  Scanning JSON... Found 80 bolded fields.
 21:28:50 [INFO]  Loading video backend: cv2
 21:28:50 [INFO]  Scanning JSON... Found 80 bolded fields.
+21:35:58 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+21:35:58 [INFO]  Loading video backend: imageio
+21:35:58 [INFO]  Scanning JSON... Found 80 bolded fields.
+21:39:59 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+21:39:59 [INFO]  Loading video backend: imageio
+21:39:59 [INFO]  Scanning JSON... Found 80 bolded fields.
+21:44:06 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+21:44:06 [INFO]  Loading video backend: imageio
+21:44:06 [INFO]  Scanning JSON... Found 80 bolded fields.
+21:47:25 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+21:47:25 [INFO]  Loading video backend: imageio
+21:47:25 [INFO]  Scanning JSON... Found 80 bolded fields.
+21:50:03 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+21:50:03 [INFO]  Loading video backend: imageio
+21:50:03 [INFO]  Scanning JSON... Found 80 bolded fields.
+21:58:17 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+21:58:17 [INFO]  Loading video backend: imageio
+21:58:17 [INFO]  Scanning JSON... Found 80 bolded fields.
+22:00:48 [ERROR] OpenCV unavailable for card video playback: No module named 'cv2'
+22:05:44 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+22:05:44 [INFO]  Loading video backend: imageio
+22:05:44 [INFO]  Scanning JSON... Found 80 bolded fields.
+22:11:28 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+22:11:28 [INFO]  Loading video backend: imageio
+22:11:28 [INFO]  Scanning JSON... Found 80 bolded fields.
+22:18:21 [INFO]  Loading video backend: cv2
+22:18:21 [INFO]  Scanning JSON... Found 80 bolded fields.
+22:25:24 [INFO]  Loading video backend: cv2
+22:25:24 [INFO]  Scanning JSON... Found 80 bolded fields.
+22:28:53 [INFO]  Loading video backend: cv2
+22:28:53 [INFO]  Scanning JSON... Found 80 bolded fields.
+22:32:00 [INFO]  Loading video backend: cv2
+22:32:00 [INFO]  Scanning JSON... Found 80 bolded fields.
+22:34:46 [INFO]  Loading video backend: cv2
+22:34:46 [INFO]  Scanning JSON... Found 80 bolded fields.
+22:37:07 [INFO]  Loading video backend: cv2
+22:37:07 [INFO]  Scanning JSON... Found 80 bolded fields.
+22:41:11 [INFO]  Loading video backend: cv2
+22:41:11 [INFO]  Scanning JSON... Found 80 bolded fields.
+22:47:45 [INFO]  Loading video backend: cv2
+22:47:45 [INFO]  Scanning JSON... Found 80 bolded fields.
