@@ -10,14 +10,67 @@ import random
 import traceback
 import re
 import webbrowser
+import shutil
 from urllib.parse import urlparse
 from datetime import datetime
 
 # ----------------------------
 # 1. LOGGING & EXE PATHS
 # ----------------------------
-LOG_FILE = "session_log.txt"
-SETTINGS_FILE = "user_settings.json"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DOCS_DIR = os.path.join(SCRIPT_DIR, "Docs")
+LEGACY_DOCS_DIR = os.path.join(os.path.expanduser("~"), "Documents", "THE GOD FILE")
+APP_DATA_DIR = DOCS_DIR
+LOCAL_SETTINGS_FILE = os.path.join(SCRIPT_DIR, "user_settings.json")
+LOCAL_SAVE_DIR = os.path.join(SCRIPT_DIR, "saves")
+
+try:
+    os.makedirs(APP_DATA_DIR, exist_ok=True)
+except Exception:
+    APP_DATA_DIR = SCRIPT_DIR
+
+LOG_FILE = os.path.join(APP_DATA_DIR, "session_log.txt")
+SETTINGS_FILE = os.path.join(APP_DATA_DIR, "user_settings.json")
+SAVE_DIR = os.path.join(APP_DATA_DIR, "saves")
+
+def _migrate_legacy_user_files():
+    try:
+        if not os.path.exists(SETTINGS_FILE):
+            legacy_settings_file = os.path.join(LEGACY_DOCS_DIR, "user_settings.json")
+            if os.path.exists(legacy_settings_file):
+                shutil.copy2(legacy_settings_file, SETTINGS_FILE)
+    except Exception:
+        pass
+    try:
+        if not os.path.exists(SETTINGS_FILE) and os.path.exists(LOCAL_SETTINGS_FILE):
+            shutil.copy2(LOCAL_SETTINGS_FILE, SETTINGS_FILE)
+    except Exception:
+        pass
+    try:
+        legacy_save_dir = os.path.join(LEGACY_DOCS_DIR, "saves")
+        if os.path.isdir(legacy_save_dir):
+            os.makedirs(SAVE_DIR, exist_ok=True)
+            for filename in os.listdir(legacy_save_dir):
+                if filename.lower().endswith(".json"):
+                    old_path = os.path.join(legacy_save_dir, filename)
+                    new_path = os.path.join(SAVE_DIR, filename)
+                    if os.path.isfile(old_path) and not os.path.exists(new_path):
+                        shutil.copy2(old_path, new_path)
+    except Exception:
+        pass
+    try:
+        if os.path.isdir(LOCAL_SAVE_DIR):
+            os.makedirs(SAVE_DIR, exist_ok=True)
+            for filename in os.listdir(LOCAL_SAVE_DIR):
+                if filename.lower().endswith(".json"):
+                    old_path = os.path.join(LOCAL_SAVE_DIR, filename)
+                    new_path = os.path.join(SAVE_DIR, filename)
+                    if os.path.isfile(old_path) and not os.path.exists(new_path):
+                        shutil.copy2(old_path, new_path)
+    except Exception:
+        pass
+
+_migrate_legacy_user_files()
 
 def log_event(message, is_error=False):
     timestamp = datetime.now().strftime("%H:%M:%S")
@@ -79,6 +132,17 @@ def resource_path(relative_path):
 
     return os.path.join(script_dir, relative_path)
 
+def docs_or_resource_path(filename):
+    candidates = [
+        os.path.join(DOCS_DIR, filename),
+        resource_path(os.path.join("Docs", filename)),
+        resource_path(filename),
+    ]
+    for path in candidates:
+        if os.path.exists(path):
+            return path
+    return os.path.join(DOCS_DIR, filename)
+
 # ----------------------------
 # 2. GLOBAL CONSTANTS
 # ----------------------------
@@ -104,7 +168,7 @@ MAJOR_PROMOTION_SOUND = resource_path(os.path.join("audio", "MFortune_promotion.
 FORTUNE_PROMOTION_SOUND = resource_path(os.path.join("audio", "fortune_promotion.mp3"))
 
 IMAGES_DIR = resource_path("images")
-CARDS_JSON = resource_path("cards.json")
+CARDS_JSON = docs_or_resource_path("cards.json")
 DECK_BACK_IMAGE = "21-Tarot_Back.png"
 VANISHED_CARD_IMAGE = "Vanished.png"
 DECK_PILE_IMAGE = "Deck_Pile.png"
@@ -113,7 +177,6 @@ SHUFFLE_SOUND = resource_path(os.path.join("audio", "shuffle.wav"))
 VIDEOS_DIR = resource_path("videos")
 MENU_BG_IMAGE = "Teller_Room.png"
 NORMAL_BG_IMAGE = "BG_3.png"
-SAVE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "saves")
 MAX_SAVE_SLOTS = 3
 
 GOLD, RED_FIRE, ORANGE_FIRE, YELLOW_FIRE, PURPLE_TAP = (235, 190, 60), (220, 30, 30), (255, 120, 0), (255, 200, 0), (180, 50, 255)
@@ -1577,6 +1640,8 @@ def safe_main():
         f_fortune_header = pygame.font.SysFont("georgia", 30, bold=True)
         f_fortune_body = pygame.font.SysFont("georgia", 22, bold=True)
         f_fortune_small = pygame.font.SysFont("georgia", 18, bold=True)
+        f_fortune_subtitle = pygame.font.SysFont("georgia", 20, bold=True)
+        f_fortune_subtitle.set_underline(True)
         settings_box_rect = pygame.Rect(W//2 - 250, H//2 - 220, 500, 500)
         settings_music_dd = Dropdown((settings_box_rect.x + 190, settings_box_rect.y + 140, 220, 40), [("on", "On"), ("off", "Off")], fantasy=True)
         settings_music_slider = IntSlider((settings_box_rect.x + 190, settings_box_rect.y + 205, 220, 36), 0, 100, 70)
@@ -2895,7 +2960,7 @@ def safe_main():
                     "At 6th level, you gain Three special Fortune cards within your Tarot deck.",
                     "Each of these Fortune cards has different ability than displayed on the Tarot Table, but still has a different effect depending on whether it is Upright or Reverse. When you draw a Fortune card you can choose to apply its Fortune card ability, or its Tarot Table ability. You can hold one Tapped Fortune card in addition to your hand size.",
                     "",
-                    "Past, Present and Future:",
+                    "Past, Present and Future",
                     "Once per turn, (or as a free action out of combat) you can choose to pull One Fortune Card from your deck and use its effect without having to roll on the Tarot Table. You can use this feature up to three times per long rest.",
                     "",
                     "",
@@ -2906,22 +2971,39 @@ def safe_main():
                 for _src in _top_box_source_lines:
                     _top_lines.extend(_wrap_to_width(_src, f_fortune_small, _top_max_w))
                 _ty = _right_top_box.y + 14
-                _lh = f_fortune_small.get_linesize()
                 for _line in _top_lines:
+                    _is_ppf_title = (_line == "Past, Present and Future")
+                    _line_col = (238, 210, 162) if _is_ppf_title else (218, 196, 152)
+                    _line_font = f_fortune_subtitle if _is_ppf_title else f_fortune_small
+                    _lh = _line_font.get_linesize()
                     if _ty + _lh > _right_top_box.bottom - 10:
                         break
-                    _line_col = (238, 210, 162) if _line == "Past, Present and Future:" else (218, 196, 152)
-                    _line_txt = f_fortune_small.render(_line, True, _line_col)
+                    _line_txt = _line_font.render(_line, True, _line_col)
                     screen.blit(_line_txt, (_right_top_box.x + 14, _ty))
                     _ty += _lh
                 # CUSTOM TITLE SLOT (BOTTOM): replace this title text.
                 _rb_title = f_fortune_small.render("Major Fortune Cards", True, (236, 214, 170))
                 screen.blit(_rb_title, (_right_bottom_title_r.x + 12, _right_bottom_title_r.centery - _rb_title.get_height() // 2))
-                # CUSTOM TEXT SLOT (BOTTOM BOX): replace these lines with your own text/content.
-                _rb_l1 = f_fortune_small.render("CUSTOM TEXT GOES HERE", True, (218, 196, 152))
-                _rb_l2 = f_fortune_small.render("Line 2 placeholder", True, (196, 175, 138))
-                screen.blit(_rb_l1, (_right_bottom_box.x + 14, _right_bottom_box.y + 16))
-                screen.blit(_rb_l2, (_right_bottom_box.x + 14, _right_bottom_box.y + 42))
+                _bottom_box_source_lines = [
+                    "At 17th Level, you add one of three Major fortune cards to your deck.",
+                    "Each of these Major Fortune Cards has different ability than displayed on the Tarot Table, but still has a different effect depending on whether it is Upright or Reverse.",
+                    "When you draw a Major Fortune card you can choose to apply its Major Fortune card ability, or its Tarot Table ability.",
+                    "You can choose to pull this Major Fortune Card from your deck and use its effect without having to roll on the Tarot Table.",
+                    "This card is called a Fated Card.",
+                    "Once used the Major Fortune Card cannot be used again until a week has passed.",
+                ]
+                _bottom_max_w = _right_bottom_box.w - 28
+                _bottom_lines = []
+                for _src in _bottom_box_source_lines:
+                    _bottom_lines.extend(_wrap_to_width(_src, f_fortune_small, _bottom_max_w))
+                _by = _right_bottom_box.y + 14
+                for _line in _bottom_lines:
+                    _blh = f_fortune_small.get_linesize()
+                    if _by + _blh > _right_bottom_box.bottom - 10:
+                        break
+                    _line_txt = f_fortune_small.render(_line, True, (218, 196, 152))
+                    screen.blit(_line_txt, (_right_bottom_box.x + 14, _by))
+                    _by += _blh
 
                 _ctrl = f_fortune_small.render("LEFT CLICK CARD/CHECKBOX: SELECT    HOVER CARD: FLIP", True, (220, 201, 154))
                 _bottom_text_y = _grid_clip.bottom + 12
