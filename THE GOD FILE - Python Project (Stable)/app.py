@@ -113,6 +113,8 @@ SHUFFLE_SOUND = resource_path(os.path.join("audio", "shuffle.wav"))
 VIDEOS_DIR = resource_path("videos")
 MENU_BG_IMAGE = "Teller_Room.png"
 NORMAL_BG_IMAGE = "BG_3.png"
+SAVE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "saves")
+MAX_SAVE_SLOTS = 3
 
 GOLD, RED_FIRE, ORANGE_FIRE, YELLOW_FIRE, PURPLE_TAP = (235, 190, 60), (220, 30, 30), (255, 120, 0), (255, 200, 0), (180, 50, 255)
 PINK_D20 = (255, 100, 220)
@@ -315,6 +317,8 @@ def safe_init():
     w, h = info.current_w, info.current_h
     if w == 0 or h == 0: w, h = 1920, 1080
     surf = pygame.display.set_mode((w, h), pygame.FULLSCREEN | pygame.DOUBLEBUF)
+    try: pygame.event.set_grab(True)
+    except: pass
     pygame.display.set_caption("Divine Seer Domain")
     return surf, w, h
 
@@ -697,6 +701,66 @@ class Game:
         self.fizzles = []
         self.shuffle_anim_timer = 0.0
         self.add_history("Undo: Reverted to previous state.")
+
+    def to_save_payload(self):
+        return {
+            "deck": list(self.deck),
+            "hand": [copy.deepcopy(h) for h in self.hand],
+            "fortune_zone": [copy.deepcopy(f) for f in self.fortune_zone],
+            "major_zone": [copy.deepcopy(f) for f in self.major_zone],
+            "vanished": list(self.vanished),
+            "stacked": self.stacked,
+            "first_three_ids": list(self.first_three_ids),
+            "seer_dice_table": list(self.seer_dice_table),
+            "days_until_major": self.days_until_major,
+            "days_passed": self.days_passed,
+            "shuffle_time": self.shuffle_time,
+            "history_log": [copy.deepcopy(e) for e in self.history_log],
+            "history": [copy.deepcopy(h) for h in self.history],
+            "toast_msg": self.toast_msg,
+            "toast_timer": self.toast_timer,
+            "level": self.level,
+            "used_major_ids": list(self.used_major_ids),
+            "hand_limit": self.hand_limit,
+            "ppf_charges": self.ppf_charges,
+            "draw_queue": list(self.draw_queue),
+            "draw_timer": self.draw_timer,
+            "is_drawing": self.is_drawing,
+            "major_fortune_used_this_week": self.major_fortune_used_this_week,
+            "shuffle_anim_timer": self.shuffle_anim_timer,
+            "seer_slots_filled_today": self.seer_slots_filled_today,
+            "draw_of_fate_uses": self.draw_of_fate_uses,
+            "draw_of_fate_current": self.draw_of_fate_current
+        }
+
+    def load_from_payload(self, payload):
+        self.deck = list(payload.get("deck", []))
+        self.hand = [copy.deepcopy(h) for h in payload.get("hand", [])]
+        self.fortune_zone = [copy.deepcopy(f) for f in payload.get("fortune_zone", [])]
+        self.major_zone = [copy.deepcopy(f) for f in payload.get("major_zone", [])]
+        self.vanished = list(payload.get("vanished", []))
+        self.stacked = payload.get("stacked")
+        self.first_three_ids = list(payload.get("first_three_ids", []))
+        self.seer_dice_table = list(payload.get("seer_dice_table", []))
+        self.days_until_major = payload.get("days_until_major", 0)
+        self.days_passed = payload.get("days_passed", 0)
+        self.shuffle_time = payload.get("shuffle_time", 0.0)
+        self.history_log = [copy.deepcopy(e) for e in payload.get("history_log", [])]
+        self.history = [copy.deepcopy(h) for h in payload.get("history", [])]
+        self.toast_msg = payload.get("toast_msg", "")
+        self.toast_timer = payload.get("toast_timer", 0.0)
+        self.level = payload.get("level", 1)
+        self.used_major_ids = list(payload.get("used_major_ids", []))
+        self.hand_limit = payload.get("hand_limit", self.get_base_limit())
+        self.ppf_charges = payload.get("ppf_charges", 3)
+        self.draw_queue = list(payload.get("draw_queue", []))
+        self.draw_timer = payload.get("draw_timer", 0.0)
+        self.is_drawing = bool(payload.get("is_drawing", False))
+        self.major_fortune_used_this_week = bool(payload.get("major_fortune_used_this_week", False))
+        self.shuffle_anim_timer = payload.get("shuffle_anim_timer", 0.0)
+        self.seer_slots_filled_today = payload.get("seer_slots_filled_today", 0)
+        self.draw_of_fate_uses = payload.get("draw_of_fate_uses", self.get_draw_of_fate_uses_by_level())
+        self.draw_of_fate_current = payload.get("draw_of_fate_current", self.draw_of_fate_uses)
 
     def rebuild_deck(self):
         possessed_ids = [h['id'] for h in (self.hand + self.fortune_zone + self.major_zone)]
@@ -1175,6 +1239,8 @@ def safe_main():
         destroy_undead_btn = Button((ui_x + (ui_w - 10) // 2 + 10, H - 160, (ui_w - 10) // 2, 42), "Destroy Undead", danger=True, image=_img_destroy_undead)
         quit_btn = Button((W-160, PADDING + 45, 140, 35), "Exit game", danger=True)
         menu_btn = Button((W-160, PADDING + 85, 140, 35), "Main Menu", warning=True)
+        save_btn = Button((W-160, PADDING + 125, 140, 35), "Save", primary=True)
+        load_btn = Button((W-160, PADDING + 165, 140, 35), "Load", primary=True)
         history_btn = Button((W-240, H-810, 210, 210), "View History", primary=True, image=_img_history)
         hamburger_btn = Button((W-50, PADDING, 35, 35), "\u2630", image=_img_settings)
         rest_menu_btn = Button((W-240, H-810, 150, 150), "Rest", primary=True, image=_img_rest)
@@ -1182,11 +1248,20 @@ def safe_main():
         top_menu_open = False
         exit_view_btn = Button((PADDING, PADDING, 160, 45), "Exit View", primary=True)
         
-        menu_box_rect = pygame.Rect(W//2 - 200, H//2 - 50, 400, 350)
+        menu_box_rect = pygame.Rect(W//2 - 200, H//2 - 85, 400, 430)
         menu_lvl_dd = Dropdown((menu_box_rect.x+50, menu_box_rect.y+100, 300, 45), [(i, i) for i in range(1, 21)], fantasy=True)
         start_game_btn = Button((menu_box_rect.x+50, menu_box_rect.y+170, 300, 50), "START GAME", primary=True, fantasy=True)
-        settings_btn = Button((menu_box_rect.x+50, menu_box_rect.y+225, 300, 50), "Settings", fantasy=True)
-        menu_quit_btn = Button((menu_box_rect.x+50, menu_box_rect.y+285, 300, 50), "Exit game", danger=True, fantasy=True)
+        menu_load_btn = Button((menu_box_rect.x+50, menu_box_rect.y+230, 300, 50), "Load Game", primary=True, fantasy=True)
+        settings_btn = Button((menu_box_rect.x+50, menu_box_rect.y+290, 300, 50), "Settings", fantasy=True)
+        menu_quit_btn = Button((menu_box_rect.x+50, menu_box_rect.y+350, 300, 50), "Exit game", danger=True, fantasy=True)
+        slot_menu_box_rect = pygame.Rect(W//2 - 260, H//2 - 230, 520, 500)
+        slot_buttons = [
+            Button((slot_menu_box_rect.x + 50, slot_menu_box_rect.y + 130 + i * 95, 420, 70), f"Slot {i+1}", primary=True, fantasy=True)
+            for i in range(MAX_SAVE_SLOTS)
+        ]
+        slot_back_btn = Button((slot_menu_box_rect.x + 160, slot_menu_box_rect.y + 430, 200, 45), "Back", warning=True, fantasy=True)
+        slot_menu_mode = "load"
+        slot_menu_return_mode = "menu"
         settings_box_rect = pygame.Rect(W//2 - 250, H//2 - 220, 500, 500)
         settings_music_dd = Dropdown((settings_box_rect.x + 190, settings_box_rect.y + 140, 220, 40), [("on", "On"), ("off", "Off")], fantasy=True)
         settings_music_slider = IntSlider((settings_box_rect.x + 190, settings_box_rect.y + 205, 220, 36), 0, 100, 70)
@@ -1259,10 +1334,16 @@ def safe_main():
         # Looping background video state for prophet_selection and deck screens
         def _open_loop_video(filename):
             path = os.path.join(VIDEOS_DIR, filename)
-            state = {"cap": None, "fps": 30.0, "frame_interval": 1.0/30.0, "accum": 0.0, "frame_surface": None, "path": path}
+            state = {"cap": None, "fps": 30.0, "frame_interval": 1.0/30.0, "accum": 0.0, "frame_surface": None, "path": path, "attempted_open": False}
+            return state
+
+        def _ensure_loop_video_open(state):
+            if state["cap"] is not None or state.get("attempted_open", False):
+                return
+            state["attempted_open"] = True
             try:
                 import cv2
-                cap = cv2.VideoCapture(path)
+                cap = cv2.VideoCapture(state["path"])
                 if cap.isOpened():
                     fps = cap.get(cv2.CAP_PROP_FPS)
                     if not fps or fps <= 1: fps = 30.0
@@ -1347,6 +1428,85 @@ def safe_main():
             game.long_rest()
             return "normal", 0
 
+        def _slot_path(slot_idx):
+            return os.path.join(SAVE_DIR, f"slot_{slot_idx}.json")
+
+        def _load_slot_payload(slot_idx):
+            p = _slot_path(slot_idx)
+            if not os.path.exists(p):
+                return None
+            try:
+                with open(p, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception as ex:
+                log_event(f"Failed to read save slot {slot_idx}: {ex}", True)
+                return None
+
+        def _slot_button_label(slot_idx):
+            payload = _load_slot_payload(slot_idx)
+            if not payload:
+                return f"Slot {slot_idx} - Empty"
+            saved_at = payload.get("saved_at", "Unknown time")
+            mode = payload.get("screen_mode", "normal")
+            lvl = payload.get("game", {}).get("level", 1)
+            day = payload.get("game", {}).get("days_passed", 0)
+            return f"Slot {slot_idx} - L{lvl} D{day} ({mode}) - {saved_at}"
+
+        def _refresh_slot_labels():
+            for i, b in enumerate(slot_buttons, start=1):
+                b.text = _slot_button_label(i)
+
+        def _build_save_payload():
+            return {
+                "version": 1,
+                "saved_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "screen_mode": screen_mode,
+                "scroll_y": scroll_y,
+                "history_overlay_open": history_overlay_open,
+                "history_scroll": history_scroll,
+                "top_menu_open": False,
+                "rest_menu_open": False,
+                "game": game.to_save_payload()
+            }
+
+        def _write_slot(slot_idx):
+            try:
+                os.makedirs(SAVE_DIR, exist_ok=True)
+                with open(_slot_path(slot_idx), "w", encoding="utf-8") as f:
+                    json.dump(_build_save_payload(), f, indent=2)
+                game.toast_msg = f"Saved to slot {slot_idx}"
+                game.toast_timer = TOAST_DURATION
+                return True
+            except Exception as ex:
+                log_event(f"Failed to save slot {slot_idx}: {ex}", True)
+                game.toast_msg = f"Save failed (slot {slot_idx})"
+                game.toast_timer = TOAST_DURATION
+                return False
+
+        def _read_slot(slot_idx):
+            nonlocal screen_mode, scroll_y, history_overlay_open, history_scroll, top_menu_open, rest_menu_open
+            payload = _load_slot_payload(slot_idx)
+            if not payload or "game" not in payload:
+                game.toast_msg = f"Slot {slot_idx} is empty."
+                game.toast_timer = TOAST_DURATION
+                return False
+            game.load_from_payload(payload["game"])
+            game.audio_enabled = audio_enabled
+            game.sfx_enabled = sfx_enabled
+            game.sfx_channel = Button.click_channel
+            draw_of_fate_slider.set_value(game.draw_of_fate_uses)
+            lvl_change_dd.selected_index = clamp(game.level - 1, 0, 19)
+            menu_lvl_dd.selected_index = clamp(game.level - 1, 0, 19)
+            screen_mode = payload.get("screen_mode", "normal")
+            scroll_y = payload.get("scroll_y", 0)
+            history_overlay_open = bool(payload.get("history_overlay_open", False))
+            history_scroll = int(payload.get("history_scroll", 0))
+            top_menu_open = False
+            rest_menu_open = False
+            game.toast_msg = f"Loaded slot {slot_idx}"
+            game.toast_timer = TOAST_DURATION
+            return True
+
         def get_draw_of_fate_rect():
             dt_box_w, dt_box_h = PANEL_W - 120, 90
             dt_box_x = PADDING + (PANEL_W - dt_box_w) // 2
@@ -1355,6 +1515,10 @@ def safe_main():
 
         while running:
             dt = clock.tick(FPS)/1000.0; m_pos = pygame.mouse.get_pos(); 
+            try:
+                pygame.event.set_grab(True)
+            except:
+                pass
             game.toast_timer = max(0.0, game.toast_timer - dt)
             game.shuffle_anim_timer = max(0.0, game.shuffle_anim_timer - dt)
             draw_of_fate_slider.rect = get_draw_of_fate_rect()
@@ -1386,8 +1550,15 @@ def safe_main():
                     surface = pygame.image.frombuffer(frame.tobytes(), (fw, fh), "RGB")
                     fool_video_state["frame_surface"] = surface.convert()
             
-            # Update looping background videos for prophet_selection and deck screens
-            for _bgv in (prophet_bg_video, deck_bg_video):
+            # Update looping background videos only when their screen is active
+            _active_loop_videos = []
+            if screen_mode == "prophet_selection":
+                _active_loop_videos = [prophet_bg_video]
+            elif screen_mode == "deck":
+                _active_loop_videos = [deck_bg_video]
+            for _bgv in _active_loop_videos:
+                if menu_videos_enabled:
+                    _ensure_loop_video_open(_bgv)
                 if menu_videos_enabled and _bgv["cap"] is not None:
                     _bgv["accum"] += dt
                     while _bgv["accum"] >= _bgv["frame_interval"]:
@@ -1479,10 +1650,28 @@ def safe_main():
                         game = Game(cards_raw); game.level = menu_lvl_dd.get_selected(); lvl_change_dd.selected_index = game.level - 1; game.hand_limit = game.get_base_limit(); game.draw_of_fate_uses = game.get_draw_of_fate_uses_by_level(); game.draw_of_fate_current = game.draw_of_fate_uses; draw_of_fate_slider.set_value(game.draw_of_fate_uses); game.audio_enabled = audio_enabled; game.sfx_enabled = sfx_enabled; game.sfx_channel = Button.click_channel
                         if game.level >= 17: total = game.long_rest(skip_draw=True); prophet_remaining_draws = total - 1; screen_mode, scroll_y = "prophet_selection", 0
                         else: game.long_rest(); screen_mode = "normal"
+                    if menu_load_btn.handle_event(e):
+                        slot_menu_mode = "load"
+                        slot_menu_return_mode = "menu"
+                        _refresh_slot_labels()
+                        screen_mode = "slot_menu"
                     if settings_btn.handle_event(e):
                         screen_mode = "settings"
                     if menu_quit_btn.handle_event(e): running = False
                 
+                elif screen_mode == "slot_menu":
+                    for _i, _btn in enumerate(slot_buttons, start=1):
+                        if _btn.handle_event(e):
+                            if slot_menu_mode == "save":
+                                _write_slot(_i)
+                                _refresh_slot_labels()
+                            else:
+                                if _read_slot(_i):
+                                    pass
+                            break
+                    if slot_back_btn.handle_event(e):
+                        screen_mode = slot_menu_return_mode
+
                 elif screen_mode == "settings":
                     if settings_music_dd.handle_event(e):
                         menu_music_enabled = (settings_music_dd.get_selected() == "on")
@@ -1720,12 +1909,24 @@ def safe_main():
                         _menu_item_h = 35
                         _menu_gap = 4
                         _menu_pad = 8
-                        _menu_count = 2
+                        _menu_count = 4
                         _menu_h = (_menu_pad * 2) + (_menu_count * _menu_item_h) + ((_menu_count - 1) * _menu_gap)
                         _menu_bg_x = hamburger_btn.rect.right - 160
                         _menu_bg_y = hamburger_btn.rect.bottom + 5
                         if quit_btn.handle_event(e): running = False
                         elif menu_btn.handle_event(e): screen_mode = "menu"; top_menu_open = False
+                        elif save_btn.handle_event(e):
+                            slot_menu_mode = "save"
+                            slot_menu_return_mode = "normal"
+                            _refresh_slot_labels()
+                            screen_mode = "slot_menu"
+                            top_menu_open = False
+                        elif load_btn.handle_event(e):
+                            slot_menu_mode = "load"
+                            slot_menu_return_mode = "normal"
+                            _refresh_slot_labels()
+                            screen_mode = "slot_menu"
+                            top_menu_open = False
                         elif e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                             _menu_area = pygame.Rect(_menu_bg_x, hamburger_btn.rect.y, 160, (_menu_bg_y - hamburger_btn.rect.y) + _menu_h)
                             if not _menu_area.collidepoint(e.pos): top_menu_open = False
@@ -1938,7 +2139,7 @@ def safe_main():
             # --- DRAWING ---
             screen.fill((10, 12, 18))
             # Play menu music in menu/settings if enabled
-            if screen_mode in ["menu", "settings"] and menu_music_enabled and audio_enabled:
+            if screen_mode in ["menu", "settings", "slot_menu"] and menu_music_enabled and audio_enabled:
                 try:
                     pygame.mixer.music.set_volume(menu_music_volume / 100.0)
                 except Exception:
@@ -1959,7 +2160,7 @@ def safe_main():
                 _vignette = pygame.Surface((W, H), pygame.SRCALPHA)
                 _vignette.fill((10, 6, 14, 95))
                 screen.blit(_vignette, (0, 0))
-                _frame_outer = pygame.Rect(menu_box_rect.x - 24, menu_box_rect.y - 26, 448, 404)
+                _frame_outer = menu_box_rect.inflate(48, 52)
                 _frame_mid = _frame_outer.inflate(-10, -10)
                 _frame_inner = menu_box_rect.copy()
                 draw_round_rect(screen, _frame_outer, (36, 20, 12, 215), 24)
@@ -1985,10 +2186,30 @@ def safe_main():
                 screen.blit(choose_lvl_surf, (choose_lvl_x, choose_lvl_y))
                 menu_lvl_dd.draw_base(screen, f_small)
                 start_game_btn.draw(screen, f_small, dt)
+                menu_load_btn.draw(screen, f_small, dt)
                 settings_btn.draw(screen, f_small, dt)
                 menu_quit_btn.draw(screen, f_small, dt)
                 menu_lvl_dd.draw_menu(screen, f_small)
-            
+
+            elif screen_mode == "slot_menu":
+                screen.blit(menu_bg, (0, 0))
+                _vignette = pygame.Surface((W, H), pygame.SRCALPHA)
+                _vignette.fill((10, 6, 14, 110))
+                screen.blit(_vignette, (0, 0))
+                _outer = slot_menu_box_rect.inflate(20, 24)
+                draw_round_rect(screen, _outer, (36, 20, 12, 220), 24)
+                pygame.draw.rect(screen, (120, 86, 42, 220), _outer, 3, 24)
+                draw_round_rect(screen, slot_menu_box_rect, (18, 14, 24, 230), 20)
+                pygame.draw.rect(screen, (235, 190, 60, 170), slot_menu_box_rect, 2, 20)
+                _title_txt = "SAVE SLOTS" if slot_menu_mode == "save" else "LOAD SLOTS"
+                _st = f_preview_title.render(_title_txt, True, GOLD)
+                screen.blit(_st, (slot_menu_box_rect.centerx - _st.get_width() // 2, slot_menu_box_rect.y + 20))
+                _hint = f_tiny.render("Select one of 3 slots", True, (205, 178, 126))
+                screen.blit(_hint, (slot_menu_box_rect.centerx - _hint.get_width() // 2, slot_menu_box_rect.y + 72))
+                for _b in slot_buttons:
+                    _b.draw(screen, f_tiny, dt)
+                slot_back_btn.draw(screen, f_small, dt)
+             
             elif screen_mode == "settings":
                 screen.blit(menu_bg, (0, 0))
                 _vignette = pygame.Surface((W, H), pygame.SRCALPHA)
@@ -2242,15 +2463,19 @@ def safe_main():
                     _menu_item_h = 35
                     _menu_gap = 4
                     _menu_pad = 8
-                    _menu_count = 2
+                    _menu_count = 4
                     _menu_h = (_menu_pad * 2) + (_menu_count * _menu_item_h) + ((_menu_count - 1) * _menu_gap)
                     _menu_bg = pygame.Rect(hamburger_btn.rect.right - 160, hamburger_btn.rect.bottom + 5, 160, _menu_h)
                     draw_round_rect(screen, _menu_bg, (18, 24, 38, 230), 10)
                     pygame.draw.rect(screen, (255, 255, 255, 40), _menu_bg, 1, 10)
                     _menu_item_w = _menu_bg.w - 20
                     menu_btn.rect = pygame.Rect(_menu_bg.x + 10, _menu_bg.y + _menu_pad, _menu_item_w, _menu_item_h)
-                    quit_btn.rect = pygame.Rect(_menu_bg.x + 10, menu_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
+                    save_btn.rect = pygame.Rect(_menu_bg.x + 10, menu_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
+                    load_btn.rect = pygame.Rect(_menu_bg.x + 10, save_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
+                    quit_btn.rect = pygame.Rect(_menu_bg.x + 10, load_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
                     menu_btn.draw(screen, f_tiny, dt)
+                    save_btn.draw(screen, f_tiny, dt)
+                    load_btn.draw(screen, f_tiny, dt)
                     quit_btn.draw(screen, f_tiny, dt)
                 rest_menu_btn.rect = pygame.Rect(_controls_x + _menu_sz + _btn_gap, _controls_y, _rest_sz, _rest_sz)
                 rest_menu_btn.draw(screen, f_tiny, dt)
