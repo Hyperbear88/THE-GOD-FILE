@@ -1,8 +1,10 @@
 {
   "menu_music_enabled": true,
-  "menu_music_volume": 70,
+  "menu_music_volume": 41,
   "audio_enabled": false,
   "sfx_enabled": true,
   "menu_videos_enabled": true,
-  "card_videos_enabled": true
+  "card_videos_enabled": true,
+  "autosave_enabled": true,
+  "autosave_interval_min": 5
 }

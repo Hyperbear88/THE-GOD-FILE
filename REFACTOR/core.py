@@ -90,7 +90,9 @@ def load_user_settings():
         "audio_enabled": True,
         "sfx_enabled": True,
         "menu_videos_enabled": True,
-        "card_videos_enabled": True
+        "card_videos_enabled": True,
+        "autosave_enabled": False,
+        "autosave_interval_min": 5,
     }
     try:
         if os.path.exists(SETTINGS_FILE):
@@ -106,6 +108,13 @@ def load_user_settings():
     defaults["sfx_enabled"] = bool(defaults.get("sfx_enabled", True))
     defaults["menu_videos_enabled"] = bool(defaults.get("menu_videos_enabled", True))
     defaults["card_videos_enabled"] = bool(defaults.get("card_videos_enabled", True))
+    defaults["autosave_enabled"] = bool(defaults.get("autosave_enabled", False))
+    _autosave_raw = defaults.get("autosave_interval_min", 5)
+    try:
+        _autosave_raw = int(_autosave_raw)
+    except Exception:
+        _autosave_raw = 5
+    defaults["autosave_interval_min"] = int(clamp(round(_autosave_raw / 5) * 5, 5, 30))
     return defaults
 
 def save_user_settings(settings):
@@ -178,6 +187,7 @@ VIDEOS_DIR = resource_path("videos")
 MENU_BG_IMAGE = "Teller_Room.png"
 NORMAL_BG_IMAGE = "BG_3.png"
 MAX_SAVE_SLOTS = 3
+MAX_AUTOSAVE_SLOTS = 10
 
 GOLD, RED_FIRE, ORANGE_FIRE, YELLOW_FIRE, PURPLE_TAP = (235, 190, 60), (220, 30, 30), (255, 120, 0), (255, 200, 0), (180, 50, 255)
 PINK_D20 = (255, 100, 220)
@@ -580,6 +590,7 @@ class Button:
                 surf.blit(img, self.rect.topleft)
             return
         if self.disabled: bg = (40, 40, 40)
+        elif self.fantasy and self.green: bg = (34, 102, 56)
         elif self.fantasy and self.pink: bg = (112, 44, 102)
         elif self.fantasy and self.cyan: bg = (32, 92, 112)
         elif self.fantasy and self.danger: bg = (110, 42, 36)
@@ -610,9 +621,11 @@ class Button:
         bc = (
             (236, 126, 194) if (self.pink and not self.disabled) else
             ((120, 232, 255) if (self.cyan and not self.disabled) else
+             ((120, 240, 150) if (self.green and not self.disabled) else
+              ((255, 126, 126) if (self.danger and not self.disabled) else
              (GOLD if (self.gold and not self.disabled) else
               (RED_FIRE if (self.fire and not self.disabled) else
-               ((80,80,80) if self.disabled else ((212, 168, 96) if self.fantasy else (255,255,255,40))))))
+               ((80,80,80) if self.disabled else ((212, 168, 96) if self.fantasy else (255,255,255,40))))))))
         )
         pygame.draw.rect(surf, bc, self.rect, 2, 12)
         txt_col = (100,100,100) if self.disabled else ((248, 231, 199) if self.fantasy else (245,245,255))

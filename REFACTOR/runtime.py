@@ -737,7 +737,9 @@ def safe_main():
         quit_btn = Button((W-160, PADDING + 45, 140, 35), "Exit game", danger=True)
         menu_btn = Button((W-160, PADDING + 85, 140, 35), "Main Menu", warning=True)
         save_btn = Button((W-160, PADDING + 125, 140, 35), "Save", primary=True)
+        save_as_btn = Button((W-160, PADDING + 145, 140, 35), "Save As", primary=True)
         load_btn = Button((W-160, PADDING + 165, 140, 35), "Load", primary=True)
+        normal_settings_btn = Button((W-160, PADDING + 185, 140, 35), "Options", primary=True)
         fortune_menu_btn = Button((W-160, PADDING + 205, 140, 35), "Fortune Setup", gold=True)
         history_btn = Button((W-240, H-810, 210, 210), "View History", primary=True, image=_img_history)
         hamburger_btn = Button((W-50, PADDING, 35, 35), "\u2630", image=_img_settings)
@@ -746,19 +748,22 @@ def safe_main():
         top_menu_open = False
         exit_view_btn = Button((PADDING, PADDING, 160, 45), "Exit View", primary=True)
         
-        menu_box_rect = pygame.Rect(W//2 - 200, H//2 - 110, 400, 500)
-        menu_lvl_dd = FantasyLevelStepper((menu_box_rect.x+50, menu_box_rect.y+100, 300, 50), 1, 20, 1)
-        start_game_btn = Button((menu_box_rect.x+50, menu_box_rect.y+170, 300, 50), "START GAME", primary=True, fantasy=True)
-        menu_load_btn = Button((menu_box_rect.x+50, menu_box_rect.y+230, 300, 50), "Load Game", primary=True, fantasy=True)
-        menu_fortune_btn = Button((menu_box_rect.x+50, menu_box_rect.y+290, 300, 50), "Fortune Setup", gold=True, fantasy=True)
-        settings_btn = Button((menu_box_rect.x+50, menu_box_rect.y+350, 300, 50), "Settings", fantasy=True)
-        menu_quit_btn = Button((menu_box_rect.x+50, menu_box_rect.y+410, 300, 50), "Exit game", danger=True, fantasy=True)
-        slot_menu_box_rect = pygame.Rect(W//2 - 260, H//2 - 230, 520, 500)
+        menu_box_rect = pygame.Rect(W//2 - 250, H//2 - 170, 500, 620)
+        menu_lvl_dd = FantasyLevelStepper((menu_box_rect.x+70, menu_box_rect.y+118, 360, 56), 1, 20, 1)
+        start_game_btn = Button((menu_box_rect.x+70, menu_box_rect.y+198, 360, 56), "START GAME", primary=True, fantasy=True)
+        menu_load_btn = Button((menu_box_rect.x+70, menu_box_rect.y+270, 360, 56), "Load Game", primary=True, fantasy=True)
+        menu_fortune_btn = Button((menu_box_rect.x+70, menu_box_rect.y+342, 360, 56), "Fortune Setup", gold=True, fantasy=True)
+        settings_btn = Button((menu_box_rect.x+70, menu_box_rect.y+414, 360, 56), "Settings", fantasy=True)
+        menu_quit_btn = Button((menu_box_rect.x+70, menu_box_rect.y+486, 360, 56), "Exit game", danger=True, fantasy=True)
+        slot_menu_box_rect = pygame.Rect(W//2 - 420, H//2 - 300, 840, 640)
         slot_buttons = [
-            Button((slot_menu_box_rect.x + 50, slot_menu_box_rect.y + 130 + i * 95, 420, 70), f"Slot {i+1}", primary=True, fantasy=True)
-            for i in range(MAX_SAVE_SLOTS)
+            Button((0, 0, 0, 0), f"Slot {i+1}", primary=True, fantasy=True)
+            for i in range(MAX_AUTOSAVE_SLOTS)
         ]
-        slot_back_btn = Button((slot_menu_box_rect.x + 160, slot_menu_box_rect.y + 430, 200, 45), "Back", warning=True, fantasy=True)
+        slot_load_file_btn = Button((slot_menu_box_rect.x + 60, slot_menu_box_rect.bottom - 82, 250, 50), "Load From File", primary=True, fantasy=True)
+        slot_autosave_dropdown = Dropdown((slot_menu_box_rect.right - 320, slot_menu_box_rect.y + 210, 230, 42), [(i, f"Autosave {i}") for i in range(1, MAX_AUTOSAVE_SLOTS + 1)], max_visible=7, fantasy=True)
+        slot_autosave_load_btn = Button((slot_menu_box_rect.right - 320, slot_menu_box_rect.y + 430, 230, 46), "Load Autosave", primary=True, fantasy=True)
+        slot_back_btn = Button((slot_menu_box_rect.right - 310, slot_menu_box_rect.bottom - 82, 250, 50), "Back", warning=True, fantasy=True)
         slot_menu_mode = "load"
         slot_menu_return_mode = "menu"
         confirm_dialog = None
@@ -786,21 +791,27 @@ def safe_main():
         f_fortune_small = pygame.font.SysFont("georgia", 18, bold=True)
         f_fortune_subtitle = pygame.font.SysFont("georgia", 20, bold=True)
         f_fortune_subtitle.set_underline(True)
-        settings_box_rect = pygame.Rect(W//2 - 250, H//2 - 220, 500, 500)
-        settings_music_dd = Dropdown((settings_box_rect.x + 190, settings_box_rect.y + 140, 220, 40), [("on", "On"), ("off", "Off")], fantasy=True)
-        settings_music_slider = IntSlider((settings_box_rect.x + 190, settings_box_rect.y + 205, 220, 36), 0, 100, 70)
-        settings_sound_btn = Button((settings_box_rect.x + 50, settings_box_rect.y + 285, 180, 45), "Audio: ON", primary=True, fantasy=True)
-        settings_fx_btn = Button((settings_box_rect.x + 270, settings_box_rect.y + 285, 180, 45), "FX: ON", primary=True, fantasy=True)
-        settings_menu_video_btn = Button((settings_box_rect.x + 50, settings_box_rect.y + 340, 180, 45), "Menu Vids: ON", primary=True, fantasy=True)
-        settings_card_video_btn = Button((settings_box_rect.x + 270, settings_box_rect.y + 340, 180, 45), "Card Videos: ON", primary=True, fantasy=True)
-        settings_back_btn = Button((settings_box_rect.x + 50, settings_box_rect.y + 415, 180, 50), "Main Menu", warning=True, fantasy=True)
-        settings_exit_btn = Button((settings_box_rect.x + 270, settings_box_rect.y + 415, 180, 50), "Exit Game", danger=True, fantasy=True)
+        settings_box_rect = pygame.Rect(W//2 - 330, H//2 - 290, 660, 680)
+        settings_music_dd = Dropdown((settings_box_rect.x + 260, settings_box_rect.y + 150, 250, 42), [("on", "On"), ("off", "Off")], fantasy=True)
+        settings_music_slider = IntSlider((settings_box_rect.x + 260, settings_box_rect.y + 220, 250, 36), 0, 100, 70)
+        settings_sound_btn = Button((settings_box_rect.x + 70, settings_box_rect.y + 310, 220, 48), "Audio: ON", primary=True, fantasy=True)
+        settings_fx_btn = Button((settings_box_rect.x + 360, settings_box_rect.y + 310, 220, 48), "FX: ON", primary=True, fantasy=True)
+        settings_menu_video_btn = Button((settings_box_rect.x + 70, settings_box_rect.y + 372, 220, 48), "Menu Vids: ON", primary=True, fantasy=True)
+        settings_card_video_btn = Button((settings_box_rect.x + 360, settings_box_rect.y + 372, 220, 48), "Card Videos: ON", primary=True, fantasy=True)
+        settings_autosave_btn = Button((settings_box_rect.x + 70, settings_box_rect.y + 462, 220, 48), "Autosave: OFF", primary=True, fantasy=True)
+        settings_autosave_minus_btn = Button((settings_box_rect.x + 360, settings_box_rect.y + 462, 56, 48), "<", warning=True, fantasy=True)
+        settings_autosave_plus_btn = Button((settings_box_rect.x + 522, settings_box_rect.y + 462, 56, 48), ">", warning=True, fantasy=True)
+        settings_back_btn = Button((settings_box_rect.x + 70, settings_box_rect.y + 580, 220, 48), "Main Menu", warning=True, fantasy=True)
+        settings_exit_btn = Button((settings_box_rect.x + 360, settings_box_rect.y + 580, 220, 48), "Exit Game", danger=True, fantasy=True)
+        settings_return_mode = "menu"
         menu_music_enabled = user_settings["menu_music_enabled"]
         menu_music_volume = user_settings["menu_music_volume"]
         audio_enabled = user_settings["audio_enabled"]
         sfx_enabled = user_settings["sfx_enabled"]
         menu_videos_enabled = user_settings["menu_videos_enabled"]
         card_videos_enabled = user_settings["card_videos_enabled"]
+        autosave_enabled = user_settings["autosave_enabled"]
+        autosave_interval_min = user_settings["autosave_interval_min"]
         settings_music_slider.set_value(menu_music_volume)
         settings_music_dd.selected_index = 0 if menu_music_enabled else 1
         game.audio_enabled = audio_enabled
@@ -845,6 +856,8 @@ def safe_main():
         history_sb_dragging = False
         grid_sb_dragging = False
         preview_sb_dragging = False  
+        autosave_last_time = time.time()
+        autosave_next_slot = 1
         fool_video_state = {
             "cap": None,
             "fps": 30.0,
@@ -952,6 +965,23 @@ def safe_main():
             if play_action and pending:
                 pending()
 
+        def _persist_settings():
+            save_user_settings({
+                "menu_music_enabled": menu_music_enabled,
+                "menu_music_volume": menu_music_volume,
+                "audio_enabled": audio_enabled,
+                "sfx_enabled": sfx_enabled,
+                "menu_videos_enabled": menu_videos_enabled,
+                "card_videos_enabled": card_videos_enabled,
+                "autosave_enabled": autosave_enabled,
+                "autosave_interval_min": autosave_interval_min,
+            })
+
+        def _open_settings(return_mode):
+            nonlocal screen_mode, settings_return_mode
+            settings_return_mode = return_mode
+            screen_mode = "settings"
+
         def apply_level_reset(new_level):
             game.level = new_level
             game.normalize_fortune_loadouts()
@@ -966,16 +996,24 @@ def safe_main():
         def _slot_path(slot_idx):
             return os.path.join(SAVE_DIR, f"slot_{slot_idx}.json")
 
-        def _load_slot_payload(slot_idx):
-            p = _slot_path(slot_idx)
-            if not os.path.exists(p):
+        def _autosave_path(slot_idx):
+            return os.path.join(SAVE_DIR, f"autosave_{slot_idx}.json")
+
+        def _load_payload_from_path(path):
+            if not path or not os.path.exists(path):
                 return None
             try:
-                with open(p, "r", encoding="utf-8") as f:
+                with open(path, "r", encoding="utf-8") as f:
                     return json.load(f)
             except Exception as ex:
-                log_event(f"Failed to read save slot {slot_idx}: {ex}", True)
+                log_event(f"Failed to read payload {path}: {ex}", True)
                 return None
+
+        def _load_slot_payload(slot_idx):
+            return _load_payload_from_path(_slot_path(slot_idx))
+
+        def _load_autosave_payload(slot_idx):
+            return _load_payload_from_path(_autosave_path(slot_idx))
 
         def _slot_button_label(slot_idx):
             payload = _load_slot_payload(slot_idx)
@@ -989,7 +1027,48 @@ def safe_main():
 
         def _refresh_slot_labels():
             for i, b in enumerate(slot_buttons, start=1):
-                b.text = _slot_button_label(i)
+                b.text = _slot_button_label(i) if i <= MAX_SAVE_SLOTS else ""
+            _auto_items = []
+            for _i in range(1, MAX_AUTOSAVE_SLOTS + 1):
+                _p = _load_autosave_payload(_i)
+                if _p:
+                    _saved_at = _p.get("saved_at", "Unknown")
+                    _lvl = _p.get("game", {}).get("level", 1)
+                    _day = _p.get("game", {}).get("days_passed", 0)
+                    _label = f"Auto {_i} - L{_lvl} D{_day} - {_saved_at}"
+                else:
+                    _label = f"Auto {_i} - Empty"
+                _auto_items.append((_i, _label))
+            slot_autosave_dropdown.items = _auto_items
+            slot_autosave_dropdown.selected_index = clamp(slot_autosave_dropdown.selected_index, 0, max(0, len(_auto_items) - 1))
+
+        def _layout_slot_buttons():
+            _count = MAX_SAVE_SLOTS
+            if slot_menu_mode == "load":
+                _cols = 1
+                _bw = 430
+                _bh = 86
+                _gap_x = 0
+                _gap_y = 24
+                _start_x = slot_menu_box_rect.x + 60
+                _start_y = slot_menu_box_rect.y + 182
+            else:
+                _cols = 1
+                _bw = 720
+                _bh = 82
+                _gap_x = 0
+                _gap_y = 22
+                _start_x = slot_menu_box_rect.x + 60
+                _start_y = slot_menu_box_rect.y + 182
+            for _idx, _btn in enumerate(slot_buttons, start=1):
+                if _idx > _count:
+                    _btn.rect = pygame.Rect(0, 0, 0, 0)
+                    continue
+                _col = (_idx - 1) % _cols
+                _row = (_idx - 1) // _cols
+                _x = _start_x + _col * (_bw + _gap_x)
+                _y = _start_y + _row * (_bh + _gap_y)
+                _btn.rect = pygame.Rect(_x, _y, _bw, _bh)
 
         def _slot_has_data(slot_idx):
             return _load_slot_payload(slot_idx) is not None
@@ -1021,11 +1100,98 @@ def safe_main():
                 game.toast_timer = TOAST_DURATION
                 return False
 
-        def _read_slot(slot_idx):
-            nonlocal screen_mode, scroll_y, history_overlay_open, history_scroll, top_menu_open, rest_menu_open
-            payload = _load_slot_payload(slot_idx)
+        def _write_autosave(slot_idx):
+            try:
+                os.makedirs(SAVE_DIR, exist_ok=True)
+                _payload = _build_save_payload()
+                _payload["save_kind"] = "autosave"
+                with open(_autosave_path(slot_idx), "w", encoding="utf-8") as f:
+                    json.dump(_payload, f, indent=2)
+                return True
+            except Exception as ex:
+                log_event(f"Failed to write autosave slot {slot_idx}: {ex}", True)
+                return False
+
+        def _write_save_as_dialog():
+            try:
+                try:
+                    pygame.event.set_grab(False)
+                except Exception:
+                    pass
+                import tkinter as _tk
+                from tkinter import filedialog as _fd
+                _root = _tk.Tk()
+                _root.withdraw()
+                _root.attributes("-topmost", True)
+                _default_name = f"tarot_save_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                _path = _fd.asksaveasfilename(
+                    title="Save As",
+                    defaultextension=".json",
+                    initialdir=SAVE_DIR,
+                    initialfile=_default_name,
+                    filetypes=[("JSON Save Files", "*.json"), ("All Files", "*.*")],
+                )
+                try:
+                    _root.destroy()
+                except Exception:
+                    pass
+                if not _path:
+                    return False
+                _dir = os.path.dirname(_path)
+                if _dir:
+                    os.makedirs(_dir, exist_ok=True)
+                with open(_path, "w", encoding="utf-8") as f:
+                    json.dump(_build_save_payload(), f, indent=2)
+                game.toast_msg = f"Saved to {os.path.basename(_path)}"
+                game.toast_timer = TOAST_DURATION
+                return True
+            except Exception as ex:
+                log_event(f"Failed to save via Save As dialog: {ex}", True)
+                game.toast_msg = "Save As failed."
+                game.toast_timer = TOAST_DURATION
+                return False
+            finally:
+                try:
+                    pygame.event.set_grab(True)
+                except Exception:
+                    pass
+
+        def _read_payload_from_dialog():
+            try:
+                try:
+                    pygame.event.set_grab(False)
+                except Exception:
+                    pass
+                import tkinter as _tk
+                from tkinter import filedialog as _fd
+                _root = _tk.Tk()
+                _root.withdraw()
+                _root.attributes("-topmost", True)
+                _path = _fd.askopenfilename(
+                    title="Load Save File",
+                    initialdir=SAVE_DIR,
+                    filetypes=[("JSON Save Files", "*.json"), ("All Files", "*.*")],
+                )
+                try:
+                    _root.destroy()
+                except Exception:
+                    pass
+                return _path or None
+            except Exception as ex:
+                log_event(f"Failed to open load dialog: {ex}", True)
+                game.toast_msg = "Load dialog failed."
+                game.toast_timer = TOAST_DURATION
+                return None
+            finally:
+                try:
+                    pygame.event.set_grab(True)
+                except Exception:
+                    pass
+
+        def _apply_loaded_payload(payload, loaded_label="save file"):
+            nonlocal screen_mode, scroll_y, history_overlay_open, history_scroll, top_menu_open, rest_menu_open, autosave_last_time
             if not payload or "game" not in payload:
-                game.toast_msg = f"Slot {slot_idx} is empty."
+                game.toast_msg = "Selected file is not a valid save."
                 game.toast_timer = TOAST_DURATION
                 return False
             game.load_from_payload(payload["game"])
@@ -1041,9 +1207,18 @@ def safe_main():
             history_scroll = int(payload.get("history_scroll", 0))
             top_menu_open = False
             rest_menu_open = False
-            game.toast_msg = f"Loaded slot {slot_idx}"
+            autosave_last_time = time.time()
+            game.toast_msg = f"Loaded {loaded_label}"
             game.toast_timer = TOAST_DURATION
             return True
+
+        def _read_slot(slot_idx):
+            payload = _load_slot_payload(slot_idx)
+            if not payload or "game" not in payload:
+                game.toast_msg = f"Slot {slot_idx} is empty."
+                game.toast_timer = TOAST_DURATION
+                return False
+            return _apply_loaded_payload(payload, f"slot {slot_idx}")
 
         game.normalize_fortune_loadouts()
         fortune_setup_return_mode = "menu"
@@ -1310,6 +1485,13 @@ def safe_main():
                 pass
             game.toast_timer = max(0.0, game.toast_timer - dt)
             game.shuffle_anim_timer = max(0.0, game.shuffle_anim_timer - dt)
+            if autosave_enabled and screen_mode not in ("menu", "settings", "slot_menu", "fool_video"):
+                _autosave_interval_s = autosave_interval_min * 60
+                if (time.time() - autosave_last_time) >= _autosave_interval_s:
+                    if _write_autosave(autosave_next_slot):
+                        log_event(f"Autosaved to slot {autosave_next_slot}.")
+                        autosave_next_slot = (autosave_next_slot % MAX_AUTOSAVE_SLOTS) + 1
+                    autosave_last_time = time.time()
             draw_of_fate_slider.rect = get_draw_of_fate_rect()
             fate_r = get_draw_of_fate_rect()
             half_w = (fate_r.w - 10) // 2
@@ -1447,6 +1629,12 @@ def safe_main():
                         else:
                             screen_mode = "normal"
                         continue
+                    if screen_mode == "settings":
+                        screen_mode = settings_return_mode
+                        continue
+                    if screen_mode == "slot_menu":
+                        screen_mode = slot_menu_return_mode
+                        continue
                     if screen_mode in ("fortune_spell_list_view", "fortune_glossary_view"):
                         screen_mode = "fortune_setup"
                         continue
@@ -1491,15 +1679,20 @@ def safe_main():
                         slot_menu_mode = "load"
                         slot_menu_return_mode = "menu"
                         _refresh_slot_labels()
+                        _layout_slot_buttons()
                         screen_mode = "slot_menu"
                     if settings_btn.handle_event(e):
-                        screen_mode = "settings"
+                        _open_settings("menu")
                     if menu_fortune_btn.handle_event(e):
                         _open_fortune_setup("menu")
                     if menu_quit_btn.handle_event(e): running = False
                 
                 elif screen_mode == "slot_menu":
+                    if slot_menu_mode == "load":
+                        slot_autosave_dropdown.handle_event(e)
                     for _i, _btn in enumerate(slot_buttons, start=1):
+                        if _btn.rect.w <= 0:
+                            continue
                         if _btn.handle_event(e):
                             if slot_menu_mode == "save":
                                 def _do_slot_save(_slot_idx=_i):
@@ -1517,16 +1710,31 @@ def safe_main():
                                 if _read_slot(_i):
                                     pass
                             break
+                    if slot_menu_mode == "load" and slot_load_file_btn.handle_event(e):
+                        _path = _read_payload_from_dialog()
+                        if _path:
+                            _payload = _load_payload_from_path(_path)
+                            if _apply_loaded_payload(_payload, os.path.basename(_path)):
+                                screen_mode = "normal"
+                    if slot_menu_mode == "load" and slot_autosave_load_btn.handle_event(e):
+                        _auto_idx = slot_autosave_dropdown.get_selected()
+                        _payload = _load_autosave_payload(_auto_idx)
+                        if _payload:
+                            if _apply_loaded_payload(_payload, f"autosave {_auto_idx}"):
+                                screen_mode = "normal"
+                        else:
+                            game.toast_msg = f"Autosave {_auto_idx} is empty."
+                            game.toast_timer = TOAST_DURATION
                     if slot_back_btn.handle_event(e):
                         screen_mode = slot_menu_return_mode
 
                 elif screen_mode == "settings":
                     if settings_music_dd.handle_event(e):
                         menu_music_enabled = (settings_music_dd.get_selected() == "on")
-                        save_user_settings({"menu_music_enabled": menu_music_enabled, "menu_music_volume": menu_music_volume, "audio_enabled": audio_enabled, "sfx_enabled": sfx_enabled, "menu_videos_enabled": menu_videos_enabled, "card_videos_enabled": card_videos_enabled})
+                        _persist_settings()
                     if settings_music_slider.handle_event(e):
                         menu_music_volume = settings_music_slider.value
-                        save_user_settings({"menu_music_enabled": menu_music_enabled, "menu_music_volume": menu_music_volume, "audio_enabled": audio_enabled, "sfx_enabled": sfx_enabled, "menu_videos_enabled": menu_videos_enabled, "card_videos_enabled": card_videos_enabled})
+                        _persist_settings()
                     if settings_sound_btn.handle_event(e):
                         audio_enabled = not audio_enabled
                         game.audio_enabled = audio_enabled
@@ -1536,22 +1744,34 @@ def safe_main():
                                 pygame.mixer.music.stop()
                             except Exception:
                                 pass
-                        save_user_settings({"menu_music_enabled": menu_music_enabled, "menu_music_volume": menu_music_volume, "audio_enabled": audio_enabled, "sfx_enabled": sfx_enabled, "menu_videos_enabled": menu_videos_enabled, "card_videos_enabled": card_videos_enabled})
+                        _persist_settings()
                     if settings_fx_btn.handle_event(e):
                         sfx_enabled = not sfx_enabled
                         game.sfx_enabled = sfx_enabled
                         Button.sfx_enabled = sfx_enabled
-                        save_user_settings({"menu_music_enabled": menu_music_enabled, "menu_music_volume": menu_music_volume, "audio_enabled": audio_enabled, "sfx_enabled": sfx_enabled, "menu_videos_enabled": menu_videos_enabled, "card_videos_enabled": card_videos_enabled})
+                        _persist_settings()
                     if settings_menu_video_btn.handle_event(e):
                         menu_videos_enabled = not menu_videos_enabled
-                        save_user_settings({"menu_music_enabled": menu_music_enabled, "menu_music_volume": menu_music_volume, "audio_enabled": audio_enabled, "sfx_enabled": sfx_enabled, "menu_videos_enabled": menu_videos_enabled, "card_videos_enabled": card_videos_enabled})
+                        _persist_settings()
                     if settings_card_video_btn.handle_event(e):
                         card_videos_enabled = not card_videos_enabled
                         if not card_videos_enabled and screen_mode == "fool_video" and fool_video_state["cap"] is not None:
                             stop_card_video(play_action=True)
-                        save_user_settings({"menu_music_enabled": menu_music_enabled, "menu_music_volume": menu_music_volume, "audio_enabled": audio_enabled, "sfx_enabled": sfx_enabled, "menu_videos_enabled": menu_videos_enabled, "card_videos_enabled": card_videos_enabled})
+                        _persist_settings()
+                    if settings_autosave_btn.handle_event(e):
+                        autosave_enabled = not autosave_enabled
+                        autosave_last_time = time.time()
+                        _persist_settings()
+                    if settings_autosave_minus_btn.handle_event(e):
+                        autosave_interval_min = max(5, autosave_interval_min - 5)
+                        autosave_last_time = time.time()
+                        _persist_settings()
+                    if settings_autosave_plus_btn.handle_event(e):
+                        autosave_interval_min = min(30, autosave_interval_min + 5)
+                        autosave_last_time = time.time()
+                        _persist_settings()
                     if settings_back_btn.handle_event(e):
-                        screen_mode = "menu"
+                        screen_mode = settings_return_mode
                     if settings_exit_btn.handle_event(e):
                         running = False
 
@@ -1964,7 +2184,7 @@ def safe_main():
                         _menu_item_h = 35
                         _menu_gap = 4
                         _menu_pad = 8
-                        _menu_count = 5
+                        _menu_count = 7
                         _menu_h = (_menu_pad * 2) + (_menu_count * _menu_item_h) + ((_menu_count - 1) * _menu_gap)
                         _menu_bg_x = hamburger_btn.rect.right - 160
                         _menu_bg_y = hamburger_btn.rect.bottom + 5
@@ -1974,13 +2194,21 @@ def safe_main():
                             slot_menu_mode = "save"
                             slot_menu_return_mode = "normal"
                             _refresh_slot_labels()
+                            _layout_slot_buttons()
                             screen_mode = "slot_menu"
+                            top_menu_open = False
+                        elif save_as_btn.handle_event(e):
+                            _write_save_as_dialog()
                             top_menu_open = False
                         elif load_btn.handle_event(e):
                             slot_menu_mode = "load"
                             slot_menu_return_mode = "normal"
                             _refresh_slot_labels()
+                            _layout_slot_buttons()
                             screen_mode = "slot_menu"
+                            top_menu_open = False
+                        elif normal_settings_btn.handle_event(e):
+                            _open_settings("normal")
                             top_menu_open = False
                         elif fortune_menu_btn.handle_event(e):
                             _open_fortune_setup("normal")
@@ -2277,10 +2505,33 @@ def safe_main():
                 _title_txt = "SAVE SLOTS" if slot_menu_mode == "save" else "LOAD SLOTS"
                 _st = f_preview_title.render(_title_txt, True, GOLD)
                 screen.blit(_st, (slot_menu_box_rect.centerx - _st.get_width() // 2, slot_menu_box_rect.y + 20))
-                _hint = f_tiny.render("Select one of 3 slots", True, (205, 178, 126))
+                _hint_txt = "Choose a save slot" if slot_menu_mode == "save" else "Choose a save slot, autosave, or file"
+                _hint = f_tiny.render(_hint_txt, True, (205, 178, 126))
                 screen.blit(_hint, (slot_menu_box_rect.centerx - _hint.get_width() // 2, slot_menu_box_rect.y + 72))
+                _layout_slot_buttons()
+                if slot_menu_mode == "load":
+                    _left_panel = pygame.Rect(slot_menu_box_rect.x + 42, slot_menu_box_rect.y + 120, 490, 416)
+                    draw_round_rect(screen, _left_panel, (20, 18, 30, 120), 12)
+                    pygame.draw.rect(screen, (235, 190, 60, 60), _left_panel, 1, 12)
+                    _manual_hdr = f_small.render("Manual Slots", True, (236, 214, 170))
+                    screen.blit(_manual_hdr, (_left_panel.x + 16, _left_panel.y + 12))
+                    _auto_panel = pygame.Rect(slot_menu_box_rect.right - 350, slot_menu_box_rect.y + 120, 280, 382)
+                    draw_round_rect(screen, _auto_panel, (20, 18, 30, 220), 12)
+                    pygame.draw.rect(screen, (235, 190, 60, 120), _auto_panel, 1, 12)
+                    _auto_hdr = f_small.render("Autosaves", True, (236, 214, 170))
+                    screen.blit(_auto_hdr, (_auto_panel.centerx - _auto_hdr.get_width() // 2, _auto_panel.y + 12))
+                    _auto_hint = f_tiny.render("Scroll dropdown list", True, (205, 178, 126))
+                    screen.blit(_auto_hint, (_auto_panel.centerx - _auto_hint.get_width() // 2, _auto_panel.y + 42))
+                    _auto_hint2 = f_tiny.render("Select an autosave to load", True, (205, 178, 126))
+                    screen.blit(_auto_hint2, (_auto_panel.centerx - _auto_hint2.get_width() // 2, _auto_panel.y + 60))
+                    slot_autosave_dropdown.draw_base(screen, f_tiny)
+                    slot_autosave_load_btn.draw(screen, f_tiny, dt)
                 for _b in slot_buttons:
-                    _b.draw(screen, f_tiny, dt)
+                    if _b.rect.w > 0:
+                        _b.draw(screen, f_tiny, dt)
+                if slot_menu_mode == "load":
+                    slot_autosave_dropdown.draw_menu(screen, f_tiny)
+                    slot_load_file_btn.draw(screen, f_tiny, dt)
                 slot_back_btn.draw(screen, f_small, dt)
              
             elif screen_mode == "settings":
@@ -2295,26 +2546,54 @@ def safe_main():
                 pygame.draw.rect(screen, (235, 190, 60, 170), settings_box_rect, 2, 20)
                 _st = f_preview_title.render("SETTINGS", True, GOLD)
                 screen.blit(_st, (settings_box_rect.centerx - _st.get_width() // 2, settings_box_rect.y + 22))
-                _hint = f_tiny.render("Press Escape to return to Main Menu", True, (205, 178, 126))
+                _hint = f_tiny.render(f"Press Escape to return to {'Normal View' if settings_return_mode == 'normal' else 'Main Menu'}", True, (205, 178, 126))
                 screen.blit(_hint, (settings_box_rect.centerx - _hint.get_width() // 2, settings_box_rect.y + 78))
 
                 _lbl1 = f_small.render("Menu Music", True, (232, 215, 176))
                 _lbl2 = f_small.render("Music Volume", True, (232, 215, 176))
                 _lbl3 = f_small.render("Global Toggles", True, (232, 215, 176))
-                screen.blit(_lbl1, (settings_box_rect.x + 70, settings_box_rect.y + 146))
-                screen.blit(_lbl2, (settings_box_rect.x + 70, settings_box_rect.y + 210))
-                screen.blit(_lbl3, (settings_box_rect.x + 70, settings_box_rect.y + 250))
+                _lbl4 = f_small.render("Autosave", True, (232, 215, 176))
+                screen.blit(_lbl1, (settings_box_rect.x + 80, settings_box_rect.y + 154))
+                screen.blit(_lbl2, (settings_box_rect.x + 80, settings_box_rect.y + 222))
+                screen.blit(_lbl4, (settings_box_rect.x + 80, settings_box_rect.y + 470))
+
+                _toggle_panel = pygame.Rect(settings_box_rect.x + 52, settings_box_rect.y + 258, settings_box_rect.w - 104, 310)
+                draw_round_rect(screen, _toggle_panel, (20, 18, 30, 160), 14)
+                pygame.draw.rect(screen, (235, 190, 60, 80), _toggle_panel, 1, 14)
+                screen.blit(_lbl3, (_toggle_panel.centerx - _lbl3.get_width() // 2, _toggle_panel.y + 8))
 
                 settings_music_dd.draw_base(screen, f_small)
                 settings_music_slider.draw(screen, f_tiny)
                 settings_sound_btn.text = f"Audio: {'ON' if audio_enabled else 'OFF'}"
-                settings_fx_btn.text = f"FX: {'ON' if sfx_enabled else 'OFF'}"
+                settings_fx_btn.text = f"Sound FX: {'ON' if sfx_enabled else 'OFF'}"
                 settings_menu_video_btn.text = f"Menu Vids: {'ON' if menu_videos_enabled else 'PAUSED'}"
                 settings_card_video_btn.text = f"Card Videos: {'ON' if card_videos_enabled else 'OFF'}"
+                settings_autosave_btn.text = f"Autosave: {'ON' if autosave_enabled else 'OFF'}"
+                settings_back_btn.text = "Back" if settings_return_mode == "normal" else "Main Menu"
+                for _btn, _state in [
+                    (settings_sound_btn, audio_enabled),
+                    (settings_fx_btn, sfx_enabled),
+                    (settings_menu_video_btn, menu_videos_enabled),
+                    (settings_card_video_btn, card_videos_enabled),
+                    (settings_autosave_btn, autosave_enabled),
+                ]:
+                    _btn.green = bool(_state)
+                    _btn.danger = not bool(_state)
+                    _btn.primary = False
                 settings_sound_btn.draw(screen, f_small, dt)
                 settings_fx_btn.draw(screen, f_small, dt)
                 settings_menu_video_btn.draw(screen, f_tiny, dt)
                 settings_card_video_btn.draw(screen, f_small, dt)
+                settings_autosave_btn.draw(screen, f_small, dt)
+                settings_autosave_minus_btn.draw(screen, f_small, dt)
+                _auto_box = pygame.Rect(settings_autosave_minus_btn.rect.right + 16, settings_autosave_minus_btn.rect.y + 7, 72, 34)
+                draw_round_rect(screen, _auto_box, (20, 18, 30, 220), 8)
+                pygame.draw.rect(screen, (235, 190, 60, 130), _auto_box, 1, 8)
+                _auto_txt = f_small.render(f"{autosave_interval_min}m", True, (236, 218, 182))
+                screen.blit(_auto_txt, (_auto_box.centerx - _auto_txt.get_width() // 2, _auto_box.centery - _auto_txt.get_height() // 2))
+                _lbl5 = f_small.render("Autosave Interval", True, (232, 215, 176))
+                screen.blit(_lbl5, (_auto_box.centerx - _lbl5.get_width() // 2, _auto_box.bottom + 10))
+                settings_autosave_plus_btn.draw(screen, f_small, dt)
                 settings_back_btn.draw(screen, f_small, dt)
                 settings_exit_btn.draw(screen, f_small, dt)
                 settings_music_dd.draw_menu(screen, f_small)
@@ -2855,7 +3134,7 @@ def safe_main():
                     _menu_item_h = 35
                     _menu_gap = 4
                     _menu_pad = 8
-                    _menu_count = 5
+                    _menu_count = 7
                     _menu_h = (_menu_pad * 2) + (_menu_count * _menu_item_h) + ((_menu_count - 1) * _menu_gap)
                     _menu_bg = pygame.Rect(hamburger_btn.rect.right - 160, hamburger_btn.rect.bottom + 5, 160, _menu_h)
                     draw_round_rect(screen, _menu_bg, (18, 24, 38, 230), 10)
@@ -2863,12 +3142,16 @@ def safe_main():
                     _menu_item_w = _menu_bg.w - 20
                     menu_btn.rect = pygame.Rect(_menu_bg.x + 10, _menu_bg.y + _menu_pad, _menu_item_w, _menu_item_h)
                     save_btn.rect = pygame.Rect(_menu_bg.x + 10, menu_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
-                    load_btn.rect = pygame.Rect(_menu_bg.x + 10, save_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
-                    fortune_menu_btn.rect = pygame.Rect(_menu_bg.x + 10, load_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
+                    save_as_btn.rect = pygame.Rect(_menu_bg.x + 10, save_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
+                    load_btn.rect = pygame.Rect(_menu_bg.x + 10, save_as_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
+                    normal_settings_btn.rect = pygame.Rect(_menu_bg.x + 10, load_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
+                    fortune_menu_btn.rect = pygame.Rect(_menu_bg.x + 10, normal_settings_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
                     quit_btn.rect = pygame.Rect(_menu_bg.x + 10, fortune_menu_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
                     menu_btn.draw(screen, f_tiny, dt)
                     save_btn.draw(screen, f_tiny, dt)
+                    save_as_btn.draw(screen, f_tiny, dt)
                     load_btn.draw(screen, f_tiny, dt)
+                    normal_settings_btn.draw(screen, f_tiny, dt)
                     fortune_menu_btn.draw(screen, f_tiny, dt)
                     quit_btn.draw(screen, f_tiny, dt)
                 rest_menu_btn.rect = pygame.Rect(_controls_x + _menu_sz + _btn_gap, _controls_y, _rest_sz, _rest_sz)
