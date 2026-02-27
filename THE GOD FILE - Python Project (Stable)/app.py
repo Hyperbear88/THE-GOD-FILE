@@ -120,6 +120,12 @@ GOLD, RED_FIRE, ORANGE_FIRE, YELLOW_FIRE, PURPLE_TAP = (235, 190, 60), (220, 30,
 PINK_D20 = (255, 100, 220)
 PURPLE_FIRE = (180, 50, 255)
 MAJOR_FORTUNE_IDS = [13, 16, 20]
+FORTUNE_UNLOCKS = {
+    6: [2, 3, 5, 6, 7, 10, 11],
+    9: [1, 4, 8, 9, 12, 14, 15, 17],
+    13: [18, 19],
+}
+MAJOR_UNLOCKS_17 = [13, 16, 20]
 
 # ----------------------------
 # 3. HELPER FUNCTIONS
@@ -593,6 +599,138 @@ class Dropdown:
             bw, bh = 4, visible_count * self.item_h; pygame.draw.rect(surf, (220, 185, 120, 40) if self.fantasy else (255, 255, 255, 20), (menu_rect.right - bw - 2, menu_rect.y, bw, bh)); pygame.draw.rect(surf, (214, 172, 98, 220) if self.fantasy else (100, 160, 255, 200), (menu_rect.right - bw - 2, menu_rect.y + int(bh * (self.scroll_offset / len(self.items))), bw, int(bh * (self.max_visible / len(self.items)))))
     def get_selected(self): return self.items[clamp(self.selected_index, 0, len(self.items)-1)][0] if self.items else 1
 
+class FantasyLevelStepper:
+    def __init__(self, rect, min_value=1, max_value=20, value=1):
+        self.rect = pygame.Rect(rect)
+        self.min_value = int(min_value)
+        self.max_value = int(max_value)
+        self.value = int(clamp(value, self.min_value, self.max_value))
+        self.selected_index = self.value - self.min_value
+        self.left_rect = pygame.Rect(0, 0, 0, 0)
+        self.right_rect = pygame.Rect(0, 0, 0, 0)
+        self.center_rect = pygame.Rect(0, 0, 0, 0)
+        self.editing = False
+        self.input_buffer = str(self.value)
+        self._sync_layout()
+
+    def _sync_layout(self):
+        h = self.rect.h
+        btn_w = max(42, int(h * 0.95))
+        self.left_rect = pygame.Rect(self.rect.x + 6, self.rect.y + (h - (h - 8)) // 2, btn_w, h - 8)
+        self.right_rect = pygame.Rect(self.rect.right - btn_w - 6, self.rect.y + (h - (h - 8)) // 2, btn_w, h - 8)
+        self.center_rect = pygame.Rect(self.left_rect.right + 8, self.rect.y + 4, self.right_rect.left - self.left_rect.right - 16, h - 8)
+
+    def set_value(self, value):
+        self.value = int(clamp(value, self.min_value, self.max_value))
+        self.selected_index = self.value - self.min_value
+        if not self.editing:
+            self.input_buffer = str(self.value)
+
+    def get_selected(self):
+        return self.value
+
+    def _play_click(self):
+        if Button.sfx_enabled and Button.click_sound is not None:
+            try:
+                if Button.click_channel is not None:
+                    if not Button.click_channel.get_busy():
+                        Button.click_channel.play(Button.click_sound)
+                else:
+                    Button.click_sound.play()
+            except Exception:
+                pass
+
+    def handle_event(self, e):
+        self._sync_layout()
+        changed = False
+        if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+            if self.left_rect.collidepoint(e.pos):
+                old = self.value
+                self.set_value(self.value - 1)
+                changed = (self.value != old)
+                self.editing = False
+            elif self.right_rect.collidepoint(e.pos):
+                old = self.value
+                self.set_value(self.value + 1)
+                changed = (self.value != old)
+                self.editing = False
+            elif self.center_rect.collidepoint(e.pos):
+                self.editing = True
+                self.input_buffer = str(self.value)
+            else:
+                if self.editing:
+                    try:
+                        old = self.value
+                        self.set_value(int(self.input_buffer))
+                        changed = (self.value != old)
+                    except Exception:
+                        self.input_buffer = str(self.value)
+                self.editing = False
+        elif e.type == pygame.MOUSEWHEEL and self.rect.collidepoint(pygame.mouse.get_pos()):
+            old = self.value
+            self.set_value(self.value + e.y)
+            changed = (self.value != old)
+            self.editing = False
+        elif e.type == pygame.KEYDOWN and self.editing:
+            if e.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                try:
+                    old = self.value
+                    self.set_value(int(self.input_buffer))
+                    changed = (self.value != old)
+                except Exception:
+                    self.input_buffer = str(self.value)
+                self.editing = False
+            elif e.key == pygame.K_ESCAPE:
+                self.editing = False
+                self.input_buffer = str(self.value)
+            elif e.key == pygame.K_BACKSPACE:
+                self.input_buffer = self.input_buffer[:-1]
+                if self.input_buffer == "":
+                    self.input_buffer = ""
+            else:
+                if e.unicode.isdigit():
+                    if len(self.input_buffer) < 2:
+                        self.input_buffer += e.unicode
+                    else:
+                        self.input_buffer = self.input_buffer[1:] + e.unicode
+        if changed:
+            self._play_click()
+        return changed
+
+    def draw_base(self, surf, font):
+        self._sync_layout()
+        draw_round_rect(surf, self.rect, (43, 28, 18, 225), 14)
+        pygame.draw.rect(surf, (120, 86, 42, 230), self.rect, 3, 14)
+        inner = self.rect.inflate(-8, -8)
+        draw_round_rect(surf, inner, (18, 14, 24, 225), 12)
+        pygame.draw.rect(surf, (212, 168, 96, 190), inner, 1, 12)
+
+        for r, direction in [(self.left_rect, "left"), (self.right_rect, "right")]:
+            hov = r.collidepoint(pygame.mouse.get_pos())
+            draw_round_rect(surf, r, (85, 60, 34, 235) if hov else (66, 46, 28, 235), 10)
+            pygame.draw.rect(surf, (230, 190, 112), r, 2, 10)
+            cx, cy = r.center
+            if direction == "left":
+                pts = [(cx + 7, cy - 10), (cx - 7, cy), (cx + 7, cy + 10)]
+            else:
+                pts = [(cx - 7, cy - 10), (cx + 7, cy), (cx - 7, cy + 10)]
+            pygame.draw.polygon(surf, (255, 230, 170), pts)
+            pygame.draw.polygon(surf, (140, 95, 45), pts, 1)
+
+        draw_round_rect(surf, self.center_rect, (26, 20, 30, 210), 10)
+        pygame.draw.rect(surf, (190, 155, 92), self.center_rect, 1, 10)
+        _show_txt = self.input_buffer if self.editing else str(self.value)
+        if self.editing and (pygame.time.get_ticks() // 450) % 2 == 0:
+            _show_txt += "|"
+        _num = font.render(_show_txt, True, (247, 228, 188))
+        _num_shadow = font.render(_show_txt, True, (30, 18, 10))
+        cx, cy = self.center_rect.center
+        surf.blit(_num_shadow, (_num_shadow.get_rect(center=(cx + 1, cy + 1))))
+        surf.blit(_num, (_num.get_rect(center=(cx, cy))))
+
+    def draw_menu(self, surf, font):
+        return
+
 class IntSlider:
     def __init__(self, rect, min_value, max_value, value=None):
         self.rect = pygame.Rect(rect)
@@ -669,11 +807,100 @@ class Game:
         self.audio_enabled = True
         self.sfx_enabled = True
         self.sfx_channel = None
+        self.fortune_loadouts = [
+            {"name": "Loadout 1", "fortune_ids": [], "major_id": None},
+            {"name": "Loadout 2", "fortune_ids": [], "major_id": None},
+            {"name": "Loadout 3", "fortune_ids": [], "major_id": None},
+        ]
+        self.active_fortune_loadout = 0
         self.rebuild_deck(); self.shuffle_deck(play_sound=False)
         self.draw_of_fate_uses = self.get_draw_of_fate_uses_by_level()
         self.draw_of_fate_current = self.draw_of_fate_uses
 
     def get_base_limit(self): return 3 if self.level >= 12 else (2 if self.level >= 6 else 1)
+    def get_fortune_option_cap(self):
+        if self.level >= 17:
+            return 9
+        if self.level >= 13:
+            return 7
+        if self.level >= 9:
+            return 5
+        if self.level >= 6:
+            return 3
+        return 0
+    def get_unlocked_fortune_ids(self):
+        unlocked = []
+        for lvl, ids in sorted(FORTUNE_UNLOCKS.items()):
+            if self.level >= lvl:
+                unlocked.extend(ids)
+        ordered = []
+        for cid in unlocked:
+            if cid not in ordered:
+                ordered.append(cid)
+        return ordered
+    def get_unlocked_major_ids(self):
+        return list(MAJOR_UNLOCKS_17) if self.level >= 17 else []
+    def normalize_fortune_loadouts(self):
+        unlocked_fortune = set(self.get_unlocked_fortune_ids())
+        unlocked_major = set(self.get_unlocked_major_ids())
+        cap = self.get_fortune_option_cap()
+        while len(self.fortune_loadouts) < 3:
+            self.fortune_loadouts.append({"name": f"Loadout {len(self.fortune_loadouts) + 1}", "fortune_ids": [], "major_id": None})
+        self.fortune_loadouts = self.fortune_loadouts[:3]
+        for i, ld in enumerate(self.fortune_loadouts):
+            if not isinstance(ld, dict):
+                self.fortune_loadouts[i] = {"name": f"Loadout {i + 1}", "fortune_ids": [], "major_id": None}
+                continue
+            fortune_ids = [int(cid) for cid in ld.get("fortune_ids", []) if int(cid) in unlocked_fortune]
+            deduped = []
+            for cid in fortune_ids:
+                if cid not in deduped:
+                    deduped.append(cid)
+            ld["fortune_ids"] = deduped[:cap]
+            major_id = ld.get("major_id")
+            ld["major_id"] = int(major_id) if major_id in unlocked_major else None
+            if not ld.get("name"):
+                ld["name"] = f"Loadout {i + 1}"
+        self.active_fortune_loadout = int(clamp(self.active_fortune_loadout, 0, len(self.fortune_loadouts) - 1))
+    def get_active_fortune_loadout(self):
+        self.normalize_fortune_loadouts()
+        return self.fortune_loadouts[self.active_fortune_loadout]
+    def get_allowed_fortune_ids(self):
+        if self.level < 6:
+            return []
+        return list(self.get_active_fortune_loadout().get("fortune_ids", []))
+    def get_allowed_major_id(self):
+        if self.level < 17:
+            return None
+        return self.get_active_fortune_loadout().get("major_id")
+    def can_promote_card(self, card_id, to_major=False):
+        if to_major:
+            return self.level >= 17 and card_id == self.get_allowed_major_id()
+        return self.level >= 6 and card_id in self.get_allowed_fortune_ids()
+    def is_card_promotion_enabled(self, card_id):
+        return self.can_promote_card(card_id, to_major=False) or self.can_promote_card(card_id, to_major=True)
+    def enforce_fortune_selection(self, add_history_entry=True):
+        allowed_fortune = set(self.get_allowed_fortune_ids())
+        allowed_major = self.get_allowed_major_id()
+        moved = []
+        for h in self.fortune_zone[:]:
+            if h.get("id") not in allowed_fortune:
+                self.fortune_zone.remove(h)
+                h["mode"] = "normal"
+                h["ppf_added"] = False
+                self.hand.append(h)
+                moved.append(h.get("id"))
+        for h in self.major_zone[:]:
+            if h.get("id") != allowed_major:
+                self.major_zone.remove(h)
+                h["mode"] = "normal"
+                h["major_added"] = False
+                self.hand.append(h)
+                moved.append(h.get("id"))
+        if moved and add_history_entry:
+            self.add_history("Fortune setup changed: ineligible promoted cards returned to Hand.", moved)
+        if moved:
+            self.rebuild_deck()
     def get_draw_of_fate_uses_by_level(self):
         if self.level >= 18:
             return 3
@@ -689,12 +916,15 @@ class Game:
         self.toast_msg, self.toast_timer = text, TOAST_DURATION
         
     def save_state(self): 
-        self.history.append({"deck": list(self.deck), "hand": [copy.deepcopy(h) for h in self.hand], "fortune_zone": [copy.deepcopy(f) for f in self.fortune_zone], "major_zone": [copy.deepcopy(f) for f in self.major_zone], "vanished": list(self.vanished), "stacked": self.stacked, "f3": list(self.first_three_ids), "cd": self.days_until_major, "days": self.days_passed, "limit": self.hand_limit, "table": list(self.seer_dice_table), "history": [copy.copy(e) for e in self.history_log], "level": self.level, "ppf": self.ppf_charges, "used_major": list(self.used_major_ids), "major_cooldown": self.major_fortune_used_this_week, "seer_filled": self.seer_slots_filled_today, "draw_of_fate": self.draw_of_fate_uses, "draw_of_fate_cur": self.draw_of_fate_current})
+        self.history.append({"deck": list(self.deck), "hand": [copy.deepcopy(h) for h in self.hand], "fortune_zone": [copy.deepcopy(f) for f in self.fortune_zone], "major_zone": [copy.deepcopy(f) for f in self.major_zone], "vanished": list(self.vanished), "stacked": self.stacked, "f3": list(self.first_three_ids), "cd": self.days_until_major, "days": self.days_passed, "limit": self.hand_limit, "table": list(self.seer_dice_table), "history": [copy.copy(e) for e in self.history_log], "level": self.level, "ppf": self.ppf_charges, "used_major": list(self.used_major_ids), "major_cooldown": self.major_fortune_used_this_week, "seer_filled": self.seer_slots_filled_today, "draw_of_fate": self.draw_of_fate_uses, "draw_of_fate_cur": self.draw_of_fate_current, "fortune_loadouts": copy.deepcopy(self.fortune_loadouts), "active_fortune_loadout": self.active_fortune_loadout})
         if len(self.history) > 50: self.history.pop(0)
         
     def undo(self):
         if not self.history: return
         s = self.history.pop(); self.deck, self.hand, self.fortune_zone, self.major_zone, self.vanished, self.stacked, self.first_three_ids, self.days_until_major, self.days_passed, self.hand_limit, self.seer_dice_table, self.history_log, self.level, self.ppf_charges, self.used_major_ids, self.major_fortune_used_this_week, self.seer_slots_filled_today, self.draw_of_fate_uses, self.draw_of_fate_current = s["deck"], s["hand"], s.get("fortune_zone", []), s.get("major_zone", []), s["vanished"], s["stacked"], s["f3"], s["cd"], s["days"], s["limit"], s["table"], s.get("history", []), s.get("level", 1), s.get("ppf", 3), s.get("used_major", []), s.get("major_cooldown", False), s.get("seer_filled", 0), s.get("draw_of_fate", 0), s.get("draw_of_fate_cur", 0)
+        self.fortune_loadouts = copy.deepcopy(s.get("fortune_loadouts", self.fortune_loadouts))
+        self.active_fortune_loadout = s.get("active_fortune_loadout", self.active_fortune_loadout)
+        self.normalize_fortune_loadouts()
         # Flush transient animation queues to stop them from resolving post-undo
         self.draw_queue = []
         self.is_drawing = False
@@ -730,7 +960,9 @@ class Game:
             "shuffle_anim_timer": self.shuffle_anim_timer,
             "seer_slots_filled_today": self.seer_slots_filled_today,
             "draw_of_fate_uses": self.draw_of_fate_uses,
-            "draw_of_fate_current": self.draw_of_fate_current
+            "draw_of_fate_current": self.draw_of_fate_current,
+            "fortune_loadouts": copy.deepcopy(self.fortune_loadouts),
+            "active_fortune_loadout": self.active_fortune_loadout
         }
 
     def load_from_payload(self, payload):
@@ -761,6 +993,10 @@ class Game:
         self.seer_slots_filled_today = payload.get("seer_slots_filled_today", 0)
         self.draw_of_fate_uses = payload.get("draw_of_fate_uses", self.get_draw_of_fate_uses_by_level())
         self.draw_of_fate_current = payload.get("draw_of_fate_current", self.draw_of_fate_uses)
+        self.fortune_loadouts = copy.deepcopy(payload.get("fortune_loadouts", self.fortune_loadouts))
+        self.active_fortune_loadout = payload.get("active_fortune_loadout", self.active_fortune_loadout)
+        self.normalize_fortune_loadouts()
+        self.enforce_fortune_selection(add_history_entry=False)
 
     def rebuild_deck(self):
         possessed_ids = [h['id'] for h in (self.hand + self.fortune_zone + self.major_zone)]
@@ -919,7 +1155,7 @@ def safe_main():
             step_sleep = 0.008
             target = pct
             for _ai in range(anim_steps):
-                _loading_display_pct += (target - _loading_display_pct) * 0.35
+                _loading_display_pct += (target - _loading_display_pct) * 0.22
                 if _ai == anim_steps - 1:
                     _loading_display_pct = target
                 _render_loading_frame(_loading_display_pct, status, thumb)
@@ -1115,7 +1351,19 @@ def safe_main():
         results = find_bold_markdown(cards_raw)
         log_event(f"Scanning JSON... Found {len(results)} bolded fields.")
         
-        hand_tex, view_tex, preview_tex_hd, preview_bgs, thumb_tex, total_steps, cur_step = {}, {}, {}, {}, {}, len(cards_raw) * 4 + 2, 0
+        _menu_element_files = [
+            "Draw_Button_Image.png",
+            "Stack_Button_Image.png",
+            "History_Button.png",
+            "Turn_Undead_Button.png",
+            "Destroy_Undead_Button.png",
+            "Settings_Menu_Image.png",
+            "Draw_of_Fate_Token.png",
+            "Side_Panel_Image.png",
+            "Rest_Button.png",
+        ]
+        preloaded_ui_images = {}
+        hand_tex, view_tex, preview_tex_hd, preview_bgs, thumb_tex, total_steps, cur_step = {}, {}, {}, {}, {}, len(cards_raw) * 4 + 3 + len(_menu_element_files), 0
         def _asset_pct(step): return (step / max(1, total_steps)) * 0.9
         _loading_pct_cur = 0.0
         def _animate_loading_step(target_pct, status, thumb=None, duration=1.0):
@@ -1142,15 +1390,15 @@ def safe_main():
         for c in cards_raw:
             cid, cname, img_path = c['id'], c['name'], os.path.join(IMAGES_DIR, c['image'])
             hand_tex[cid] = load_image_safe(img_path, (HAND_CARD_W, HAND_CARD_H), cname); cur_step += 1
-            if not _animate_loading_step(_asset_pct(cur_step), f"Hand Texture: {cname}", hand_tex[cid], duration=0.25): return
+            if not _animate_loading_step(_asset_pct(cur_step), f"Hand Texture: {cname}", hand_tex[cid], duration=0.1): return
             view_tex[cid] = load_image_safe(img_path, (VIEW_CARD_W, VIEW_CARD_H), cname); cur_step += 1
-            if not _animate_loading_step(_asset_pct(cur_step), f"Grid Texture: {cname}", hand_tex[cid], duration=0.25): return
+            if not _animate_loading_step(_asset_pct(cur_step), f"Grid Texture: {cname}", hand_tex[cid], duration=0.1): return
             thumb_tex[cid] = pygame.transform.smoothscale(hand_tex[cid], (THUMB_W, THUMB_H))
             prev_h, prev_w = int(H * 0.80), int(int(H * 0.80) * (HAND_CARD_W / HAND_CARD_H))
             preview_tex_hd[cid] = load_image_safe(img_path, (prev_w, prev_h), cname); cur_step += 1
-            if not _animate_loading_step(_asset_pct(cur_step), f"HD View: {cname}", hand_tex[cid], duration=0.25): return
+            if not _animate_loading_step(_asset_pct(cur_step), f"HD View: {cname}", hand_tex[cid], duration=0.1): return
             found = next((f for f in os.listdir(IMAGES_DIR) if f.lower().startswith(f"{cid}-") and f.lower().endswith("_bg.png")), None); preview_bgs[cid] = pygame.transform.smoothscale(pygame.image.load(os.path.join(IMAGES_DIR, found)).convert(), (W, H)) if found else pygame.Surface((W,H)); cur_step += 1
-            if not _animate_loading_step(_asset_pct(cur_step), f"Backdrop: {cname}", hand_tex[cid], duration=0.25): return
+            if not _animate_loading_step(_asset_pct(cur_step), f"Backdrop: {cname}", hand_tex[cid], duration=0.1): return
         
         menu_bg, normal_bg, deck_back_sm, v_face_hand = load_image_safe(os.path.join(IMAGES_DIR, MENU_BG_IMAGE), (W, H)), load_image_safe(os.path.join(IMAGES_DIR, NORMAL_BG_IMAGE), (W, H)), load_image_safe(os.path.join(IMAGES_DIR, DECK_BACK_IMAGE), (160, 224)), load_image_safe(os.path.join(IMAGES_DIR, VANISHED_CARD_IMAGE), (HAND_CARD_W, HAND_CARD_H))
         deck_pile_frame = load_image_safe(os.path.join(IMAGES_DIR, DECK_PILE_IMAGE), (210, 310))
@@ -1162,16 +1410,75 @@ def safe_main():
         deck_pile_frame = fade_edges_to_alpha(deck_pile_frame, feather=26)
         vanish_pile_frame = fade_edges_to_alpha(vanish_pile_frame, feather=26)
         cur_step += 1
-        if not _animate_loading_step(_asset_pct(cur_step), "Interface Textures", v_face_hand, duration=0.25): return
+        if not _animate_loading_step(_asset_pct(cur_step), "Interface Textures", v_face_hand, duration=0.1): return
         # Release loading bg video so the file can be reopened later
         if _loading_bg_video["cap"] is not None:
             _loading_bg_video["cap"].release()
             _loading_bg_video["cap"] = None
         v_face_view, v_face_deck = pygame.transform.smoothscale(v_face_hand, (VIEW_CARD_W, VIEW_CARD_H)), pygame.transform.smoothscale(v_face_hand, (160, 224))
         cur_step += 1
-        if not _animate_loading_step(_asset_pct(cur_step), "Finalizing Visual Assets", v_face_hand, duration=0.25): return
-        
-        # Last 10%: options/settings load stage over 10 seconds
+        if not _animate_loading_step(_asset_pct(cur_step), "Finalizing Visual Assets", v_face_hand, duration=0.1): return
+
+        for _fname in _menu_element_files:
+            _fp = os.path.join(IMAGES_DIR, _fname)
+            _img = None
+            try:
+                if os.path.exists(_fp):
+                    _img = pygame.image.load(_fp).convert_alpha()
+            except Exception as _ex:
+                log_event(f"Could not load UI element {_fname}: {_ex}", is_error=True)
+            preloaded_ui_images[_fname] = _img
+            cur_step += 1
+            _label = os.path.splitext(_fname)[0].replace("_", " ")
+            if not _animate_loading_step(_asset_pct(cur_step), f"Main Menu Element: {_label}", _img if _img is not None else v_face_hand, duration=0.1): return
+
+        glow_gold, glow_purple, game = make_glow(HAND_CARD_W, HAND_CARD_H, GOLD), make_glow(HAND_CARD_W, HAND_CARD_H, PURPLE_TAP), Game(cards_raw)
+
+        # RENDERING TOOLS
+        f_rich_reg = pygame.font.SysFont("georgia", 18)
+        f_rich_bold = pygame.font.SysFont("georgia", 18, bold=True)
+        rich_renderer = RichTextRenderer(f_rich_reg, f_rich_bold)
+
+        f_p_reg = pygame.font.SysFont("georgia", 26)
+        f_p_bold = pygame.font.SysFont("georgia", 26, bold=True)
+        p_rich_renderer = RichTextRenderer(f_p_reg, f_p_bold)
+        prebuilt_fortune_back_cache = {}
+
+        def _build_mode_back_surface_loading(cid, mode, w, h):
+            mode_key = mode if mode in ["fortune", "major"] else "effect"
+            cd = game.cards[cid]
+            surf = pygame.Surface((w, h), pygame.SRCALPHA)
+            draw_round_rect(surf, (0, 0, w, h), (20, 25, 40, 255), 12)
+            pygame.draw.rect(surf, (180, 160, 100), (0, 0, w, h), 3, 12)
+            margin = 10
+            top_h = max(48, (h // 2) - 24)
+            box_w = w - margin * 2
+            top_box = pygame.Surface((box_w, top_h), pygame.SRCALPHA)
+            rich_renderer.draw_rich_box(top_box, top_box.get_rect(), cd.get(f"{mode_key}_inverted", "..."), 0, show_scrollbar=False)
+            top_box = pygame.transform.rotate(top_box, 180)
+            surf.blit(top_box, (margin, 10))
+            bottom_box = pygame.Rect(margin, (h // 2) + 6, box_w, top_h)
+            rich_renderer.draw_rich_box(surf, bottom_box, cd.get(f"{mode_key}_upright", "..."), 0, show_scrollbar=False)
+            _mode_lbl = f_rich_bold.render(("MAJOR MODE" if mode == "major" else "FORTUNE MODE"), True, (255, 230, 170))
+            _lbl_bg = pygame.Rect((w - _mode_lbl.get_width()) // 2 - 4, h - _mode_lbl.get_height() - 8, _mode_lbl.get_width() + 8, _mode_lbl.get_height() + 4)
+            draw_round_rect(surf, _lbl_bg, (0, 0, 0, 170), 6)
+            surf.blit(_mode_lbl, (_lbl_bg.x + 4, _lbl_bg.y + 2))
+            return surf
+
+        _prep_total = max(1, len(game.ids))
+        _prep_thumb = None
+        for _idx, _cid in enumerate(game.ids, start=1):
+            prebuilt_fortune_back_cache[(_cid, "fortune", 168, 242)] = _build_mode_back_surface_loading(_cid, "fortune", 168, 242)
+            prebuilt_fortune_back_cache[(_cid, "major", 152, 214)] = _build_mode_back_surface_loading(_cid, "major", 152, 214)
+            _prep_thumb = thumb_tex.get(_cid)
+            for _ev in pygame.event.get():
+                if _ev.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+        cur_step += 1
+        if not _animate_loading_step(_asset_pct(cur_step), "Preparing Fortune Selection", _prep_thumb, duration=0.1): return
+
+        # Last 10%: options/settings must always be last
         user_settings = load_user_settings()
         _settings_stage_seconds = 5.0
         _settings_start = time.time()
@@ -1185,20 +1492,11 @@ def safe_main():
                     return
             if _frac >= 1.0:
                 break
-        
-        glow_gold, glow_purple, game = make_glow(HAND_CARD_W, HAND_CARD_H, GOLD), make_glow(HAND_CARD_W, HAND_CARD_H, PURPLE_TAP), Game(cards_raw)
-        
-        # RENDERING TOOLS
-        f_rich_reg = pygame.font.SysFont("georgia", 18)
-        f_rich_bold = pygame.font.SysFont("georgia", 18, bold=True)
-        rich_renderer = RichTextRenderer(f_rich_reg, f_rich_bold)
-        
-        f_p_reg = pygame.font.SysFont("georgia", 26)
-        f_p_bold = pygame.font.SysFont("georgia", 26, bold=True)
-        p_rich_renderer = RichTextRenderer(f_p_reg, f_p_bold)
 
         # BUTTON IMAGES
         def _load_btn_img(fname):
+            if fname in preloaded_ui_images:
+                return preloaded_ui_images.get(fname)
             p = os.path.join(IMAGES_DIR, fname)
             if os.path.exists(p):
                 return pygame.image.load(p).convert_alpha()
@@ -1224,7 +1522,7 @@ def safe_main():
 
         # UI BUTTONS
         ui_x, ui_w = PADDING+PANEL_INNER_PAD, PANEL_W-PANEL_INNER_PAD*2
-        lvl_change_dd = Dropdown((ui_x + 15, PADDING + 45, ui_w - 30, 35), [(i, f"Level {i}") for i in range(1, 21)])
+        lvl_change_dd = FantasyLevelStepper((ui_x + 15, PADDING + 45, ui_w - 30, 42), 1, 20, 1)
         ppf_btn = Button((ui_x, 115, ui_w, 45), f"PP&F (3/3)", gold=True)
         undo_btn = Button((ui_x, 165, ui_w, 45), "Undo Action", warning=True)
         major_btn = Button((ui_x, 235, ui_w, 45), "Use Major Fortune", danger=True, fire=True)
@@ -1241,6 +1539,7 @@ def safe_main():
         menu_btn = Button((W-160, PADDING + 85, 140, 35), "Main Menu", warning=True)
         save_btn = Button((W-160, PADDING + 125, 140, 35), "Save", primary=True)
         load_btn = Button((W-160, PADDING + 165, 140, 35), "Load", primary=True)
+        fortune_menu_btn = Button((W-160, PADDING + 205, 140, 35), "Fortune Setup", gold=True)
         history_btn = Button((W-240, H-810, 210, 210), "View History", primary=True, image=_img_history)
         hamburger_btn = Button((W-50, PADDING, 35, 35), "\u2630", image=_img_settings)
         rest_menu_btn = Button((W-240, H-810, 150, 150), "Rest", primary=True, image=_img_rest)
@@ -1248,12 +1547,13 @@ def safe_main():
         top_menu_open = False
         exit_view_btn = Button((PADDING, PADDING, 160, 45), "Exit View", primary=True)
         
-        menu_box_rect = pygame.Rect(W//2 - 200, H//2 - 85, 400, 430)
-        menu_lvl_dd = Dropdown((menu_box_rect.x+50, menu_box_rect.y+100, 300, 45), [(i, i) for i in range(1, 21)], fantasy=True)
+        menu_box_rect = pygame.Rect(W//2 - 200, H//2 - 110, 400, 500)
+        menu_lvl_dd = FantasyLevelStepper((menu_box_rect.x+50, menu_box_rect.y+100, 300, 50), 1, 20, 1)
         start_game_btn = Button((menu_box_rect.x+50, menu_box_rect.y+170, 300, 50), "START GAME", primary=True, fantasy=True)
         menu_load_btn = Button((menu_box_rect.x+50, menu_box_rect.y+230, 300, 50), "Load Game", primary=True, fantasy=True)
-        settings_btn = Button((menu_box_rect.x+50, menu_box_rect.y+290, 300, 50), "Settings", fantasy=True)
-        menu_quit_btn = Button((menu_box_rect.x+50, menu_box_rect.y+350, 300, 50), "Exit game", danger=True, fantasy=True)
+        menu_fortune_btn = Button((menu_box_rect.x+50, menu_box_rect.y+290, 300, 50), "Fortune Setup", gold=True, fantasy=True)
+        settings_btn = Button((menu_box_rect.x+50, menu_box_rect.y+350, 300, 50), "Settings", fantasy=True)
+        menu_quit_btn = Button((menu_box_rect.x+50, menu_box_rect.y+410, 300, 50), "Exit game", danger=True, fantasy=True)
         slot_menu_box_rect = pygame.Rect(W//2 - 260, H//2 - 230, 520, 500)
         slot_buttons = [
             Button((slot_menu_box_rect.x + 50, slot_menu_box_rect.y + 130 + i * 95, 420, 70), f"Slot {i+1}", primary=True, fantasy=True)
@@ -1262,6 +1562,21 @@ def safe_main():
         slot_back_btn = Button((slot_menu_box_rect.x + 160, slot_menu_box_rect.y + 430, 200, 45), "Back", warning=True, fantasy=True)
         slot_menu_mode = "load"
         slot_menu_return_mode = "menu"
+        fortune_setup_box = pygame.Rect(50, 38, W - 100, H - 76)
+        fortune_loadout_buttons = [
+            Button((fortune_setup_box.x + 40 + i * 220, fortune_setup_box.y + 108, 200, 50), f"Loadout {i+1}", primary=True, fantasy=True)
+            for i in range(3)
+        ]
+        fortune_clear_btn = Button((fortune_setup_box.centerx - 320, fortune_setup_box.bottom - 72, 210, 46), "Clear Loadout", danger=True, fantasy=True)
+        fortune_save_btn = Button((fortune_setup_box.centerx - 95, fortune_setup_box.bottom - 72, 210, 46), "Save Setup", primary=True, fantasy=True)
+        fortune_back_btn = Button((fortune_setup_box.centerx + 130, fortune_setup_box.bottom - 72, 210, 46), "Back", warning=True, fantasy=True)
+        fortune_lvl_dd = FantasyLevelStepper((fortune_setup_box.right - 270, fortune_setup_box.y + 24, 230, 46), 1, 20, game.level)
+        fortune_card_buttons = []
+        fortune_section_headers = []
+        f_fortune_title = pygame.font.SysFont("timesnewroman", 54, bold=True)
+        f_fortune_header = pygame.font.SysFont("georgia", 30, bold=True)
+        f_fortune_body = pygame.font.SysFont("georgia", 22, bold=True)
+        f_fortune_small = pygame.font.SysFont("georgia", 18, bold=True)
         settings_box_rect = pygame.Rect(W//2 - 250, H//2 - 220, 500, 500)
         settings_music_dd = Dropdown((settings_box_rect.x + 190, settings_box_rect.y + 140, 220, 40), [("on", "On"), ("off", "Off")], fantasy=True)
         settings_music_slider = IntSlider((settings_box_rect.x + 190, settings_box_rect.y + 205, 220, 36), 0, 100, 70)
@@ -1303,6 +1618,7 @@ def safe_main():
         
         screen_mode, running, scroll_y, preview_cid, card_fire_particles = "menu", True, 0, None, []
         preview_state = {'mode': 'normal', 'orientation': 'upright'}
+        preview_locked_mode = False
         preview_scrolls = {"current": 0, "max": 0}
         prophet_remaining_draws, current_roll_anim = 0, None
         previous_viewer_mode = None
@@ -1421,6 +1737,8 @@ def safe_main():
 
         def apply_level_reset(new_level):
             game.level = new_level
+            game.normalize_fortune_loadouts()
+            game.enforce_fortune_selection()
             game.hand_limit = game.get_base_limit()
             if game.level >= 17:
                 total = game.long_rest(skip_draw=True)
@@ -1506,6 +1824,132 @@ def safe_main():
             game.toast_msg = f"Loaded slot {slot_idx}"
             game.toast_timer = TOAST_DURATION
             return True
+
+        game.normalize_fortune_loadouts()
+        fortune_setup_return_mode = "menu"
+        fortune_scroll_y = 0
+        fortune_selected_loadout_idx = game.active_fortune_loadout
+        fortune_back_cache = dict(prebuilt_fortune_back_cache)
+
+        def _fortune_slots_summary():
+            return f"{len(game.get_active_fortune_loadout().get('fortune_ids', []))}/{game.get_fortune_option_cap()}"
+
+        def _open_fortune_setup(return_mode):
+            nonlocal screen_mode, fortune_setup_return_mode, fortune_selected_loadout_idx, fortune_scroll_y
+            fortune_setup_return_mode = return_mode
+            fortune_selected_loadout_idx = game.active_fortune_loadout
+            fortune_scroll_y = 0
+            screen_mode = "fortune_setup"
+
+        def _persist_fortune_setup():
+            game.normalize_fortune_loadouts()
+            try:
+                os.makedirs(SAVE_DIR, exist_ok=True)
+            except Exception:
+                pass
+            game.toast_msg = f"Fortune setup saved ({_fortune_slots_summary()})."
+            game.toast_timer = TOAST_DURATION
+
+        def _play_click_sfx():
+            if Button.sfx_enabled and Button.click_sound is not None:
+                try:
+                    if Button.click_channel is not None and not Button.click_channel.get_busy():
+                        Button.click_channel.play(Button.click_sound)
+                    elif Button.click_channel is None:
+                        Button.click_sound.play()
+                except Exception:
+                    pass
+
+        def _fortune_grid_clip_rect():
+            _full_w = fortune_setup_box.w - 68
+            return pygame.Rect(fortune_setup_box.x + 34, fortune_setup_box.y + 226, _full_w // 2, fortune_setup_box.h - 368)
+
+        def _fortune_grid_metrics():
+            clip = _fortune_grid_clip_rect()
+            card_w = 168
+            card_h = 242
+            gap_x = 44
+            gap_y = 52
+            cols = min(5, max(1, (clip.w + gap_x) // (card_w + gap_x)))
+            base_x = clip.x + 8
+            return clip, card_w, card_h, gap_x, gap_y, cols, base_x
+
+        def _fortune_checkbox_rect(card_rect):
+            return pygame.Rect(card_rect.centerx - 7, card_rect.bottom + 4, 14, 14)
+
+        def _fortune_max_scroll():
+            _build_fortune_card_buttons()
+            clip = _fortune_grid_clip_rect()
+            if not fortune_card_buttons and not fortune_section_headers:
+                return 0
+            _bottom = clip.y
+            for _hdr in fortune_section_headers:
+                _bottom = max(_bottom, _hdr[1] + _hdr[2])
+            for _item in fortune_card_buttons:
+                _bottom = max(_bottom, _item[1].bottom, _fortune_checkbox_rect(_item[1]).bottom)
+            content_h = max(0, (_bottom - clip.y) + fortune_scroll_y)
+            return max(0, content_h - clip.h)
+
+        def _build_fortune_card_buttons():
+            nonlocal fortune_card_buttons, fortune_section_headers
+            clip, card_w, card_h, gap_x, gap_y, cols, base_x = _fortune_grid_metrics()
+            content_y = 0
+            header_h = 30
+            section_gap = 22
+            fortune_card_buttons = []
+            fortune_section_headers = []
+            _levels = [6, 9, 13]
+            for _lvl in _levels:
+                _ids = list(FORTUNE_UNLOCKS.get(_lvl, []))
+                _unlocked = game.level >= _lvl
+                _title = f"FORTUNE UNLOCK {_lvl}" + ("" if _unlocked else " (LOCKED)")
+                _hy = clip.y + content_y - fortune_scroll_y
+                fortune_section_headers.append((_title, _hy, header_h, _unlocked))
+                content_y += header_h + 8
+                if _unlocked and _ids:
+                    for _idx, _cid in enumerate(_ids):
+                        _col = _idx % cols
+                        _row = _idx // cols
+                        _x = base_x + _col * (card_w + gap_x)
+                        _y = clip.y + content_y + _row * (card_h + gap_y) - fortune_scroll_y
+                        fortune_card_buttons.append((_cid, pygame.Rect(_x, _y, card_w, card_h), "fortune"))
+                    _rows = math.ceil(len(_ids) / max(1, cols))
+                    content_y += _rows * card_h + max(0, _rows - 1) * gap_y
+                content_y += section_gap
+
+            _mj_unlocked = game.level >= 17
+            _mj_title = "Major Fortune Unlock: Level 17 - CHOOSE ONE!" + ("" if _mj_unlocked else " (LOCKED)")
+            _mhy = clip.y + content_y - fortune_scroll_y
+            fortune_section_headers.append((_mj_title, _mhy, header_h, _mj_unlocked))
+            content_y += header_h + 8
+            if _mj_unlocked:
+                for _idx, _cid in enumerate(MAJOR_FORTUNE_IDS):
+                    _col = _idx % cols
+                    _row = _idx // cols
+                    _x = base_x + _col * (card_w + gap_x)
+                    _y = clip.y + content_y + _row * (card_h + gap_y) - fortune_scroll_y
+                    fortune_card_buttons.append((_cid, pygame.Rect(_x, _y, card_w, card_h), "major"))
+
+        def _get_mode_back_surface(cid, mode, w, h):
+            key = (cid, mode, w, h)
+            if key in fortune_back_cache:
+                return fortune_back_cache[key]
+            mode_key = mode if mode in ["fortune", "major"] else "effect"
+            cd = game.cards[cid]
+            surf = pygame.Surface((w, h), pygame.SRCALPHA)
+            draw_round_rect(surf, (0, 0, w, h), (20, 25, 40, 255), 12)
+            pygame.draw.rect(surf, (180, 160, 100), (0, 0, w, h), 3, 12)
+            margin = 10
+            top_h = max(48, (h // 2) - 24)
+            box_w = w - margin * 2
+            top_box = pygame.Surface((box_w, top_h), pygame.SRCALPHA)
+            rich_renderer.draw_rich_box(top_box, top_box.get_rect(), cd.get(f"{mode_key}_inverted", "..."), 0, show_scrollbar=False)
+            top_box = pygame.transform.rotate(top_box, 180)
+            surf.blit(top_box, (margin, 10))
+            bottom_box = pygame.Rect(margin, (h // 2) + 6, box_w, top_h)
+            rich_renderer.draw_rich_box(surf, bottom_box, cd.get(f"{mode_key}_upright", "..."), 0, show_scrollbar=False)
+            fortune_back_cache[key] = surf
+            return surf
 
         def get_draw_of_fate_rect():
             dt_box_w, dt_box_h = PANEL_W - 120, 90
@@ -1609,8 +2053,8 @@ def safe_main():
             turn_undead_btn.disabled = (game.draw_of_fate_current < 1)
             destroy_undead_btn.disabled = (game.draw_of_fate_current < 2)
             ppf_btn.text = f"PP&F ({game.ppf_charges}/3)"
-            ppf_btn.disabled = (game.ppf_charges <= 0 or game.level < 6 or len(game.fortune_zone) >= 1)
-            major_btn.disabled = (game.major_fortune_used_this_week or len(game.major_zone) > 0 or game.level < 17)
+            ppf_btn.disabled = (game.ppf_charges <= 0 or game.level < 6 or len(game.fortune_zone) >= 1 or len(game.get_allowed_fortune_ids()) < 1)
+            major_btn.disabled = (game.major_fortune_used_this_week or len(game.major_zone) > 0 or game.level < 17 or game.get_allowed_major_id() is None)
             
             # --- ANIMATION SAFETY CHECK FOR UNDO BUTTON ---
             is_animating = (
@@ -1642,12 +2086,16 @@ def safe_main():
                     if menu_lvl_dd.handle_event(e):
                         selected_level = menu_lvl_dd.get_selected()
                         game.level = selected_level
+                        game.normalize_fortune_loadouts()
+                        game.enforce_fortune_selection()
                         game.draw_of_fate_uses = game.get_draw_of_fate_uses_by_level()
                         game.draw_of_fate_current = game.draw_of_fate_uses
                         draw_of_fate_slider.set_value(game.draw_of_fate_uses)
                         lvl_change_dd.selected_index = game.level - 1
                     if start_game_btn.handle_event(e):
-                        game = Game(cards_raw); game.level = menu_lvl_dd.get_selected(); lvl_change_dd.selected_index = game.level - 1; game.hand_limit = game.get_base_limit(); game.draw_of_fate_uses = game.get_draw_of_fate_uses_by_level(); game.draw_of_fate_current = game.draw_of_fate_uses; draw_of_fate_slider.set_value(game.draw_of_fate_uses); game.audio_enabled = audio_enabled; game.sfx_enabled = sfx_enabled; game.sfx_channel = Button.click_channel
+                        _prev_loadouts = copy.deepcopy(game.fortune_loadouts)
+                        _prev_active = game.active_fortune_loadout
+                        game = Game(cards_raw); game.level = menu_lvl_dd.get_selected(); game.fortune_loadouts = _prev_loadouts; game.active_fortune_loadout = _prev_active; game.normalize_fortune_loadouts(); lvl_change_dd.selected_index = game.level - 1; game.hand_limit = game.get_base_limit(); game.draw_of_fate_uses = game.get_draw_of_fate_uses_by_level(); game.draw_of_fate_current = game.draw_of_fate_uses; draw_of_fate_slider.set_value(game.draw_of_fate_uses); game.audio_enabled = audio_enabled; game.sfx_enabled = sfx_enabled; game.sfx_channel = Button.click_channel
                         if game.level >= 17: total = game.long_rest(skip_draw=True); prophet_remaining_draws = total - 1; screen_mode, scroll_y = "prophet_selection", 0
                         else: game.long_rest(); screen_mode = "normal"
                     if menu_load_btn.handle_event(e):
@@ -1657,6 +2105,8 @@ def safe_main():
                         screen_mode = "slot_menu"
                     if settings_btn.handle_event(e):
                         screen_mode = "settings"
+                    if menu_fortune_btn.handle_event(e):
+                        _open_fortune_setup("menu")
                     if menu_quit_btn.handle_event(e): running = False
                 
                 elif screen_mode == "slot_menu":
@@ -1706,6 +2156,68 @@ def safe_main():
                         screen_mode = "menu"
                     if settings_exit_btn.handle_event(e):
                         running = False
+
+                elif screen_mode == "fortune_setup":
+                    fortune_lvl_dd.set_value(game.level)
+                    if fortune_lvl_dd.handle_event(e):
+                        game.level = fortune_lvl_dd.get_selected()
+                        game.draw_of_fate_uses = game.get_draw_of_fate_uses_by_level()
+                        game.draw_of_fate_current = min(game.draw_of_fate_current, game.draw_of_fate_uses)
+                        draw_of_fate_slider.set_value(game.draw_of_fate_uses)
+                        menu_lvl_dd.set_value(game.level)
+                        lvl_change_dd.set_value(game.level)
+                        game.normalize_fortune_loadouts()
+                        game.enforce_fortune_selection()
+                    if e.type == pygame.MOUSEWHEEL:
+                        if _fortune_grid_clip_rect().collidepoint(m_pos):
+                            fortune_scroll_y = int(clamp(fortune_scroll_y - e.y * 50, 0, _fortune_max_scroll()))
+                    for _idx, _btn in enumerate(fortune_loadout_buttons):
+                        _btn.warning = (_idx == game.active_fortune_loadout)
+                        _btn.primary = (_idx != game.active_fortune_loadout)
+                        if _btn.handle_event(e):
+                            game.active_fortune_loadout = _idx
+                            fortune_selected_loadout_idx = _idx
+                            game.normalize_fortune_loadouts()
+                            game.enforce_fortune_selection()
+                    active_ld = game.get_active_fortune_loadout()
+                    _build_fortune_card_buttons()
+                    _grid_clip = _fortune_grid_clip_rect()
+                    for _cid, _rect, _mode in fortune_card_buttons:
+                        if _rect.bottom < _grid_clip.y or _rect.top > _grid_clip.bottom:
+                            continue
+                        _cb = _fortune_checkbox_rect(_rect)
+                        if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and _grid_clip.collidepoint(e.pos) and _cb.collidepoint(e.pos):
+                            _play_click_sfx()
+                            if _mode == "major":
+                                active_ld["major_id"] = None if active_ld.get("major_id") == _cid else _cid
+                            else:
+                                pool = active_ld.setdefault("fortune_ids", [])
+                                if _cid in pool:
+                                    pool.remove(_cid)
+                                elif len(pool) < game.get_fortune_option_cap():
+                                    pool.append(_cid)
+                                else:
+                                    game.toast_msg = f"Fortune loadout full ({game.get_fortune_option_cap()})."
+                                    game.toast_timer = TOAST_DURATION
+                            game.enforce_fortune_selection()
+                        elif e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and _grid_clip.collidepoint(e.pos) and _rect.collidepoint(e.pos):
+                            _play_click_sfx()
+                            previous_viewer_mode = "fortune_setup"
+                            preview_cid = _cid
+                            preview_state = {'mode': _mode, 'orientation': 'upright'}
+                            preview_scrolls = {"current": 0, "max": 0}
+                            preview_locked_mode = True
+                            screen_mode = "preview_view"
+                            break
+                    if fortune_clear_btn.handle_event(e):
+                        active_ld["fortune_ids"] = []
+                        active_ld["major_id"] = None
+                        game.enforce_fortune_selection()
+                    if fortune_save_btn.handle_event(e):
+                        _persist_fortune_setup()
+                    if fortune_back_btn.handle_event(e):
+                        game.normalize_fortune_loadouts()
+                        screen_mode = fortune_setup_return_mode
                 
                 elif screen_mode == "preview_view":
                     if exit_view_btn.handle_event(e): 
@@ -1715,6 +2227,7 @@ def safe_main():
                             previous_viewer_mode = None
                         else:
                             screen_mode = "normal"
+                        preview_locked_mode = False
                     # Preview scrollbar drag
                     if e.type == pygame.MOUSEBUTTONUP and e.button == 1:
                         preview_sb_dragging = False
@@ -1755,7 +2268,22 @@ def safe_main():
                                 for i, (label, url) in enumerate(links):
                                     if pygame.Rect(spell_box_x + 10, start_y + 85 + i * 65, spell_w - 20, 50).collidepoint(e.pos): webbrowser.open(url)
                         elif e.button == 2: preview_state['orientation'] = "inverted" if preview_state['orientation'] == "upright" else "upright"; play_turnpage_sfx()
-                        elif e.button == 3: preview_state['mode'] = ("major" if preview_cid in MAJOR_FORTUNE_IDS else "fortune") if preview_state['mode'] == "normal" else "normal"
+                        elif e.button == 3:
+                            if preview_locked_mode:
+                                continue
+                            if preview_state['mode'] != "normal":
+                                preview_state['mode'] = "normal"
+                            else:
+                                if preview_cid in MAJOR_FORTUNE_IDS:
+                                    if game.can_promote_card(preview_cid, to_major=True):
+                                        preview_state['mode'] = "major"
+                                    else:
+                                        game.toast_msg, game.toast_timer = "Major mode locked for this card/loadout.", TOAST_DURATION
+                                else:
+                                    if game.can_promote_card(preview_cid, to_major=False):
+                                        preview_state['mode'] = "fortune"
+                                    else:
+                                        game.toast_msg, game.toast_timer = "Fortune mode locked for this card/loadout.", TOAST_DURATION
                     if e.type == pygame.MOUSEWHEEL:
                         cd = game.cards[preview_cid]
                         mk = (preview_state['mode'] if preview_state['mode'] != 'normal' else 'effect')
@@ -1909,7 +2437,7 @@ def safe_main():
                         _menu_item_h = 35
                         _menu_gap = 4
                         _menu_pad = 8
-                        _menu_count = 4
+                        _menu_count = 5
                         _menu_h = (_menu_pad * 2) + (_menu_count * _menu_item_h) + ((_menu_count - 1) * _menu_gap)
                         _menu_bg_x = hamburger_btn.rect.right - 160
                         _menu_bg_y = hamburger_btn.rect.bottom + 5
@@ -1926,6 +2454,9 @@ def safe_main():
                             slot_menu_return_mode = "normal"
                             _refresh_slot_labels()
                             screen_mode = "slot_menu"
+                            top_menu_open = False
+                        elif fortune_menu_btn.handle_event(e):
+                            _open_fortune_setup("normal")
                             top_menu_open = False
                         elif e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                             _menu_area = pygame.Rect(_menu_bg_x, hamburger_btn.rect.y, 160, (_menu_bg_y - hamburger_btn.rect.y) + _menu_h)
@@ -1998,6 +2529,7 @@ def safe_main():
                                 # If they click the card itself (not a button) to preview it
                                 elif card_rect.collidepoint(e.pos) and not h.get('tapped'):
                                     preview_cid, screen_mode = h['id'], "preview_view"
+                                    preview_locked_mode = False
                                     preview_scrolls = {"current":0,"max":0}
                                     break
                                     
@@ -2014,14 +2546,16 @@ def safe_main():
                             elif e.button == 3 and card_rect.collidepoint(e.pos) and not h.get('tapped'):
                                 game.save_state()
                                 if zone == game.hand:
-                                    if h['id'] in MAJOR_FORTUNE_IDS and game.level >= 17 and len(game.major_zone) < 1:
+                                    if h['id'] in MAJOR_FORTUNE_IDS and game.level >= 17 and len(game.major_zone) < 1 and game.can_promote_card(h['id'], to_major=True):
                                         play_sfx(_sfx_major_promo, priority=True)
                                         game.hand.remove(h); h['mode'] = 'major'; game.major_zone.append(h)
                                         game.add_history(f"{game.cards[h['id']]['name']} moved to Major Zone.", [h['id']])
-                                    elif game.level >= 6 and len(game.fortune_zone) < 1 and h['id'] not in MAJOR_FORTUNE_IDS:
+                                    elif game.level >= 6 and len(game.fortune_zone) < 1 and h['id'] not in MAJOR_FORTUNE_IDS and game.can_promote_card(h['id'], to_major=False):
                                         play_sfx(_sfx_fortune_promo, priority=True)
                                         game.hand.remove(h); h['mode'] = 'fortune'; game.fortune_zone.append(h)
                                         game.add_history(f"{game.cards[h['id']]['name']} moved to Fortune Zone.", [h['id']])
+                                    else:
+                                        game.toast_msg, game.toast_timer = "Card is not enabled in active Fortune loadout.", TOAST_DURATION
                                 else:
                                     if h in game.fortune_zone:
                                         if h.get('ppf_added'):
@@ -2049,13 +2583,13 @@ def safe_main():
                     # Compute scrollbar track geometry for grid views
                     hi_ev, fi_ev = [h['id'] for h in game.hand], [f['id'] for f in (game.fortune_zone+game.major_zone)]
                     _g_cur_list = []
-                    if screen_mode == "ppf_selection": _g_cur_list = [c for c in game.ids if c not in MAJOR_FORTUNE_IDS and c not in game.vanished and c not in hi_ev and c not in fi_ev]
+                    if screen_mode == "ppf_selection": _g_cur_list = [c for c in game.ids if c in game.get_allowed_fortune_ids() and c not in MAJOR_FORTUNE_IDS and c not in game.vanished and c not in hi_ev and c not in fi_ev]
                     elif screen_mode == "world_restore_view": _g_cur_list = [vid for vid in game.vanished if vid != 20]
                     elif screen_mode == "deck": _g_cur_list = game.deck
                     elif screen_mode == "vanish_view": _g_cur_list = game.vanished
                     elif screen_mode == "prophet_selection": _g_cur_list = [c for c in game.ids if c != 20 and c not in hi_ev and c not in fi_ev]
                     elif screen_mode == "stack_selection": _g_cur_list = [c for c in game.deck if c != 20]
-                    elif screen_mode == "major_selection": _g_cur_list = [c for c in MAJOR_FORTUNE_IDS if c not in game.vanished and c not in hi_ev and c not in fi_ev]
+                    elif screen_mode == "major_selection": _g_cur_list = [c for c in MAJOR_FORTUNE_IDS if c == game.get_allowed_major_id() and c not in game.vanished and c not in hi_ev and c not in fi_ev]
                     _g_max_scroll = get_card_grid_max_scroll(len(_g_cur_list), H)
                     _g_sb_w = 14
                     _g_track_x = W - 30
@@ -2076,17 +2610,18 @@ def safe_main():
                                 if pygame.Rect(gx, gy, VIEW_CARD_W, VIEW_CARD_H).collidepoint(e.pos):
                                     previous_viewer_mode = screen_mode
                                     preview_cid, screen_mode = cid, "preview_view"; preview_scrolls = {"current":0,"max":0}
+                                    preview_locked_mode = False
                                     break
                     if e.type == pygame.MOUSEWHEEL:
                         hi, fi = [h['id'] for h in game.hand], [f['id'] for f in (game.fortune_zone+game.major_zone)]
                         cur_list = []
-                        if screen_mode == "ppf_selection": cur_list = [c for c in game.ids if c not in MAJOR_FORTUNE_IDS and c not in game.vanished and c not in hi and c not in fi]
+                        if screen_mode == "ppf_selection": cur_list = [c for c in game.ids if c in game.get_allowed_fortune_ids() and c not in MAJOR_FORTUNE_IDS and c not in game.vanished and c not in hi and c not in fi]
                         elif screen_mode == "world_restore_view": cur_list = [vid for vid in game.vanished if vid != 20]
                         elif screen_mode == "deck": cur_list = game.deck
                         elif screen_mode == "vanish_view": cur_list = game.vanished
                         elif screen_mode == "prophet_selection": cur_list = [c for c in game.ids if c != 20 and c not in hi and c not in fi]
                         elif screen_mode == "stack_selection": cur_list = [c for c in game.deck if c != 20]
-                        elif screen_mode == "major_selection": cur_list = [c for c in MAJOR_FORTUNE_IDS if c not in game.vanished and c not in hi and c not in fi]
+                        elif screen_mode == "major_selection": cur_list = [c for c in MAJOR_FORTUNE_IDS if c == game.get_allowed_major_id() and c not in game.vanished and c not in hi and c not in fi]
                         max_scroll = get_card_grid_max_scroll(len(cur_list), H)
                         scroll_y = clamp(scroll_y - e.y*60, 0, max_scroll)
                     if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
@@ -2097,32 +2632,38 @@ def safe_main():
                             scroll_y = int(_g_rel / max(1, _g_track_h - _g_handle_h) * _g_max_scroll)
                         else:
                             hi, fi = [h['id'] for h in game.hand], [f['id'] for f in (game.fortune_zone+game.major_zone)]; cur_list = []
-                            if screen_mode == "ppf_selection": cur_list = [c for c in game.ids if c not in MAJOR_FORTUNE_IDS and c not in game.vanished and c not in hi and c not in fi]
+                            if screen_mode == "ppf_selection": cur_list = [c for c in game.ids if c in game.get_allowed_fortune_ids() and c not in MAJOR_FORTUNE_IDS and c not in game.vanished and c not in hi and c not in fi]
                             elif screen_mode == "world_restore_view": cur_list = [vid for vid in game.vanished if vid != 20]
                             elif screen_mode == "deck": cur_list = game.deck
                             elif screen_mode == "vanish_view": cur_list = game.vanished
                             elif screen_mode == "prophet_selection": cur_list = [c for c in game.ids if c != 20 and c not in hi and c not in fi]
                             elif screen_mode == "stack_selection": cur_list = [c for c in game.deck if c != 20]
-                            elif screen_mode == "major_selection": cur_list = [c for c in MAJOR_FORTUNE_IDS if c not in game.vanished and c not in hi and c not in fi]
+                            elif screen_mode == "major_selection": cur_list = [c for c in MAJOR_FORTUNE_IDS if c == game.get_allowed_major_id() and c not in game.vanished and c not in hi and c not in fi]
                             for i, cid in enumerate(cur_list):
                                 gx, gy = VIEW_START_X+(i%6)*CELL_W, VIEW_START_Y+(i//6)*CELL_H-scroll_y+160
                                 if pygame.Rect(gx, gy, VIEW_CARD_W, VIEW_CARD_H).collidepoint(e.pos):
                                     if screen_mode == "ppf_selection":
-                                        play_sfx(_sfx_fortune_promo, priority=True)
-                                        game.save_state()
-                                        game.fortune_zone.append({"id": cid, "mode": "fortune", "orientation": "upright", "flip": 0.0, "scroll_up": 0, "scroll_inv": 0, "max_sc_up": 0, "max_sc_inv": 0, "is_vanishing": False, "tapped": False, "ppf_added": True})
-                                        game.ppf_charges -= 1
-                                        game.add_history(f"PP&F: {game.cards[cid]['name']} added to Fortune Zone.", [cid])
-                                        game.rebuild_deck()
-                                        screen_mode = "normal"
+                                        if game.can_promote_card(cid, to_major=False):
+                                            play_sfx(_sfx_fortune_promo, priority=True)
+                                            game.save_state()
+                                            game.fortune_zone.append({"id": cid, "mode": "fortune", "orientation": "upright", "flip": 0.0, "scroll_up": 0, "scroll_inv": 0, "max_sc_up": 0, "max_sc_inv": 0, "is_vanishing": False, "tapped": False, "ppf_added": True})
+                                            game.ppf_charges -= 1
+                                            game.add_history(f"PP&F: {game.cards[cid]['name']} added to Fortune Zone.", [cid])
+                                            game.rebuild_deck()
+                                            screen_mode = "normal"
+                                        else:
+                                            game.toast_msg, game.toast_timer = "Card not enabled in active Fortune loadout.", TOAST_DURATION
                                     elif screen_mode == "major_selection":
-                                        play_sfx(_sfx_major_promo, priority=True)
-                                        game.save_state()
-                                        game.major_zone.append({"id": cid, "mode": "major", "orientation": "upright", "flip": 0.0, "scroll_up": 0, "scroll_inv": 0, "max_sc_up": 0, "max_sc_inv": 0, "is_vanishing": False, "tapped": False, "major_added": True})
-                                        game.major_fortune_used_this_week = True
-                                        game.add_history(f"Major Fortune: {game.cards[cid]['name']} activated.", [cid])
-                                        game.rebuild_deck()
-                                        screen_mode = "normal"
+                                        if game.can_promote_card(cid, to_major=True):
+                                            play_sfx(_sfx_major_promo, priority=True)
+                                            game.save_state()
+                                            game.major_zone.append({"id": cid, "mode": "major", "orientation": "upright", "flip": 0.0, "scroll_up": 0, "scroll_inv": 0, "max_sc_up": 0, "max_sc_inv": 0, "is_vanishing": False, "tapped": False, "major_added": True})
+                                            game.major_fortune_used_this_week = True
+                                            game.add_history(f"Major Fortune: {game.cards[cid]['name']} activated.", [cid])
+                                            game.rebuild_deck()
+                                            screen_mode = "normal"
+                                        else:
+                                            game.toast_msg, game.toast_timer = "Major card not enabled in active Fortune loadout.", TOAST_DURATION
                                     elif screen_mode == "prophet_selection": 
                                         if cid in game.vanished: game.vanished.remove(cid)
                                         if cid in game.deck: game.deck.remove(cid)
@@ -2133,13 +2674,13 @@ def safe_main():
                                         screen_mode = "normal"
                                     elif screen_mode == "world_restore_view": game.vanished.remove(cid); game.hand.append({"id":cid,"mode":"normal","orientation":"upright","flip":0.0,"scroll_up":0,"scroll_inv":0,"max_sc_up":0,"max_sc_inv":0,"is_vanishing":False, "tapped": False}); game.add_history(f"World Restored: {game.cards[cid]['name']} returned to hand.", [cid]); game.rebuild_deck(); screen_mode = "normal"
                                     elif screen_mode == "stack_selection": game.stack_on_top(cid); screen_mode = "normal"
-                                    else: preview_cid, screen_mode = cid, "preview_view"; preview_scrolls = {"current":0,"max":0}
+                                    else: preview_cid, screen_mode = cid, "preview_view"; preview_scrolls = {"current":0,"max":0}; preview_locked_mode = False
                                     break
 
             # --- DRAWING ---
             screen.fill((10, 12, 18))
             # Play menu music in menu/settings if enabled
-            if screen_mode in ["menu", "settings", "slot_menu"] and menu_music_enabled and audio_enabled:
+            if screen_mode in ["menu", "settings", "slot_menu", "fortune_setup"] and menu_music_enabled and audio_enabled:
                 try:
                     pygame.mixer.music.set_volume(menu_music_volume / 100.0)
                 except Exception:
@@ -2187,6 +2728,7 @@ def safe_main():
                 menu_lvl_dd.draw_base(screen, f_small)
                 start_game_btn.draw(screen, f_small, dt)
                 menu_load_btn.draw(screen, f_small, dt)
+                menu_fortune_btn.draw(screen, f_small, dt)
                 settings_btn.draw(screen, f_small, dt)
                 menu_quit_btn.draw(screen, f_small, dt)
                 menu_lvl_dd.draw_menu(screen, f_small)
@@ -2245,6 +2787,148 @@ def safe_main():
                 settings_back_btn.draw(screen, f_small, dt)
                 settings_exit_btn.draw(screen, f_small, dt)
                 settings_music_dd.draw_menu(screen, f_small)
+
+            elif screen_mode == "fortune_setup":
+                screen.blit(menu_bg, (0, 0))
+                _vignette = pygame.Surface((W, H), pygame.SRCALPHA)
+                _vignette.fill((10, 6, 14, 110))
+                screen.blit(_vignette, (0, 0))
+                _outer = fortune_setup_box.inflate(22, 24)
+                draw_round_rect(screen, _outer, (36, 20, 12, 220), 24)
+                pygame.draw.rect(screen, (120, 86, 42, 220), _outer, 3, 24)
+                draw_round_rect(screen, fortune_setup_box, (18, 14, 24, 235), 20)
+                pygame.draw.rect(screen, (235, 190, 60, 180), fortune_setup_box, 2, 20)
+                _title = f_fortune_title.render("FORTUNE CARD SELECTION", True, GOLD)
+                screen.blit(_title, (fortune_setup_box.centerx - _title.get_width() // 2, fortune_setup_box.y + 20))
+                _hint = f_fortune_small.render("SELECT THE ONLY CARDS THAT CAN BE PROMOTED TO FORTUNE / MAJOR FORTUNE", True, (228, 204, 156))
+                screen.blit(_hint, (fortune_setup_box.centerx - _hint.get_width() // 2, fortune_setup_box.y + 78))
+                _slots = f_fortune_body.render(f"SELECTED: {_fortune_slots_summary()}", True, (230, 215, 175))
+                screen.blit(_slots, (fortune_setup_box.x + 40, fortune_setup_box.y + 175))
+                fortune_lvl_dd.set_value(game.level)
+                fortune_lvl_dd.draw_base(screen, f_fortune_body)
+                active_ld = game.get_active_fortune_loadout()
+                for _idx, _btn in enumerate(fortune_loadout_buttons):
+                    _btn.warning = (_idx == game.active_fortune_loadout)
+                    _btn.primary = (_idx != game.active_fortune_loadout)
+                    _btn.draw(screen, f_fortune_small, dt)
+                _mj_hdr = f_fortune_small.render("MAJOR FORTUNE CARDS ARE LISTED LAST", True, (238, 175, 175))
+                screen.blit(_mj_hdr, (fortune_setup_box.x + 40, fortune_setup_box.y + 204))
+                _build_fortune_card_buttons()
+                _grid_clip = _fortune_grid_clip_rect()
+                _right_col_gap = 22
+                _right_col_x = _grid_clip.right + _right_col_gap
+                _right_col_r = pygame.Rect(_right_col_x, _grid_clip.y, fortune_setup_box.right - 34 - _right_col_x, _grid_clip.h)
+                _title_band_h = 30
+                _mid_gap = 18
+                _right_box_h = (_right_col_r.h - (_title_band_h * 2) - _mid_gap) // 2
+                _right_top_title_r = pygame.Rect(_right_col_r.x, _right_col_r.y, _right_col_r.w, _title_band_h)
+                _right_top_box = pygame.Rect(_right_col_r.x, _right_top_title_r.bottom, _right_col_r.w, _right_box_h)
+                _right_bottom_title_r = pygame.Rect(_right_col_r.x, _right_top_box.bottom + _mid_gap, _right_col_r.w, _title_band_h)
+                _right_bottom_box = pygame.Rect(_right_col_r.x, _right_bottom_title_r.bottom, _right_col_r.w, _right_box_h)
+                _clip_prev = screen.get_clip()
+                screen.set_clip(_grid_clip)
+                for _hdr, _hy, _hh, _unlocked in fortune_section_headers:
+                    _hdr_box = pygame.Rect(_grid_clip.x + 4, _hy, _grid_clip.w - 8, _hh)
+                    draw_round_rect(screen, _hdr_box, (26, 22, 32, 210), 8)
+                    pygame.draw.rect(screen, (220, 186, 108) if _unlocked else (130, 96, 76), _hdr_box, 1, 8)
+                    _hc = (236, 214, 170) if _unlocked else (165, 128, 112)
+                    _hs = f_fortune_small.render(_hdr, True, _hc)
+                    screen.blit(_hs, (_hdr_box.x + 10, _hdr_box.centery - _hs.get_height() // 2))
+                for _cid, _rect, _mode in fortune_card_buttons:
+                    _show_back = _rect.collidepoint(m_pos)
+                    _face = _get_mode_back_surface(_cid, _mode, _rect.w, _rect.h) if _show_back else view_tex[_cid]
+                    _art = pygame.transform.smoothscale(_face, (_rect.w, _rect.h))
+                    screen.blit(_art, _rect.topleft)
+                    draw_card_glitter(screen, _rect, pygame.time.get_ticks() / 1000.0, "red" if _mode == "major" else "gold")
+                    _selected = (active_ld.get("major_id") == _cid) if _mode == "major" else (_cid in active_ld.get("fortune_ids", []))
+                    _hover = _rect.collidepoint(m_pos)
+                    if _selected:
+                        _sel_glow = pygame.Surface((_rect.w + 20, _rect.h + 20), pygame.SRCALPHA)
+                        _gcol = (235, 120, 95, 120) if _mode == "major" else (235, 190, 60, 120)
+                        pygame.draw.rect(_sel_glow, _gcol, _sel_glow.get_rect(), 8, 14)
+                        screen.blit(_sel_glow, (_rect.x - 10, _rect.y - 10))
+                    _edge = (255, 120, 120) if (_selected and _mode == "major") else (GOLD if _selected else ((225, 190, 120) if _hover else (120, 86, 62)))
+                    pygame.draw.rect(screen, _edge, _rect, 3, 12)
+                    _cb = _fortune_checkbox_rect(_rect)
+                    draw_round_rect(screen, _cb, (18, 26, 16, 210), 4)
+                    pygame.draw.rect(screen, (250, 230, 160), _cb, 1, 4)
+                    if _selected:
+                        _p1 = (_cb.x + 2, _cb.centery)
+                        _p2 = (_cb.x + (_cb.w // 2), _cb.bottom - 3)
+                        _p3 = (_cb.right - 2, _cb.y + 2)
+                        pygame.draw.line(screen, (255, 226, 118), _p1, _p2, 2)
+                        pygame.draw.line(screen, (255, 226, 118), _p2, _p3, 2)
+                        _st = f_fortune_small.render("SELECTED", True, (255, 230, 170))
+                        screen.blit(_st, (_rect.x + 10, _rect.y + 10))
+                screen.set_clip(_clip_prev)
+                pygame.draw.rect(screen, (235, 190, 60, 80), _grid_clip, 1, 8)
+                draw_round_rect(screen, _right_top_title_r, (28, 22, 32, 220), 10)
+                pygame.draw.rect(screen, (220, 186, 108), _right_top_title_r, 1, 10)
+                draw_round_rect(screen, _right_top_box, (20, 18, 30, 225), 12)
+                pygame.draw.rect(screen, (220, 186, 108), _right_top_box, 2, 12)
+                draw_round_rect(screen, _right_bottom_title_r, (28, 22, 32, 220), 10)
+                pygame.draw.rect(screen, (220, 186, 108), _right_bottom_title_r, 1, 10)
+                draw_round_rect(screen, _right_bottom_box, (20, 18, 30, 225), 12)
+                pygame.draw.rect(screen, (220, 186, 108), _right_bottom_box, 2, 12)
+
+                # CUSTOM TITLE SLOT (TOP): replace this title text.
+                _rt_title = f_fortune_small.render("Fortune Cards", True, (236, 214, 170))
+                screen.blit(_rt_title, (_right_top_title_r.x + 12, _right_top_title_r.centery - _rt_title.get_height() // 2))
+                # CUSTOM TEXT SLOT (TOP BOX): replace these lines with your own text/content.
+                def _wrap_to_width(_txt, _font, _max_w):
+                    _txt = str(_txt)
+                    if not _txt.strip():
+                        return [""]
+                    _words = _txt.split(" ")
+                    _lines = []
+                    _cur = _words[0]
+                    for _w in _words[1:]:
+                        _cand = f"{_cur} {_w}"
+                        if _font.size(_cand)[0] <= _max_w:
+                            _cur = _cand
+                        else:
+                            _lines.append(_cur)
+                            _cur = _w
+                    _lines.append(_cur)
+                    return _lines
+                _top_box_source_lines = [
+                    "At 6th level, you gain Three special Fortune cards within your Tarot deck.",
+                    "Each of these Fortune cards has different ability than displayed on the Tarot Table, but still has a different effect depending on whether it is Upright or Reverse. When you draw a Fortune card you can choose to apply its Fortune card ability, or its Tarot Table ability. You can hold one Tapped Fortune card in addition to your hand size.",
+                    "",
+                    "Past, Present and Future:",
+                    "Once per turn, (or as a free action out of combat) you can choose to pull One Fortune Card from your deck and use its effect without having to roll on the Tarot Table. You can use this feature up to three times per long rest.",
+                    "",
+                    "",
+                    "You gain two additional Fortune card options at 9th, 13th, and 17th level. Also each time you gain a Level, you can replace one of your Fortune Cards for another.",
+                ]
+                _top_max_w = _right_top_box.w - 28
+                _top_lines = []
+                for _src in _top_box_source_lines:
+                    _top_lines.extend(_wrap_to_width(_src, f_fortune_small, _top_max_w))
+                _ty = _right_top_box.y + 14
+                _lh = f_fortune_small.get_linesize()
+                for _line in _top_lines:
+                    if _ty + _lh > _right_top_box.bottom - 10:
+                        break
+                    _line_col = (238, 210, 162) if _line == "Past, Present and Future:" else (218, 196, 152)
+                    _line_txt = f_fortune_small.render(_line, True, _line_col)
+                    screen.blit(_line_txt, (_right_top_box.x + 14, _ty))
+                    _ty += _lh
+                # CUSTOM TITLE SLOT (BOTTOM): replace this title text.
+                _rb_title = f_fortune_small.render("Major Fortune Cards", True, (236, 214, 170))
+                screen.blit(_rb_title, (_right_bottom_title_r.x + 12, _right_bottom_title_r.centery - _rb_title.get_height() // 2))
+                # CUSTOM TEXT SLOT (BOTTOM BOX): replace these lines with your own text/content.
+                _rb_l1 = f_fortune_small.render("CUSTOM TEXT GOES HERE", True, (218, 196, 152))
+                _rb_l2 = f_fortune_small.render("Line 2 placeholder", True, (196, 175, 138))
+                screen.blit(_rb_l1, (_right_bottom_box.x + 14, _right_bottom_box.y + 16))
+                screen.blit(_rb_l2, (_right_bottom_box.x + 14, _right_bottom_box.y + 42))
+
+                _ctrl = f_fortune_small.render("LEFT CLICK CARD/CHECKBOX: SELECT    HOVER CARD: FLIP", True, (220, 201, 154))
+                _bottom_text_y = _grid_clip.bottom + 12
+                screen.blit(_ctrl, (fortune_setup_box.centerx - _ctrl.get_width() // 2, _bottom_text_y))
+                fortune_clear_btn.draw(screen, f_fortune_small, dt)
+                fortune_save_btn.draw(screen, f_fortune_small, dt)
+                fortune_back_btn.draw(screen, f_fortune_small, dt)
             
             elif screen_mode == "normal":
                 screen.blit(normal_bg, (0, 0))
@@ -2412,6 +3096,12 @@ def safe_main():
                         
                         card_x = x + (HAND_CARD_W - sw) // 2
                         screen.blit(pygame.transform.smoothscale(content, (sw, HAND_CARD_H)), (card_x, y))
+                        if zone == game.hand and game.is_card_promotion_enabled(h['id']):
+                            _stamp = pygame.Rect(card_x + HAND_CARD_W - 112, y + 8, 100, 26)
+                            draw_round_rect(screen, _stamp, (28, 54, 22, 210), 10)
+                            pygame.draw.rect(screen, (225, 210, 120), _stamp, 1, 10)
+                            _stxt = f_tiny.render("PROMOTABLE", True, (235, 230, 165))
+                            screen.blit(_stxt, _stxt.get_rect(center=_stamp.center))
                         if zone == game.fortune_zone:
                             draw_card_glitter(screen, pygame.Rect(card_x, y, sw, HAND_CARD_H), pygame.time.get_ticks() / 1000.0, "gold")
                         elif zone == game.major_zone:
@@ -2463,7 +3153,7 @@ def safe_main():
                     _menu_item_h = 35
                     _menu_gap = 4
                     _menu_pad = 8
-                    _menu_count = 4
+                    _menu_count = 5
                     _menu_h = (_menu_pad * 2) + (_menu_count * _menu_item_h) + ((_menu_count - 1) * _menu_gap)
                     _menu_bg = pygame.Rect(hamburger_btn.rect.right - 160, hamburger_btn.rect.bottom + 5, 160, _menu_h)
                     draw_round_rect(screen, _menu_bg, (18, 24, 38, 230), 10)
@@ -2472,10 +3162,12 @@ def safe_main():
                     menu_btn.rect = pygame.Rect(_menu_bg.x + 10, _menu_bg.y + _menu_pad, _menu_item_w, _menu_item_h)
                     save_btn.rect = pygame.Rect(_menu_bg.x + 10, menu_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
                     load_btn.rect = pygame.Rect(_menu_bg.x + 10, save_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
-                    quit_btn.rect = pygame.Rect(_menu_bg.x + 10, load_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
+                    fortune_menu_btn.rect = pygame.Rect(_menu_bg.x + 10, load_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
+                    quit_btn.rect = pygame.Rect(_menu_bg.x + 10, fortune_menu_btn.rect.bottom + _menu_gap, _menu_item_w, _menu_item_h)
                     menu_btn.draw(screen, f_tiny, dt)
                     save_btn.draw(screen, f_tiny, dt)
                     load_btn.draw(screen, f_tiny, dt)
+                    fortune_menu_btn.draw(screen, f_tiny, dt)
                     quit_btn.draw(screen, f_tiny, dt)
                 rest_menu_btn.rect = pygame.Rect(_controls_x + _menu_sz + _btn_gap, _controls_y, _rest_sz, _rest_sz)
                 rest_menu_btn.draw(screen, f_tiny, dt)
@@ -2753,13 +3445,13 @@ def safe_main():
                     screen.blit(_dim, (0, 0))
 
                 hi, fi, cur_list = [h['id'] for h in game.hand], [f['id'] for f in (game.fortune_zone+game.major_zone)], []
-                if screen_mode == "ppf_selection": cur_list = [c for c in game.ids if c not in MAJOR_FORTUNE_IDS and c not in game.vanished and c not in hi and c not in fi]
+                if screen_mode == "ppf_selection": cur_list = [c for c in game.ids if c in game.get_allowed_fortune_ids() and c not in MAJOR_FORTUNE_IDS and c not in game.vanished and c not in hi and c not in fi]
                 elif screen_mode == "world_restore_view": cur_list = [vid for vid in game.vanished if vid != 20]
                 elif screen_mode == "deck": cur_list = game.deck
                 elif screen_mode == "vanish_view": cur_list = game.vanished
                 elif screen_mode == "prophet_selection": cur_list = [c for c in game.ids if c != 20 and c not in hi and c not in fi]
                 elif screen_mode == "stack_selection": cur_list = [c for c in game.deck if c != 20]
-                elif screen_mode == "major_selection": cur_list = [c for c in MAJOR_FORTUNE_IDS if c not in game.vanished and c not in hi and c not in fi]
+                elif screen_mode == "major_selection": cur_list = [c for c in MAJOR_FORTUNE_IDS if c == game.get_allowed_major_id() and c not in game.vanished and c not in hi and c not in fi]
                 
                 if screen_mode == "deck":
                     title_text = "MAIN DECK"
