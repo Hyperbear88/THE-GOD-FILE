@@ -1,0 +1,2812 @@
+{
+  "version": 1,
+  "saved_at": "2026-02-28 13:43:44",
+  "screen_mode": "normal",
+  "scroll_y": 0,
+  "history_overlay_open": false,
+  "history_scroll": 0,
+  "top_menu_open": false,
+  "rest_menu_open": false,
+  "game": {
+    "deck": [
+      19,
+      10,
+      5,
+      1,
+      14,
+      15,
+      8,
+      18,
+      4,
+      17,
+      2,
+      7,
+      16,
+      9,
+      3,
+      20,
+      11
+    ],
+    "hand": [
+      {
+        "id": 6,
+        "mode": "normal",
+        "orientation": "upright",
+        "flip": 0,
+        "scroll_up": 0,
+        "scroll_inv": 0,
+        "max_sc_up": 0,
+        "max_sc_inv": 0,
+        "is_vanishing": false,
+        "tapped": false
+      },
+      {
+        "id": 12,
+        "mode": "normal",
+        "orientation": "upright",
+        "flip": 0,
+        "scroll_up": 0,
+        "scroll_inv": 0,
+        "max_sc_up": 131,
+        "max_sc_inv": 115,
+        "is_vanishing": false,
+        "tapped": false
+      }
+    ],
+    "fortune_zone": [],
+    "major_zone": [
+      {
+        "id": 13,
+        "mode": "major",
+        "orientation": "upright",
+        "flip": 0,
+        "scroll_up": 0,
+        "scroll_inv": 0,
+        "max_sc_up": 185,
+        "max_sc_inv": 115,
+        "is_vanishing": false,
+        "tapped": false
+      }
+    ],
+    "vanished": [],
+    "stacked": null,
+    "first_three_ids": [
+      5,
+      6,
+      12
+    ],
+    "seer_dice_table": [
+      5,
+      6,
+      12
+    ],
+    "days_until_major": 0,
+    "days_passed": 3,
+    "shuffle_time": 0.0,
+    "history_log": [
+      {
+        "text": "[13:33] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+        "card_ids": []
+      },
+      {
+        "text": "[13:33] Drew 1 card(s): The Devil",
+        "card_ids": [
+          14
+        ]
+      },
+      {
+        "text": "[13:34] Long Rest (Day 2): Hand returned to deck. Deck shuffled.",
+        "card_ids": []
+      },
+      {
+        "text": "[13:34] Prophet of Fortune: The Fool selected.",
+        "card_ids": [
+          1
+        ]
+      },
+      {
+        "text": "[13:34] Drew 3 card(s): The Fool, The Tower, The Star",
+        "card_ids": [
+          1,
+          15,
+          16
+        ]
+      },
+      {
+        "text": "[13:34] The Star was Tapped.",
+        "card_ids": [
+          16
+        ]
+      },
+      {
+        "text": "[13:34] The Star was Used and Vanished.",
+        "card_ids": [
+          16
+        ]
+      },
+      {
+        "text": "[13:36] The Tower moved to Fortune Zone.",
+        "card_ids": [
+          15
+        ]
+      },
+      {
+        "text": "[13:36] Major Fortune: Death activated.",
+        "card_ids": [
+          13
+        ]
+      },
+      {
+        "text": "[13:36] Long Rest (Day 3): Hand returned to deck. Deck shuffled.",
+        "card_ids": []
+      },
+      {
+        "text": "[13:36] Prophet of Fortune: The Emperor selected.",
+        "card_ids": [
+          5
+        ]
+      },
+      {
+        "text": "[13:36] Drew 3 card(s): The Emperor, The Hierophant, The Hanged Man",
+        "card_ids": [
+          5,
+          6,
+          12
+        ]
+      },
+      {
+        "text": "[13:36] Fate: Death stacked on top.",
+        "card_ids": [
+          13
+        ]
+      },
+      {
+        "text": "[13:37] Mulligan: The Emperor -> Shuffled.",
+        "card_ids": [
+          5
+        ]
+      },
+      {
+        "text": "[13:37] Drew 1 card(s): Death",
+        "card_ids": [
+          13
+        ]
+      },
+      {
+        "text": "[13:37] Death moved to Major Zone.",
+        "card_ids": [
+          13
+        ]
+      },
+      {
+        "text": "[13:37] Death returned to Hand.",
+        "card_ids": [
+          13
+        ]
+      },
+      {
+        "text": "[13:40] Death moved to Major Zone.",
+        "card_ids": [
+          13
+        ]
+      }
+    ],
+    "history": [
+      {
+        "deck": [
+          19,
+          11,
+          14,
+          9,
+          17,
+          12,
+          6,
+          18,
+          8,
+          15,
+          10,
+          7,
+          5,
+          1,
+          20,
+          16,
+          13,
+          2,
+          4,
+          3
+        ],
+        "hand": [],
+        "fortune_zone": [],
+        "major_zone": [],
+        "vanished": [],
+        "stacked": null,
+        "f3": [],
+        "cd": 0,
+        "days": 0,
+        "limit": 1,
+        "table": [],
+        "history": [],
+        "level": 1,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": false,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 0,
+        "draw_of_fate": 0,
+        "draw_of_fate_cur": 0,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 4",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 5",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 6",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 7",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 8",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 9",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 10",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      },
+      {
+        "deck": [
+          19,
+          11,
+          9,
+          6,
+          2,
+          10,
+          20,
+          12,
+          1,
+          13,
+          4,
+          8,
+          7,
+          3,
+          18,
+          16,
+          15,
+          5,
+          17
+        ],
+        "hand": [
+          {
+            "id": 14,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 104,
+            "max_sc_inv": 115,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "fortune_zone": [],
+        "major_zone": [],
+        "vanished": [],
+        "stacked": null,
+        "f3": [
+          14
+        ],
+        "cd": 0,
+        "days": 1,
+        "limit": 3,
+        "table": [
+          14
+        ],
+        "history": [
+          {
+            "text": "[13:33] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:33] Drew 1 card(s): The Devil",
+            "card_ids": [
+              14
+            ]
+          }
+        ],
+        "level": 19,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": false,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 1,
+        "draw_of_fate": 0,
+        "draw_of_fate_cur": 0,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 4",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 5",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 6",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 7",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 8",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 9",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 10",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      },
+      {
+        "deck": [
+          12,
+          6,
+          5,
+          7,
+          11,
+          20,
+          10,
+          17,
+          13,
+          14,
+          3,
+          18,
+          4,
+          2,
+          8,
+          9,
+          19
+        ],
+        "hand": [
+          {
+            "id": 1,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 15,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 16,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 77,
+            "max_sc_inv": 115,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "fortune_zone": [],
+        "major_zone": [],
+        "vanished": [],
+        "stacked": null,
+        "f3": [
+          1,
+          15,
+          16
+        ],
+        "cd": 0,
+        "days": 2,
+        "limit": 3,
+        "table": [
+          1,
+          15,
+          16
+        ],
+        "history": [
+          {
+            "text": "[13:33] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:33] Drew 1 card(s): The Devil",
+            "card_ids": [
+              14
+            ]
+          },
+          {
+            "text": "[13:34] Long Rest (Day 2): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:34] Prophet of Fortune: The Fool selected.",
+            "card_ids": [
+              1
+            ]
+          },
+          {
+            "text": "[13:34] Drew 3 card(s): The Fool, The Tower, The Star",
+            "card_ids": [
+              1,
+              15,
+              16
+            ]
+          }
+        ],
+        "level": 19,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": false,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 3,
+        "draw_of_fate": 0,
+        "draw_of_fate_cur": 0,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 4",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 5",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 6",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 7",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 8",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 9",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 10",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      },
+      {
+        "deck": [
+          12,
+          6,
+          5,
+          7,
+          11,
+          20,
+          10,
+          17,
+          13,
+          14,
+          3,
+          18,
+          4,
+          2,
+          8,
+          9,
+          19
+        ],
+        "hand": [
+          {
+            "id": 1,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 15,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 16,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 77,
+            "max_sc_inv": 115,
+            "is_vanishing": false,
+            "tapped": true
+          }
+        ],
+        "fortune_zone": [],
+        "major_zone": [],
+        "vanished": [],
+        "stacked": null,
+        "f3": [
+          1,
+          15,
+          16
+        ],
+        "cd": 0,
+        "days": 2,
+        "limit": 3,
+        "table": [
+          1,
+          15,
+          16
+        ],
+        "history": [
+          {
+            "text": "[13:33] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:33] Drew 1 card(s): The Devil",
+            "card_ids": [
+              14
+            ]
+          },
+          {
+            "text": "[13:34] Long Rest (Day 2): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:34] Prophet of Fortune: The Fool selected.",
+            "card_ids": [
+              1
+            ]
+          },
+          {
+            "text": "[13:34] Drew 3 card(s): The Fool, The Tower, The Star",
+            "card_ids": [
+              1,
+              15,
+              16
+            ]
+          },
+          {
+            "text": "[13:34] The Star was Tapped.",
+            "card_ids": [
+              16
+            ]
+          }
+        ],
+        "level": 19,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": false,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 3,
+        "draw_of_fate": 0,
+        "draw_of_fate_cur": 0,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 4",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 5",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 6",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 7",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 8",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 9",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 10",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      },
+      {
+        "deck": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          17,
+          18,
+          19,
+          20
+        ],
+        "hand": [
+          {
+            "id": 1,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 15,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 1,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 104,
+            "max_sc_inv": 115,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "fortune_zone": [],
+        "major_zone": [],
+        "vanished": [
+          16
+        ],
+        "stacked": null,
+        "f3": [
+          1,
+          15,
+          16
+        ],
+        "cd": 0,
+        "days": 2,
+        "limit": 3,
+        "table": [
+          1,
+          15,
+          16
+        ],
+        "history": [
+          {
+            "text": "[13:33] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:33] Drew 1 card(s): The Devil",
+            "card_ids": [
+              14
+            ]
+          },
+          {
+            "text": "[13:34] Long Rest (Day 2): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:34] Prophet of Fortune: The Fool selected.",
+            "card_ids": [
+              1
+            ]
+          },
+          {
+            "text": "[13:34] Drew 3 card(s): The Fool, The Tower, The Star",
+            "card_ids": [
+              1,
+              15,
+              16
+            ]
+          },
+          {
+            "text": "[13:34] The Star was Tapped.",
+            "card_ids": [
+              16
+            ]
+          },
+          {
+            "text": "[13:34] The Star was Used and Vanished.",
+            "card_ids": [
+              16
+            ]
+          }
+        ],
+        "level": 19,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": false,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 3,
+        "draw_of_fate": 0,
+        "draw_of_fate_cur": 0,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [
+              5,
+              3,
+              10,
+              8,
+              17,
+              18,
+              19,
+              15,
+              14
+            ],
+            "major_id": 13
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 4",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 5",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 6",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 7",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 8",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 9",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 10",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      },
+      {
+        "deck": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          17,
+          18,
+          19,
+          20
+        ],
+        "hand": [
+          {
+            "id": 1,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "fortune_zone": [
+          {
+            "id": 15,
+            "mode": "fortune",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 266,
+            "max_sc_inv": 115,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "major_zone": [],
+        "vanished": [
+          16
+        ],
+        "stacked": null,
+        "f3": [
+          1,
+          15,
+          16
+        ],
+        "cd": 0,
+        "days": 2,
+        "limit": 3,
+        "table": [
+          1,
+          15,
+          16
+        ],
+        "history": [
+          {
+            "text": "[13:33] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:33] Drew 1 card(s): The Devil",
+            "card_ids": [
+              14
+            ]
+          },
+          {
+            "text": "[13:34] Long Rest (Day 2): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:34] Prophet of Fortune: The Fool selected.",
+            "card_ids": [
+              1
+            ]
+          },
+          {
+            "text": "[13:34] Drew 3 card(s): The Fool, The Tower, The Star",
+            "card_ids": [
+              1,
+              15,
+              16
+            ]
+          },
+          {
+            "text": "[13:34] The Star was Tapped.",
+            "card_ids": [
+              16
+            ]
+          },
+          {
+            "text": "[13:34] The Star was Used and Vanished.",
+            "card_ids": [
+              16
+            ]
+          },
+          {
+            "text": "[13:36] The Tower moved to Fortune Zone.",
+            "card_ids": [
+              15
+            ]
+          }
+        ],
+        "level": 19,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": false,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 3,
+        "draw_of_fate": 0,
+        "draw_of_fate_cur": 0,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [
+              5,
+              3,
+              10,
+              8,
+              17,
+              18,
+              19,
+              15,
+              14
+            ],
+            "major_id": 13
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 4",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 5",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 6",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 7",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 8",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 9",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 10",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      },
+      {
+        "deck": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          14,
+          17,
+          18,
+          19,
+          20
+        ],
+        "hand": [
+          {
+            "id": 1,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "fortune_zone": [
+          {
+            "id": 15,
+            "mode": "fortune",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 266,
+            "max_sc_inv": 115,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "major_zone": [
+          {
+            "id": 13,
+            "mode": "major",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false,
+            "major_added": true
+          }
+        ],
+        "vanished": [
+          16
+        ],
+        "stacked": null,
+        "f3": [
+          1,
+          15,
+          16
+        ],
+        "cd": 0,
+        "days": 2,
+        "limit": 3,
+        "table": [
+          1,
+          15,
+          16
+        ],
+        "history": [
+          {
+            "text": "[13:33] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:33] Drew 1 card(s): The Devil",
+            "card_ids": [
+              14
+            ]
+          },
+          {
+            "text": "[13:34] Long Rest (Day 2): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:34] Prophet of Fortune: The Fool selected.",
+            "card_ids": [
+              1
+            ]
+          },
+          {
+            "text": "[13:34] Drew 3 card(s): The Fool, The Tower, The Star",
+            "card_ids": [
+              1,
+              15,
+              16
+            ]
+          },
+          {
+            "text": "[13:34] The Star was Tapped.",
+            "card_ids": [
+              16
+            ]
+          },
+          {
+            "text": "[13:34] The Star was Used and Vanished.",
+            "card_ids": [
+              16
+            ]
+          },
+          {
+            "text": "[13:36] The Tower moved to Fortune Zone.",
+            "card_ids": [
+              15
+            ]
+          },
+          {
+            "text": "[13:36] Major Fortune: Death activated.",
+            "card_ids": [
+              13
+            ]
+          }
+        ],
+        "level": 19,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": true,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 3,
+        "draw_of_fate": 6,
+        "draw_of_fate_cur": 0,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [
+              5,
+              3,
+              10,
+              8,
+              17,
+              18,
+              19,
+              15,
+              14
+            ],
+            "major_id": 13
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 4",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 5",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 6",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 7",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 8",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 9",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 10",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      },
+      {
+        "deck": [
+          13,
+          16,
+          2,
+          20,
+          18,
+          1,
+          14,
+          15,
+          7,
+          8,
+          10,
+          9,
+          4,
+          11,
+          17,
+          19,
+          3
+        ],
+        "hand": [
+          {
+            "id": 5,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 6,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 12,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "fortune_zone": [],
+        "major_zone": [],
+        "vanished": [],
+        "stacked": null,
+        "f3": [
+          5,
+          6,
+          12
+        ],
+        "cd": 0,
+        "days": 3,
+        "limit": 3,
+        "table": [
+          5,
+          6,
+          12
+        ],
+        "history": [
+          {
+            "text": "[13:33] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:33] Drew 1 card(s): The Devil",
+            "card_ids": [
+              14
+            ]
+          },
+          {
+            "text": "[13:34] Long Rest (Day 2): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:34] Prophet of Fortune: The Fool selected.",
+            "card_ids": [
+              1
+            ]
+          },
+          {
+            "text": "[13:34] Drew 3 card(s): The Fool, The Tower, The Star",
+            "card_ids": [
+              1,
+              15,
+              16
+            ]
+          },
+          {
+            "text": "[13:34] The Star was Tapped.",
+            "card_ids": [
+              16
+            ]
+          },
+          {
+            "text": "[13:34] The Star was Used and Vanished.",
+            "card_ids": [
+              16
+            ]
+          },
+          {
+            "text": "[13:36] The Tower moved to Fortune Zone.",
+            "card_ids": [
+              15
+            ]
+          },
+          {
+            "text": "[13:36] Major Fortune: Death activated.",
+            "card_ids": [
+              13
+            ]
+          },
+          {
+            "text": "[13:36] Long Rest (Day 3): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:36] Prophet of Fortune: The Emperor selected.",
+            "card_ids": [
+              5
+            ]
+          },
+          {
+            "text": "[13:36] Drew 3 card(s): The Emperor, The Hierophant, The Hanged Man",
+            "card_ids": [
+              5,
+              6,
+              12
+            ]
+          }
+        ],
+        "level": 19,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": true,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 3,
+        "draw_of_fate": 6,
+        "draw_of_fate_cur": 6,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [
+              5,
+              3,
+              10,
+              8,
+              17,
+              18,
+              19,
+              15,
+              14
+            ],
+            "major_id": 13
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 4",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 5",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 6",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 7",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 8",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 9",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 10",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      },
+      {
+        "deck": [
+          13,
+          16,
+          2,
+          20,
+          18,
+          1,
+          14,
+          15,
+          7,
+          8,
+          10,
+          9,
+          4,
+          11,
+          17,
+          19,
+          3
+        ],
+        "hand": [
+          {
+            "id": 5,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 6,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 12,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "fortune_zone": [],
+        "major_zone": [],
+        "vanished": [],
+        "stacked": null,
+        "f3": [
+          5,
+          6,
+          12
+        ],
+        "cd": 0,
+        "days": 3,
+        "limit": 3,
+        "table": [
+          5,
+          6,
+          12
+        ],
+        "history": [
+          {
+            "text": "[13:33] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:33] Drew 1 card(s): The Devil",
+            "card_ids": [
+              14
+            ]
+          },
+          {
+            "text": "[13:34] Long Rest (Day 2): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:34] Prophet of Fortune: The Fool selected.",
+            "card_ids": [
+              1
+            ]
+          },
+          {
+            "text": "[13:34] Drew 3 card(s): The Fool, The Tower, The Star",
+            "card_ids": [
+              1,
+              15,
+              16
+            ]
+          },
+          {
+            "text": "[13:34] The Star was Tapped.",
+            "card_ids": [
+              16
+            ]
+          },
+          {
+            "text": "[13:34] The Star was Used and Vanished.",
+            "card_ids": [
+              16
+            ]
+          },
+          {
+            "text": "[13:36] The Tower moved to Fortune Zone.",
+            "card_ids": [
+              15
+            ]
+          },
+          {
+            "text": "[13:36] Major Fortune: Death activated.",
+            "card_ids": [
+              13
+            ]
+          },
+          {
+            "text": "[13:36] Long Rest (Day 3): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:36] Prophet of Fortune: The Emperor selected.",
+            "card_ids": [
+              5
+            ]
+          },
+          {
+            "text": "[13:36] Drew 3 card(s): The Emperor, The Hierophant, The Hanged Man",
+            "card_ids": [
+              5,
+              6,
+              12
+            ]
+          }
+        ],
+        "level": 19,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": true,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 3,
+        "draw_of_fate": 6,
+        "draw_of_fate_cur": 5,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [
+              5,
+              3,
+              10,
+              8,
+              17,
+              18,
+              19,
+              15,
+              14
+            ],
+            "major_id": 13
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 4",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 5",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 6",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 7",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 8",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 9",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 10",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      },
+      {
+        "deck": [
+          13,
+          16,
+          2,
+          20,
+          18,
+          1,
+          14,
+          15,
+          7,
+          8,
+          10,
+          9,
+          4,
+          11,
+          17,
+          19,
+          3
+        ],
+        "hand": [
+          {
+            "id": 5,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 6,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 12,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "fortune_zone": [],
+        "major_zone": [],
+        "vanished": [],
+        "stacked": 13,
+        "f3": [
+          5,
+          6,
+          12
+        ],
+        "cd": 0,
+        "days": 3,
+        "limit": 3,
+        "table": [
+          5,
+          6,
+          12
+        ],
+        "history": [
+          {
+            "text": "[13:33] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:33] Drew 1 card(s): The Devil",
+            "card_ids": [
+              14
+            ]
+          },
+          {
+            "text": "[13:34] Long Rest (Day 2): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:34] Prophet of Fortune: The Fool selected.",
+            "card_ids": [
+              1
+            ]
+          },
+          {
+            "text": "[13:34] Drew 3 card(s): The Fool, The Tower, The Star",
+            "card_ids": [
+              1,
+              15,
+              16
+            ]
+          },
+          {
+            "text": "[13:34] The Star was Tapped.",
+            "card_ids": [
+              16
+            ]
+          },
+          {
+            "text": "[13:34] The Star was Used and Vanished.",
+            "card_ids": [
+              16
+            ]
+          },
+          {
+            "text": "[13:36] The Tower moved to Fortune Zone.",
+            "card_ids": [
+              15
+            ]
+          },
+          {
+            "text": "[13:36] Major Fortune: Death activated.",
+            "card_ids": [
+              13
+            ]
+          },
+          {
+            "text": "[13:36] Long Rest (Day 3): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:36] Prophet of Fortune: The Emperor selected.",
+            "card_ids": [
+              5
+            ]
+          },
+          {
+            "text": "[13:36] Drew 3 card(s): The Emperor, The Hierophant, The Hanged Man",
+            "card_ids": [
+              5,
+              6,
+              12
+            ]
+          },
+          {
+            "text": "[13:36] Fate: Death stacked on top.",
+            "card_ids": [
+              13
+            ]
+          }
+        ],
+        "level": 19,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": true,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 3,
+        "draw_of_fate": 6,
+        "draw_of_fate_cur": 5,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [
+              5,
+              3,
+              10,
+              8,
+              17,
+              18,
+              19,
+              15,
+              14
+            ],
+            "major_id": 13
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 4",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 5",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 6",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 7",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 8",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 9",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 10",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      },
+      {
+        "deck": [
+          19,
+          10,
+          5,
+          1,
+          14,
+          15,
+          8,
+          18,
+          4,
+          17,
+          2,
+          7,
+          16,
+          9,
+          3,
+          20,
+          11
+        ],
+        "hand": [
+          {
+            "id": 6,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 12,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 13,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 1,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 185,
+            "max_sc_inv": 115,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "fortune_zone": [],
+        "major_zone": [],
+        "vanished": [],
+        "stacked": null,
+        "f3": [
+          5,
+          6,
+          12
+        ],
+        "cd": 0,
+        "days": 3,
+        "limit": 3,
+        "table": [
+          5,
+          6,
+          12
+        ],
+        "history": [
+          {
+            "text": "[13:33] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:33] Drew 1 card(s): The Devil",
+            "card_ids": [
+              14
+            ]
+          },
+          {
+            "text": "[13:34] Long Rest (Day 2): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:34] Prophet of Fortune: The Fool selected.",
+            "card_ids": [
+              1
+            ]
+          },
+          {
+            "text": "[13:34] Drew 3 card(s): The Fool, The Tower, The Star",
+            "card_ids": [
+              1,
+              15,
+              16
+            ]
+          },
+          {
+            "text": "[13:34] The Star was Tapped.",
+            "card_ids": [
+              16
+            ]
+          },
+          {
+            "text": "[13:34] The Star was Used and Vanished.",
+            "card_ids": [
+              16
+            ]
+          },
+          {
+            "text": "[13:36] The Tower moved to Fortune Zone.",
+            "card_ids": [
+              15
+            ]
+          },
+          {
+            "text": "[13:36] Major Fortune: Death activated.",
+            "card_ids": [
+              13
+            ]
+          },
+          {
+            "text": "[13:36] Long Rest (Day 3): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:36] Prophet of Fortune: The Emperor selected.",
+            "card_ids": [
+              5
+            ]
+          },
+          {
+            "text": "[13:36] Drew 3 card(s): The Emperor, The Hierophant, The Hanged Man",
+            "card_ids": [
+              5,
+              6,
+              12
+            ]
+          },
+          {
+            "text": "[13:36] Fate: Death stacked on top.",
+            "card_ids": [
+              13
+            ]
+          },
+          {
+            "text": "[13:37] Mulligan: The Emperor -> Shuffled.",
+            "card_ids": [
+              5
+            ]
+          },
+          {
+            "text": "[13:37] Drew 1 card(s): Death",
+            "card_ids": [
+              13
+            ]
+          }
+        ],
+        "level": 19,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": true,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 3,
+        "draw_of_fate": 6,
+        "draw_of_fate_cur": 4,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [
+              5,
+              3,
+              10,
+              8,
+              17,
+              18,
+              19,
+              15,
+              14
+            ],
+            "major_id": 13
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 4",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 5",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 6",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 7",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 8",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 9",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 10",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      },
+      {
+        "deck": [
+          19,
+          10,
+          5,
+          1,
+          14,
+          15,
+          8,
+          18,
+          4,
+          17,
+          2,
+          7,
+          16,
+          9,
+          3,
+          20,
+          11
+        ],
+        "hand": [
+          {
+            "id": 6,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 12,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "fortune_zone": [],
+        "major_zone": [
+          {
+            "id": 13,
+            "mode": "major",
+            "orientation": "upright",
+            "flip": 1,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 185,
+            "max_sc_inv": 115,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "vanished": [],
+        "stacked": null,
+        "f3": [
+          5,
+          6,
+          12
+        ],
+        "cd": 0,
+        "days": 3,
+        "limit": 3,
+        "table": [
+          5,
+          6,
+          12
+        ],
+        "history": [
+          {
+            "text": "[13:33] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:33] Drew 1 card(s): The Devil",
+            "card_ids": [
+              14
+            ]
+          },
+          {
+            "text": "[13:34] Long Rest (Day 2): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:34] Prophet of Fortune: The Fool selected.",
+            "card_ids": [
+              1
+            ]
+          },
+          {
+            "text": "[13:34] Drew 3 card(s): The Fool, The Tower, The Star",
+            "card_ids": [
+              1,
+              15,
+              16
+            ]
+          },
+          {
+            "text": "[13:34] The Star was Tapped.",
+            "card_ids": [
+              16
+            ]
+          },
+          {
+            "text": "[13:34] The Star was Used and Vanished.",
+            "card_ids": [
+              16
+            ]
+          },
+          {
+            "text": "[13:36] The Tower moved to Fortune Zone.",
+            "card_ids": [
+              15
+            ]
+          },
+          {
+            "text": "[13:36] Major Fortune: Death activated.",
+            "card_ids": [
+              13
+            ]
+          },
+          {
+            "text": "[13:36] Long Rest (Day 3): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:36] Prophet of Fortune: The Emperor selected.",
+            "card_ids": [
+              5
+            ]
+          },
+          {
+            "text": "[13:36] Drew 3 card(s): The Emperor, The Hierophant, The Hanged Man",
+            "card_ids": [
+              5,
+              6,
+              12
+            ]
+          },
+          {
+            "text": "[13:36] Fate: Death stacked on top.",
+            "card_ids": [
+              13
+            ]
+          },
+          {
+            "text": "[13:37] Mulligan: The Emperor -> Shuffled.",
+            "card_ids": [
+              5
+            ]
+          },
+          {
+            "text": "[13:37] Drew 1 card(s): Death",
+            "card_ids": [
+              13
+            ]
+          },
+          {
+            "text": "[13:37] Death moved to Major Zone.",
+            "card_ids": [
+              13
+            ]
+          }
+        ],
+        "level": 19,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": true,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 3,
+        "draw_of_fate": 6,
+        "draw_of_fate_cur": 4,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [
+              5,
+              3,
+              10,
+              8,
+              17,
+              18,
+              19,
+              15,
+              14
+            ],
+            "major_id": 13
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 4",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 5",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 6",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 7",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 8",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 9",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 10",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      },
+      {
+        "deck": [
+          19,
+          10,
+          5,
+          1,
+          14,
+          15,
+          8,
+          18,
+          4,
+          17,
+          2,
+          7,
+          16,
+          9,
+          3,
+          20,
+          11
+        ],
+        "hand": [
+          {
+            "id": 6,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 12,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 131,
+            "max_sc_inv": 115,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 13,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 1,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 185,
+            "max_sc_inv": 115,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "fortune_zone": [],
+        "major_zone": [],
+        "vanished": [],
+        "stacked": null,
+        "f3": [
+          5,
+          6,
+          12
+        ],
+        "cd": 0,
+        "days": 3,
+        "limit": 3,
+        "table": [
+          5,
+          6,
+          12
+        ],
+        "history": [
+          {
+            "text": "[13:33] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:33] Drew 1 card(s): The Devil",
+            "card_ids": [
+              14
+            ]
+          },
+          {
+            "text": "[13:34] Long Rest (Day 2): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:34] Prophet of Fortune: The Fool selected.",
+            "card_ids": [
+              1
+            ]
+          },
+          {
+            "text": "[13:34] Drew 3 card(s): The Fool, The Tower, The Star",
+            "card_ids": [
+              1,
+              15,
+              16
+            ]
+          },
+          {
+            "text": "[13:34] The Star was Tapped.",
+            "card_ids": [
+              16
+            ]
+          },
+          {
+            "text": "[13:34] The Star was Used and Vanished.",
+            "card_ids": [
+              16
+            ]
+          },
+          {
+            "text": "[13:36] The Tower moved to Fortune Zone.",
+            "card_ids": [
+              15
+            ]
+          },
+          {
+            "text": "[13:36] Major Fortune: Death activated.",
+            "card_ids": [
+              13
+            ]
+          },
+          {
+            "text": "[13:36] Long Rest (Day 3): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[13:36] Prophet of Fortune: The Emperor selected.",
+            "card_ids": [
+              5
+            ]
+          },
+          {
+            "text": "[13:36] Drew 3 card(s): The Emperor, The Hierophant, The Hanged Man",
+            "card_ids": [
+              5,
+              6,
+              12
+            ]
+          },
+          {
+            "text": "[13:36] Fate: Death stacked on top.",
+            "card_ids": [
+              13
+            ]
+          },
+          {
+            "text": "[13:37] Mulligan: The Emperor -> Shuffled.",
+            "card_ids": [
+              5
+            ]
+          },
+          {
+            "text": "[13:37] Drew 1 card(s): Death",
+            "card_ids": [
+              13
+            ]
+          },
+          {
+            "text": "[13:37] Death moved to Major Zone.",
+            "card_ids": [
+              13
+            ]
+          },
+          {
+            "text": "[13:37] Death returned to Hand.",
+            "card_ids": [
+              13
+            ]
+          }
+        ],
+        "level": 19,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": true,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 3,
+        "draw_of_fate": 6,
+        "draw_of_fate_cur": 4,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [
+              5,
+              3,
+              10,
+              8,
+              17,
+              18,
+              19,
+              15,
+              14
+            ],
+            "major_id": 13
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 4",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 5",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 6",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 7",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 8",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 9",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 10",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      }
+    ],
+    "toast_msg": "Death moved to Major Zone.",
+    "toast_timer": 0.0,
+    "level": 19,
+    "used_major_ids": [],
+    "hand_limit": 3,
+    "ppf_charges": 3,
+    "draw_queue": [],
+    "draw_timer": -0.004000000000000087,
+    "is_drawing": false,
+    "major_fortune_used_this_week": true,
+    "divine_intervention_used_this_week": false,
+    "divine_intervention_failed_until_long_rest": false,
+    "shuffle_anim_timer": 0.0,
+    "seer_slots_filled_today": 3,
+    "draw_of_fate_uses": 6,
+    "draw_of_fate_current": 4,
+    "fortune_loadouts": [
+      {
+        "name": "Loadout 1",
+        "fortune_ids": [
+          5,
+          3,
+          10,
+          8,
+          17,
+          18,
+          19,
+          15,
+          14
+        ],
+        "major_id": 13
+      },
+      {
+        "name": "Loadout 2",
+        "fortune_ids": [],
+        "major_id": null
+      },
+      {
+        "name": "Loadout 3",
+        "fortune_ids": [],
+        "major_id": null
+      },
+      {
+        "name": "Loadout 4",
+        "fortune_ids": [],
+        "major_id": null
+      },
+      {
+        "name": "Loadout 5",
+        "fortune_ids": [],
+        "major_id": null
+      },
+      {
+        "name": "Loadout 6",
+        "fortune_ids": [],
+        "major_id": null
+      },
+      {
+        "name": "Loadout 7",
+        "fortune_ids": [],
+        "major_id": null
+      },
+      {
+        "name": "Loadout 8",
+        "fortune_ids": [],
+        "major_id": null
+      },
+      {
+        "name": "Loadout 9",
+        "fortune_ids": [],
+        "major_id": null
+      },
+      {
+        "name": "Loadout 10",
+        "fortune_ids": [],
+        "major_id": null
+      }
+    ],
+    "active_fortune_loadout": 0
+  },
+  "save_kind": "autosave"
+}
