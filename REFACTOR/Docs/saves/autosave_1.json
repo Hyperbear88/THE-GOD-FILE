@@ -1,0 +1,906 @@
+{
+  "version": 1,
+  "saved_at": "2026-02-28 00:40:28",
+  "screen_mode": "normal",
+  "scroll_y": 0,
+  "history_overlay_open": false,
+  "history_scroll": 0,
+  "top_menu_open": false,
+  "rest_menu_open": false,
+  "game": {
+    "deck": [
+      10,
+      12,
+      6,
+      18,
+      11,
+      1,
+      20,
+      14,
+      13,
+      2,
+      9,
+      7,
+      8,
+      15,
+      19,
+      4,
+      5
+    ],
+    "hand": [
+      {
+        "id": 3,
+        "mode": "normal",
+        "orientation": "upright",
+        "flip": 0,
+        "scroll_up": 0,
+        "scroll_inv": 0,
+        "max_sc_up": 158,
+        "max_sc_inv": 115,
+        "is_vanishing": false,
+        "tapped": false
+      },
+      {
+        "id": 16,
+        "mode": "normal",
+        "orientation": "upright",
+        "flip": 0,
+        "scroll_up": 0,
+        "scroll_inv": 0,
+        "max_sc_up": 77,
+        "max_sc_inv": 115,
+        "is_vanishing": false,
+        "tapped": false
+      },
+      {
+        "id": 17,
+        "mode": "normal",
+        "orientation": "upright",
+        "flip": 0,
+        "scroll_up": 0,
+        "scroll_inv": 0,
+        "max_sc_up": 0,
+        "max_sc_inv": 0,
+        "is_vanishing": false,
+        "tapped": false
+      }
+    ],
+    "fortune_zone": [],
+    "major_zone": [],
+    "vanished": [],
+    "stacked": null,
+    "first_three_ids": [
+      3,
+      16,
+      17
+    ],
+    "seer_dice_table": [
+      3,
+      16,
+      17
+    ],
+    "days_until_major": 0,
+    "days_passed": 3,
+    "shuffle_time": 0.0,
+    "history_log": [
+      {
+        "text": "[00:35] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+        "card_ids": []
+      },
+      {
+        "text": "[00:35] Drew 1 card(s): The World",
+        "card_ids": [
+          20
+        ]
+      },
+      {
+        "text": "[00:35] Long Rest (Day 2): Hand returned to deck. Deck shuffled.",
+        "card_ids": []
+      },
+      {
+        "text": "[00:35] Prophet of Fortune: The Hierophant selected.",
+        "card_ids": [
+          6
+        ]
+      },
+      {
+        "text": "[00:35] Drew 3 card(s): The Hierophant, The Fool, The Magician",
+        "card_ids": [
+          6,
+          1,
+          2
+        ]
+      },
+      {
+        "text": "[00:35] Divine Intervention: rolled 90 vs <= 20. Failed. Disabled until long rest..",
+        "card_ids": []
+      },
+      {
+        "text": "[00:35] Long Rest (Day 3): Hand returned to deck. Deck shuffled.",
+        "card_ids": []
+      },
+      {
+        "text": "[00:35] Prophet of Fortune: The High Priestess selected.",
+        "card_ids": [
+          3
+        ]
+      },
+      {
+        "text": "[00:35] Drew 3 card(s): The High Priestess, The Star, The Moon",
+        "card_ids": [
+          3,
+          16,
+          17
+        ]
+      }
+    ],
+    "history": [
+      {
+        "deck": [
+          8,
+          18,
+          6,
+          12,
+          15,
+          17,
+          4,
+          19,
+          3,
+          10,
+          11,
+          9,
+          2,
+          20,
+          1,
+          14,
+          5,
+          13,
+          7,
+          16
+        ],
+        "hand": [],
+        "fortune_zone": [],
+        "major_zone": [],
+        "vanished": [],
+        "stacked": null,
+        "f3": [],
+        "cd": 0,
+        "days": 0,
+        "limit": 1,
+        "table": [],
+        "history": [],
+        "level": 1,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": false,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 0,
+        "draw_of_fate": 0,
+        "draw_of_fate_cur": 0,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      },
+      {
+        "deck": [
+          8,
+          2,
+          3,
+          7,
+          1,
+          19,
+          12,
+          17,
+          11,
+          9,
+          4,
+          16,
+          10,
+          14,
+          5,
+          13,
+          18,
+          6,
+          15
+        ],
+        "hand": [
+          {
+            "id": 20,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "fortune_zone": [],
+        "major_zone": [],
+        "vanished": [],
+        "stacked": null,
+        "f3": [
+          20
+        ],
+        "cd": 0,
+        "days": 1,
+        "limit": 3,
+        "table": [
+          20
+        ],
+        "history": [
+          {
+            "text": "[00:35] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[00:35] Drew 1 card(s): The World",
+            "card_ids": [
+              20
+            ]
+          }
+        ],
+        "level": 20,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": false,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 1,
+        "draw_of_fate": 0,
+        "draw_of_fate_cur": 0,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      },
+      {
+        "deck": [
+          4,
+          12,
+          8,
+          18,
+          19,
+          10,
+          3,
+          20,
+          14,
+          15,
+          16,
+          7,
+          11,
+          17,
+          13,
+          5,
+          9
+        ],
+        "hand": [
+          {
+            "id": 6,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 1,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 2,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "fortune_zone": [],
+        "major_zone": [],
+        "vanished": [],
+        "stacked": null,
+        "f3": [
+          6,
+          1,
+          2
+        ],
+        "cd": 0,
+        "days": 2,
+        "limit": 3,
+        "table": [
+          6,
+          1,
+          2
+        ],
+        "history": [
+          {
+            "text": "[00:35] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[00:35] Drew 1 card(s): The World",
+            "card_ids": [
+              20
+            ]
+          },
+          {
+            "text": "[00:35] Long Rest (Day 2): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[00:35] Prophet of Fortune: The Hierophant selected.",
+            "card_ids": [
+              6
+            ]
+          },
+          {
+            "text": "[00:35] Drew 3 card(s): The Hierophant, The Fool, The Magician",
+            "card_ids": [
+              6,
+              1,
+              2
+            ]
+          }
+        ],
+        "level": 20,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": false,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 3,
+        "draw_of_fate": 0,
+        "draw_of_fate_cur": 0,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      },
+      {
+        "deck": [
+          4,
+          12,
+          8,
+          18,
+          19,
+          10,
+          3,
+          20,
+          14,
+          15,
+          16,
+          7,
+          11,
+          17,
+          13,
+          5,
+          9
+        ],
+        "hand": [
+          {
+            "id": 6,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 1,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 2,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "fortune_zone": [],
+        "major_zone": [],
+        "vanished": [],
+        "stacked": null,
+        "f3": [
+          6,
+          1,
+          2
+        ],
+        "cd": 0,
+        "days": 2,
+        "limit": 3,
+        "table": [
+          6,
+          1,
+          2
+        ],
+        "history": [
+          {
+            "text": "[00:35] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[00:35] Drew 1 card(s): The World",
+            "card_ids": [
+              20
+            ]
+          },
+          {
+            "text": "[00:35] Long Rest (Day 2): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[00:35] Prophet of Fortune: The Hierophant selected.",
+            "card_ids": [
+              6
+            ]
+          },
+          {
+            "text": "[00:35] Drew 3 card(s): The Hierophant, The Fool, The Magician",
+            "card_ids": [
+              6,
+              1,
+              2
+            ]
+          },
+          {
+            "text": "[00:35] Divine Intervention: rolled 90 vs <= 20. Failed. Disabled until long rest..",
+            "card_ids": []
+          }
+        ],
+        "level": 20,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": false,
+        "divine_weekly": false,
+        "divine_rest": true,
+        "seer_filled": 3,
+        "draw_of_fate": 0,
+        "draw_of_fate_cur": 0,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      },
+      {
+        "deck": [
+          10,
+          12,
+          6,
+          18,
+          11,
+          1,
+          20,
+          14,
+          13,
+          2,
+          9,
+          7,
+          8,
+          15,
+          19,
+          4,
+          5
+        ],
+        "hand": [
+          {
+            "id": 3,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 1,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 158,
+            "max_sc_inv": 115,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 16,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 77,
+            "max_sc_inv": 115,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 17,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "fortune_zone": [],
+        "major_zone": [],
+        "vanished": [],
+        "stacked": null,
+        "f3": [
+          3,
+          16,
+          17
+        ],
+        "cd": 0,
+        "days": 3,
+        "limit": 3,
+        "table": [
+          3,
+          16,
+          17
+        ],
+        "history": [
+          {
+            "text": "[00:35] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[00:35] Drew 1 card(s): The World",
+            "card_ids": [
+              20
+            ]
+          },
+          {
+            "text": "[00:35] Long Rest (Day 2): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[00:35] Prophet of Fortune: The Hierophant selected.",
+            "card_ids": [
+              6
+            ]
+          },
+          {
+            "text": "[00:35] Drew 3 card(s): The Hierophant, The Fool, The Magician",
+            "card_ids": [
+              6,
+              1,
+              2
+            ]
+          },
+          {
+            "text": "[00:35] Divine Intervention: rolled 90 vs <= 20. Failed. Disabled until long rest..",
+            "card_ids": []
+          },
+          {
+            "text": "[00:35] Long Rest (Day 3): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[00:35] Prophet of Fortune: The High Priestess selected.",
+            "card_ids": [
+              3
+            ]
+          },
+          {
+            "text": "[00:35] Drew 3 card(s): The High Priestess, The Star, The Moon",
+            "card_ids": [
+              3,
+              16,
+              17
+            ]
+          }
+        ],
+        "level": 20,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": false,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 3,
+        "draw_of_fate": 0,
+        "draw_of_fate_cur": 0,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      },
+      {
+        "deck": [
+          10,
+          12,
+          6,
+          18,
+          11,
+          1,
+          20,
+          14,
+          13,
+          2,
+          9,
+          7,
+          8,
+          15,
+          19,
+          4,
+          5
+        ],
+        "hand": [
+          {
+            "id": 3,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 158,
+            "max_sc_inv": 115,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 16,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 1,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 77,
+            "max_sc_inv": 115,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 17,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "fortune_zone": [],
+        "major_zone": [],
+        "vanished": [],
+        "stacked": null,
+        "f3": [
+          3,
+          16,
+          17
+        ],
+        "cd": 0,
+        "days": 3,
+        "limit": 3,
+        "table": [
+          3,
+          16,
+          17
+        ],
+        "history": [
+          {
+            "text": "[00:35] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[00:35] Drew 1 card(s): The World",
+            "card_ids": [
+              20
+            ]
+          },
+          {
+            "text": "[00:35] Long Rest (Day 2): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[00:35] Prophet of Fortune: The Hierophant selected.",
+            "card_ids": [
+              6
+            ]
+          },
+          {
+            "text": "[00:35] Drew 3 card(s): The Hierophant, The Fool, The Magician",
+            "card_ids": [
+              6,
+              1,
+              2
+            ]
+          },
+          {
+            "text": "[00:35] Divine Intervention: rolled 90 vs <= 20. Failed. Disabled until long rest..",
+            "card_ids": []
+          },
+          {
+            "text": "[00:35] Long Rest (Day 3): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[00:35] Prophet of Fortune: The High Priestess selected.",
+            "card_ids": [
+              3
+            ]
+          },
+          {
+            "text": "[00:35] Drew 3 card(s): The High Priestess, The Star, The Moon",
+            "card_ids": [
+              3,
+              16,
+              17
+            ]
+          }
+        ],
+        "level": 20,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": false,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 3,
+        "draw_of_fate": 0,
+        "draw_of_fate_cur": 0,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      }
+    ],
+    "toast_msg": "Card is not enabled in active Fortune loadout.",
+    "toast_timer": 0.0,
+    "level": 20,
+    "used_major_ids": [],
+    "hand_limit": 3,
+    "ppf_charges": 3,
+    "draw_queue": [],
+    "draw_timer": -0.008000000000000056,
+    "is_drawing": false,
+    "major_fortune_used_this_week": false,
+    "divine_intervention_used_this_week": false,
+    "divine_intervention_failed_until_long_rest": false,
+    "shuffle_anim_timer": 0.0,
+    "seer_slots_filled_today": 3,
+    "draw_of_fate_uses": 0,
+    "draw_of_fate_current": 0,
+    "fortune_loadouts": [
+      {
+        "name": "Loadout 1",
+        "fortune_ids": [],
+        "major_id": null
+      },
+      {
+        "name": "Loadout 2",
+        "fortune_ids": [],
+        "major_id": null
+      },
+      {
+        "name": "Loadout 3",
+        "fortune_ids": [],
+        "major_id": null
+      }
+    ],
+    "active_fortune_loadout": 0
+  },
+  "save_kind": "autosave"
+}

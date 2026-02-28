@@ -13,6 +13,8 @@ class Game:
         self.toast_msg, self.toast_timer, self.level, self.used_major_ids = "", 0.0, 1, []
         self.hand_limit, self.ppf_charges, self.draw_queue, self.draw_timer, self.is_drawing = 1, 3, [], 0.0, False
         self.major_fortune_used_this_week, self.shuffle_anim_timer = False, 0.0
+        self.divine_intervention_used_this_week = False
+        self.divine_intervention_failed_until_long_rest = False
         self.seer_slots_filled_today = 0
         self.draw_of_fate_uses = 0
         self.draw_of_fate_current = 0
@@ -128,12 +130,12 @@ class Game:
         self.toast_msg, self.toast_timer = text, TOAST_DURATION
         
     def save_state(self): 
-        self.history.append({"deck": list(self.deck), "hand": [copy.deepcopy(h) for h in self.hand], "fortune_zone": [copy.deepcopy(f) for f in self.fortune_zone], "major_zone": [copy.deepcopy(f) for f in self.major_zone], "vanished": list(self.vanished), "stacked": self.stacked, "f3": list(self.first_three_ids), "cd": self.days_until_major, "days": self.days_passed, "limit": self.hand_limit, "table": list(self.seer_dice_table), "history": [copy.copy(e) for e in self.history_log], "level": self.level, "ppf": self.ppf_charges, "used_major": list(self.used_major_ids), "major_cooldown": self.major_fortune_used_this_week, "seer_filled": self.seer_slots_filled_today, "draw_of_fate": self.draw_of_fate_uses, "draw_of_fate_cur": self.draw_of_fate_current, "fortune_loadouts": copy.deepcopy(self.fortune_loadouts), "active_fortune_loadout": self.active_fortune_loadout})
+        self.history.append({"deck": list(self.deck), "hand": [copy.deepcopy(h) for h in self.hand], "fortune_zone": [copy.deepcopy(f) for f in self.fortune_zone], "major_zone": [copy.deepcopy(f) for f in self.major_zone], "vanished": list(self.vanished), "stacked": self.stacked, "f3": list(self.first_three_ids), "cd": self.days_until_major, "days": self.days_passed, "limit": self.hand_limit, "table": list(self.seer_dice_table), "history": [copy.copy(e) for e in self.history_log], "level": self.level, "ppf": self.ppf_charges, "used_major": list(self.used_major_ids), "major_cooldown": self.major_fortune_used_this_week, "divine_weekly": self.divine_intervention_used_this_week, "divine_rest": self.divine_intervention_failed_until_long_rest, "seer_filled": self.seer_slots_filled_today, "draw_of_fate": self.draw_of_fate_uses, "draw_of_fate_cur": self.draw_of_fate_current, "fortune_loadouts": copy.deepcopy(self.fortune_loadouts), "active_fortune_loadout": self.active_fortune_loadout})
         if len(self.history) > 50: self.history.pop(0)
         
     def undo(self):
         if not self.history: return
-        s = self.history.pop(); self.deck, self.hand, self.fortune_zone, self.major_zone, self.vanished, self.stacked, self.first_three_ids, self.days_until_major, self.days_passed, self.hand_limit, self.seer_dice_table, self.history_log, self.level, self.ppf_charges, self.used_major_ids, self.major_fortune_used_this_week, self.seer_slots_filled_today, self.draw_of_fate_uses, self.draw_of_fate_current = s["deck"], s["hand"], s.get("fortune_zone", []), s.get("major_zone", []), s["vanished"], s["stacked"], s["f3"], s["cd"], s["days"], s["limit"], s["table"], s.get("history", []), s.get("level", 1), s.get("ppf", 3), s.get("used_major", []), s.get("major_cooldown", False), s.get("seer_filled", 0), s.get("draw_of_fate", 0), s.get("draw_of_fate_cur", 0)
+        s = self.history.pop(); self.deck, self.hand, self.fortune_zone, self.major_zone, self.vanished, self.stacked, self.first_three_ids, self.days_until_major, self.days_passed, self.hand_limit, self.seer_dice_table, self.history_log, self.level, self.ppf_charges, self.used_major_ids, self.major_fortune_used_this_week, self.divine_intervention_used_this_week, self.divine_intervention_failed_until_long_rest, self.seer_slots_filled_today, self.draw_of_fate_uses, self.draw_of_fate_current = s["deck"], s["hand"], s.get("fortune_zone", []), s.get("major_zone", []), s["vanished"], s["stacked"], s["f3"], s["cd"], s["days"], s["limit"], s["table"], s.get("history", []), s.get("level", 1), s.get("ppf", 3), s.get("used_major", []), s.get("major_cooldown", False), s.get("divine_weekly", False), s.get("divine_rest", False), s.get("seer_filled", 0), s.get("draw_of_fate", 0), s.get("draw_of_fate_cur", 0)
         self.fortune_loadouts = copy.deepcopy(s.get("fortune_loadouts", self.fortune_loadouts))
         self.active_fortune_loadout = s.get("active_fortune_loadout", self.active_fortune_loadout)
         self.normalize_fortune_loadouts()
@@ -169,6 +171,8 @@ class Game:
             "draw_timer": self.draw_timer,
             "is_drawing": self.is_drawing,
             "major_fortune_used_this_week": self.major_fortune_used_this_week,
+            "divine_intervention_used_this_week": self.divine_intervention_used_this_week,
+            "divine_intervention_failed_until_long_rest": self.divine_intervention_failed_until_long_rest,
             "shuffle_anim_timer": self.shuffle_anim_timer,
             "seer_slots_filled_today": self.seer_slots_filled_today,
             "draw_of_fate_uses": self.draw_of_fate_uses,
@@ -201,6 +205,8 @@ class Game:
         self.draw_timer = payload.get("draw_timer", 0.0)
         self.is_drawing = bool(payload.get("is_drawing", False))
         self.major_fortune_used_this_week = bool(payload.get("major_fortune_used_this_week", False))
+        self.divine_intervention_used_this_week = bool(payload.get("divine_intervention_used_this_week", False))
+        self.divine_intervention_failed_until_long_rest = bool(payload.get("divine_intervention_failed_until_long_rest", False))
         self.shuffle_anim_timer = payload.get("shuffle_anim_timer", 0.0)
         self.seer_slots_filled_today = payload.get("seer_slots_filled_today", 0)
         self.draw_of_fate_uses = payload.get("draw_of_fate_uses", self.get_draw_of_fate_uses_by_level())
@@ -238,11 +244,13 @@ class Game:
         self.seer_slots_filled_today = 0
         self.hand_limit = self.get_base_limit()
         self.draw_of_fate_current = self.draw_of_fate_uses
+        self.divine_intervention_failed_until_long_rest = False
         self.vanished = []
         self.rebuild_deck()
         if self.days_passed >= 7:
             self.days_passed = 0
             self.major_fortune_used_this_week = False
+            self.divine_intervention_used_this_week = False
         self.shuffle_deck()
         self.add_history(f"Long Rest (Day {self.days_passed}): Hand returned to deck. Deck shuffled.")
         if not skip_draw: self.initiate_bulk_draw(self.hand_limit)

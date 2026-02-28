@@ -447,6 +447,18 @@ def draw_d20_static(surf, center, radius, value, font, is_reveal=False):
     txt = font.render(str(value), True, (255, 255, 255))
     surf.blit(txt, txt.get_rect(center=center))
 
+def draw_d100_static(surf, center, radius, value, font, is_reveal=False):
+    if is_reveal:
+        pulse = (math.sin(pygame.time.get_ticks() * 0.01) + 1) / 2
+        glow = pygame.Surface((radius * 5, radius * 5), pygame.SRCALPHA)
+        pygame.draw.circle(glow, (*GOLD, int(50 + 45 * pulse)), (radius * 2, radius * 2), int(radius * 1.7))
+        surf.blit(glow, (center[0] - radius * 2, center[1] - radius * 2))
+    pygame.draw.circle(surf, (55, 36, 10), center, radius)
+    pygame.draw.circle(surf, GOLD, center, radius, 4 if is_reveal else 3)
+    pygame.draw.circle(surf, (255, 235, 170), center, max(6, radius - 16), 2)
+    txt = font.render(str(value), True, (255, 250, 220))
+    surf.blit(txt, txt.get_rect(center=center))
+
 # ----------------------------
 # 5. FX CLASSES
 # ----------------------------
@@ -503,6 +515,62 @@ class D20RollAnimation:
         elif self.phase in ["reveal", "fire"]:
             draw_d20_static(surf, self.pos, 110, self.target_value, font_res, is_reveal=True)
         for p in self.particles: p.draw(surf)
+
+class D100RollAnimation:
+    def __init__(self, target_value, screen_w, screen_h):
+        self.target_value, self.sw, self.sh = target_value, screen_w, screen_h
+        self.pos = [-180.0, max(180.0, screen_h * 0.72)]
+        self.target_pos = [screen_w // 2, max(180.0, screen_h * 0.52)]
+        self.timer, self.duration, self.phase, self.particles, self.done = 0.0, 1.8, "rolling", [], False
+        self.rotation = 0.0
+        self.spin_speed = random.uniform(12.0, 18.0)
+        self.bounce_height = random.uniform(80.0, 120.0)
+
+    def update(self, dt):
+        self.timer += dt
+        if self.phase == "rolling":
+            p = min(1.0, self.timer / self.duration)
+            ease = 1 - (1 - p) ** 3
+            self.pos[0] = -180 + (self.target_pos[0] + 180) * ease
+            self.pos[1] = self.target_pos[1] - abs(math.sin(p * math.pi * 2.8) * self.bounce_height * (1 - p * 0.45))
+            self.rotation += self.spin_speed * dt * (1.2 - 0.7 * p)
+            if p >= 1.0:
+                self.phase = "reveal"
+                self.timer = 0.0
+                for _ in range(70):
+                    part = FireParticle((int(self.pos[0] - 14), int(self.pos[0] + 14)), self.pos[1], color=GOLD)
+                    part.vel_x = random.uniform(-16, 16)
+                    part.vel_y = random.uniform(-18, 12)
+                    self.particles.append(part)
+        elif self.phase == "reveal":
+            if self.timer > 1.1:
+                self.done = True
+        for p in self.particles[:]:
+            p.update()
+            if p.life <= 0:
+                self.particles.remove(p)
+
+    def draw(self, surf, font_roll, font_result):
+        overlay = pygame.Surface((self.sw, self.sh), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 160))
+        surf.blit(overlay, (0, 0))
+        if self.phase == "rolling":
+            size = 120
+            die_surf = pygame.Surface((size * 2, size * 2), pygame.SRCALPHA)
+            draw_d100_static(
+                die_surf,
+                (size, size),
+                size - 10,
+                random.randint(1, 100),
+                font_roll,
+                is_reveal=False,
+            )
+            die_surf = pygame.transform.rotate(die_surf, math.degrees(self.rotation))
+            surf.blit(die_surf, die_surf.get_rect(center=(int(self.pos[0]), int(self.pos[1]))))
+        else:
+            draw_d100_static(surf, (int(self.pos[0]), int(self.pos[1])), 115, self.target_value, font_result, is_reveal=True)
+        for p in self.particles:
+            p.draw(surf)
 
 class FireParticle:
     def __init__(self, x_range, y, color=None): self.reset(x_range, y, color)

@@ -189,3 +189,29 @@ TypeError: Button.__init__() got an unexpected keyword argument 'blue'
 23:33:18 [INFO]  Scanning JSON... Found 80 bolded fields.
 23:39:41 [INFO]  Loading video backend: cv2
 23:39:41 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:55:01 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+23:55:01 [INFO]  Loading video backend: imageio
+23:55:01 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:00:44 [INFO]  Autosaved to slot 1.
+00:04:09 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+00:04:10 [INFO]  Loading video backend: imageio
+00:04:10 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:23:40 [INFO]  Loading video backend: cv2
+00:23:40 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:29:06 [INFO]  Loading video backend: cv2
+00:29:06 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:31:13 [INFO]  Loading video backend: cv2
+00:31:13 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:34:39 [INFO]  Loading video backend: cv2
+00:34:39 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:40:28 [INFO]  Autosaved to slot 1.
+00:41:05 [INFO]  Loading video backend: cv2
+00:41:05 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:44:05 [INFO]  Loading video backend: cv2
+00:44:05 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:50:49 [INFO]  Loading video backend: cv2
+00:50:49 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:55:43 [INFO]  Loading video backend: cv2
+00:55:43 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:57:19 [INFO]  Loading video backend: cv2
+00:57:19 [INFO]  Scanning JSON... Found 80 bolded fields.

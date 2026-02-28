@@ -7,6 +7,7 @@ from .game import Game
 
 def safe_main():
     try:
+        random.seed(int.from_bytes(os.urandom(16), "big") ^ time.time_ns())
         screen, W, H = safe_init(); clock = pygame.time.Clock(); f_title, f_small, f_tiny, f_seer_bold, f_seer_dice_sim, f_seer_massive, f_preview_title, f_preview_body, f_labels, f_hand_header, f_hand_body = pygame.font.SysFont("Segoe UI", 26, True), pygame.font.SysFont("Segoe UI", 18, True), pygame.font.SysFont("Segoe UI", 18), pygame.font.SysFont("Segoe UI", 20, True), pygame.font.SysFont("Segoe UI", 24, True), pygame.font.SysFont("timesnewroman", 72, True), pygame.font.SysFont("timesnewroman", 44, bold=True), pygame.font.SysFont("georgia", 26), pygame.font.SysFont("timesnewroman", 32, bold=True), pygame.font.SysFont("timesnewroman", 22, bold=True), pygame.font.SysFont("georgia", 18)
 
         _loading_log = []       # list of (status_text, thumb_surface_or_None)
@@ -685,6 +686,7 @@ def safe_main():
         _img_history = _load_btn_img("History_Button.png")
         _img_turn_undead = _load_btn_img("Turn_Undead_Button.png")
         _img_destroy_undead = _load_btn_img("Destroy_Undead_Button.png")
+        _img_divine_intervention = _load_btn_img("Divine_Intervention.png")
         _img_settings = _load_btn_img("Settings_Menu_Image.png")
         _img_dof_token = _load_btn_img("Draw_of_Fate_Token.png")
         _img_side_panel = _load_btn_img("Side_Panel_Image.png")
@@ -718,6 +720,7 @@ def safe_main():
         _sfx_turnpage = _load_sfx(TURNPAGE_SOUND)
         _sfx_major_promo = _load_sfx(MAJOR_PROMOTION_SOUND)
         _sfx_fortune_promo = _load_sfx(FORTUNE_PROMOTION_SOUND)
+        _sfx_pot_of_greed = _load_sfx(os.path.join(VIDEOS_DIR, "I SUMMON POT OF GREED.wav"))
 
         # UI BUTTONS
         ui_x, ui_w = PADDING+PANEL_INNER_PAD, PANEL_W-PANEL_INNER_PAD*2
@@ -734,6 +737,7 @@ def safe_main():
         draw_of_fate_slider = IntSlider((ui_x + 35, H - 200, ui_w - 70, 34), 0, 6, game.draw_of_fate_uses)
         turn_undead_btn = Button((ui_x, H - 160, (ui_w - 10) // 2, 42), "Turn Undead", green=True, image=_img_turn_undead)
         destroy_undead_btn = Button((ui_x + (ui_w - 10) // 2 + 10, H - 160, (ui_w - 10) // 2, 42), "Destroy Undead", danger=True, image=_img_destroy_undead)
+        divine_intervention_btn = Button((ui_x, H - 110, 90, 90), "", gold=True, image=_img_divine_intervention)
         quit_btn = Button((W-160, PADDING + 45, 140, 35), "Exit game", danger=True)
         menu_btn = Button((W-160, PADDING + 85, 140, 35), "Main Menu", warning=True)
         save_btn = Button((W-160, PADDING + 125, 140, 35), "Save", primary=True)
@@ -841,6 +845,8 @@ def safe_main():
         preview_locked_mode = False
         preview_scrolls = {"current": 0, "max": 0}
         prophet_remaining_draws, current_roll_anim = 0, None
+        divine_roll_anim = None
+        divine_roll_result = None
         previous_viewer_mode = None
         fortune_spell_list_scroll = 0
         fortune_glossary_scroll = 0
@@ -865,6 +871,15 @@ def safe_main():
             "accum": 0.0,
             "frame_surface": None,
             "post_action": None
+        }
+        greedy_pot_state = {
+            "frames": [],
+            "durations": [],
+            "frame_index": 0,
+            "frame_timer": 0.0,
+            "active": False,
+            "post_action": None,
+            "background": None,
         }
         card_video_paths = {}
         if os.path.isdir(VIDEOS_DIR):
@@ -965,6 +980,56 @@ def safe_main():
             if play_action and pending:
                 pending()
 
+        def _load_greedy_pot_frames():
+            if greedy_pot_state["frames"]:
+                return True
+            gif_path = os.path.join(IMAGES_DIR, "greedy-pot.gif")
+            if not os.path.exists(gif_path):
+                gif_path = os.path.join(VIDEOS_DIR, "greedy-pot.gif")
+            if not os.path.exists(gif_path):
+                log_event("greedy-pot.gif not found for The World popup.", is_error=True)
+                return False
+            try:
+                from PIL import Image, ImageSequence
+                with Image.open(gif_path) as gif_img:
+                    for frame in ImageSequence.Iterator(gif_img):
+                        rgba_frame = frame.convert("RGBA")
+                        frame_surface = pygame.image.fromstring(rgba_frame.tobytes(), rgba_frame.size, "RGBA").convert_alpha()
+                        greedy_pot_state["frames"].append(frame_surface)
+                        greedy_pot_state["durations"].append(max(0.03, float(frame.info.get("duration", gif_img.info.get("duration", 100))) / 1000.0))
+            except Exception as ex:
+                log_event(f"Failed to load greedy-pot.gif: {ex}", is_error=True)
+                greedy_pot_state["frames"].clear()
+                greedy_pot_state["durations"].clear()
+                return False
+            return bool(greedy_pot_state["frames"])
+
+        def start_greedy_pot_popup(post_action):
+            nonlocal screen_mode
+            if not _load_greedy_pot_frames():
+                post_action()
+                return False
+            greedy_pot_state["frame_index"] = 0
+            greedy_pot_state["frame_timer"] = 0.0
+            greedy_pot_state["active"] = True
+            greedy_pot_state["post_action"] = post_action
+            greedy_pot_state["background"] = screen.copy()
+            play_sfx(_sfx_pot_of_greed, priority=True)
+            screen_mode = "greedy_pot_popup"
+            return True
+
+        def stop_greedy_pot_popup(play_action=True):
+            nonlocal screen_mode
+            pending = greedy_pot_state["post_action"]
+            greedy_pot_state["frame_index"] = 0
+            greedy_pot_state["frame_timer"] = 0.0
+            greedy_pot_state["active"] = False
+            greedy_pot_state["post_action"] = None
+            greedy_pot_state["background"] = None
+            screen_mode = "normal"
+            if play_action and pending:
+                pending()
+
         def _persist_settings():
             save_user_settings({
                 "menu_music_enabled": menu_music_enabled,
@@ -992,6 +1057,18 @@ def safe_main():
                 return "prophet_selection", total - 1
             game.long_rest()
             return "normal", 0
+
+        def _get_divine_intervention_threshold():
+            if game.level < 10:
+                return 0
+            return min(20, game.level)
+
+        def _get_divine_intervention_status_text():
+            if game.divine_intervention_used_this_week:
+                return "Weekly Reset"
+            if game.divine_intervention_failed_until_long_rest:
+                return "Long Rest"
+            return None
 
         def _slot_path(slot_idx):
             return os.path.join(SAVE_DIR, f"slot_{slot_idx}.json")
@@ -1475,7 +1552,13 @@ def safe_main():
             dt_box_w, dt_box_h = PANEL_W - 120, 90
             dt_box_x = PADDING + (PANEL_W - dt_box_w) // 2
             dt_box_y = H - dt_box_h - 35
-            return pygame.Rect(dt_box_x, dt_box_y - 275, dt_box_w, 34)
+            return pygame.Rect(dt_box_x, dt_box_y - 405, dt_box_w, 34)
+
+        def get_seer_dice_rect():
+            dt_box_w, dt_box_h = PANEL_W - 120, 90
+            dt_box_x = PADDING + (PANEL_W - dt_box_w) // 2
+            dt_box_y = H - dt_box_h - 145
+            return pygame.Rect(dt_box_x, dt_box_y, dt_box_w, dt_box_h)
 
         while running:
             dt = clock.tick(FPS)/1000.0; m_pos = pygame.mouse.get_pos(); 
@@ -1485,7 +1568,7 @@ def safe_main():
                 pass
             game.toast_timer = max(0.0, game.toast_timer - dt)
             game.shuffle_anim_timer = max(0.0, game.shuffle_anim_timer - dt)
-            if autosave_enabled and screen_mode not in ("menu", "settings", "slot_menu", "fool_video"):
+            if autosave_enabled and screen_mode not in ("menu", "settings", "slot_menu", "fool_video", "greedy_pot_popup"):
                 _autosave_interval_s = autosave_interval_min * 60
                 if (time.time() - autosave_last_time) >= _autosave_interval_s:
                     if _write_autosave(autosave_next_slot):
@@ -1497,6 +1580,10 @@ def safe_main():
             half_w = (fate_r.w - 10) // 2
             turn_undead_btn.rect = pygame.Rect(fate_r.x, fate_r.bottom + 8, half_w, half_w)
             destroy_undead_btn.rect = pygame.Rect(fate_r.x + half_w + 10, fate_r.bottom + 8, half_w, half_w)
+            _seer_rect = get_seer_dice_rect()
+            _divine_size = 90
+            _divine_y = _seer_rect.bottom + 18
+            divine_intervention_btn.rect = pygame.Rect(_seer_rect.centerx - (_divine_size // 2), _divine_y, _divine_size, _divine_size)
             # Position Draw 1 / Stack Top just above the Draw of Fate title
             _div_top = fate_r.y - 105  # divider_box top
             _title_y = _div_top - 38   # Draw of Fate label y
@@ -1520,6 +1607,14 @@ def safe_main():
                     fh, fw = frame.shape[:2]
                     surface = pygame.image.frombuffer(frame.tobytes(), (fw, fh), "RGB")
                     fool_video_state["frame_surface"] = surface.convert()
+            if screen_mode == "greedy_pot_popup" and greedy_pot_state["active"] and greedy_pot_state["frames"]:
+                greedy_pot_state["frame_timer"] += dt
+                while greedy_pot_state["frame_timer"] >= greedy_pot_state["durations"][greedy_pot_state["frame_index"]]:
+                    greedy_pot_state["frame_timer"] -= greedy_pot_state["durations"][greedy_pot_state["frame_index"]]
+                    greedy_pot_state["frame_index"] += 1
+                    if greedy_pot_state["frame_index"] >= len(greedy_pot_state["frames"]):
+                        stop_greedy_pot_popup(play_action=True)
+                        break
             
             # Update looping background videos only when their screen is active
             _active_loop_videos = []
@@ -1559,6 +1654,14 @@ def safe_main():
                         if cid == current_roll_anim.target_value: idx_to_pop = i; break
                     if idx_to_pop != -1: game.seer_dice_table.pop(idx_to_pop)
                     current_roll_anim = None
+            if divine_roll_anim:
+                divine_roll_anim.update(dt)
+                if divine_roll_anim.done:
+                    if divine_roll_result is not None:
+                        _di_roll, _di_threshold, _di_result = divine_roll_result
+                        game.add_history(f"Divine Intervention: rolled {_di_roll} vs <= {_di_threshold}. {_di_result}.")
+                        divine_roll_result = None
+                    divine_roll_anim = None
 
             if game.is_drawing:
                 game.draw_timer -= dt
@@ -1581,6 +1684,11 @@ def safe_main():
             stack_btn.disabled = (game.level >= 2 and game.draw_of_fate_current < 1)
             turn_undead_btn.disabled = (game.draw_of_fate_current < 1)
             destroy_undead_btn.disabled = (game.draw_of_fate_current < 2)
+            divine_intervention_btn.disabled = (
+                game.level < 10 or
+                game.divine_intervention_used_this_week or
+                game.divine_intervention_failed_until_long_rest
+            )
             ppf_btn.text = f"PP&F ({game.ppf_charges}/3)"
             ppf_btn.disabled = (game.ppf_charges <= 0 or game.level < 6 or len(game.fortune_zone) >= 1 or len(game.get_allowed_fortune_ids()) < 1)
             major_btn.disabled = (game.major_fortune_used_this_week or len(game.major_zone) > 0 or game.level < 17 or game.get_allowed_major_id() is None)
@@ -1588,17 +1696,18 @@ def safe_main():
             # --- ANIMATION SAFETY CHECK FOR UNDO BUTTON ---
             is_animating = (
                 current_roll_anim is not None or
+                divine_roll_anim is not None or
                 game.is_drawing or
                 len(game.fizzles) > 0 or
                 len(dof_token_fizzles) > 0 or
                 game.shuffle_anim_timer > 0 or
-                screen_mode == "fool_video"
+                screen_mode in ("fool_video", "greedy_pot_popup")
             )
             undo_btn.disabled = is_animating or (len(game.history) == 0)
             # ----------------------------------------------
             
             for e in pygame.event.get():
-                if current_roll_anim: continue 
+                if current_roll_anim or divine_roll_anim: continue 
                 if e.type == pygame.QUIT:
                     running = False
                 if confirm_dialog is not None:
@@ -1619,6 +1728,8 @@ def safe_main():
                     if screen_mode == "fool_video":
                         stop_card_video(play_action=True)
                         screen_mode = "normal"
+                        continue
+                    if screen_mode == "greedy_pot_popup":
                         continue
                     if screen_mode == "preview_view":
                         preview_sb_dragging = False
@@ -1649,14 +1760,14 @@ def safe_main():
                         screen_mode = "normal"
                         continue
                     # Only allow Escape to open menu if NOT in Normal View
-                    if screen_mode not in ("normal", "fool_video"):
+                    if screen_mode not in ("normal", "fool_video", "greedy_pot_popup"):
                         rest_menu_open = False
                         top_menu_open = False
                         history_overlay_open = False
                         screen_mode = "menu"
                         continue
                     # In Normal View, Escape does nothing
-                if screen_mode == "fool_video":
+                if screen_mode in ("fool_video", "greedy_pot_popup"):
                     continue
                 
                 if screen_mode == "menu":
@@ -2160,6 +2271,21 @@ def safe_main():
                     if game.level >= 2 and rest_menu_open and short_rest_btn.handle_event(e): game.short_rest(); rest_menu_open = False
                     if game.level >= 2 and turn_undead_btn.handle_event(e): game.save_state(); game.draw_of_fate_current = max(0, game.draw_of_fate_current - 1); game.add_history("Used Turn Undead.")
                     if game.level >= 2 and destroy_undead_btn.handle_event(e): game.save_state(); game.draw_of_fate_current = max(0, game.draw_of_fate_current - 2); game.add_history("Used Destroy Undead.")
+                    if game.level >= 10 and divine_intervention_btn.handle_event(e) and not divine_intervention_btn.disabled:
+                        game.save_state()
+                        _di_threshold = _get_divine_intervention_threshold()
+                        _di_roll = random.randint(1, 100)
+                        _di_success = _di_roll <= _di_threshold
+                        if _di_success:
+                            game.divine_intervention_used_this_week = True
+                            game.divine_intervention_failed_until_long_rest = False
+                            _di_result = "Succeeded. Disabled until weekly reset."
+                        else:
+                            game.divine_intervention_failed_until_long_rest = True
+                            _di_result = "Failed. Disabled until long rest."
+                        divine_roll_anim = D100RollAnimation(_di_roll, W, H)
+                        divine_roll_result = (_di_roll, _di_threshold, _di_result)
+                        continue
                     if game.level >= 17 and rest_menu_open and reset_major_btn.handle_event(e): game.major_fortune_used_this_week = False; rest_menu_open = False
                     if rest_menu_open and rest_btn.handle_event(e):
                         if game.level >= 17: total = game.long_rest(skip_draw=True); prophet_remaining_draws = total - 1; screen_mode, scroll_y = "prophet_selection", 0
@@ -2224,10 +2350,7 @@ def safe_main():
                         elif vz_rect.collidepoint(e.pos): screen_mode, scroll_y = "vanish_view", 0
                     
                     if game.level >= 6 and e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
-                        dt_box_w, dt_box_h = PANEL_W - 120, 90
-                        dt_box_x = PADDING + (PANEL_W - dt_box_w) // 2
-                        dt_box_y = H - dt_box_h - 35
-                        dt_box = pygame.Rect(dt_box_x, dt_box_y, dt_box_w, dt_box_h)
+                        dt_box = get_seer_dice_rect()
                         if dt_box.collidepoint(e.pos):
                             dice_count = len(game.seer_dice_table)
                             if dice_count > 0:
@@ -2274,7 +2397,12 @@ def safe_main():
                                     if game.level >= 2: game.draw_of_fate_current = max(0, game.draw_of_fate_current - 1)
                                     break
                                 elif vbr and vbr.collidepoint(e.pos):
-                                    if ((zone == game.fortune_zone and h['mode'] == 'fortune') or (zone == game.major_zone and h['mode'] == 'major')) and not h.get('tapped'):
+                                    if h['id'] == 20 and h['mode'] == 'normal' and h['orientation'] == 'upright':
+                                        if random.randint(1, 20) == 1:
+                                            start_greedy_pot_popup(lambda hh=h, x=hx, y=hy: execute_card_use_action(hh, x, y))
+                                        else:
+                                            execute_card_use_action(h, hx, hy)
+                                    elif ((zone == game.fortune_zone and h['mode'] == 'fortune') or (zone == game.major_zone and h['mode'] == 'major')) and not h.get('tapped'):
                                         started = start_fool_video(h['id'], lambda hh=h, x=hx, y=hy: execute_card_use_action(hh, x, y))
                                         if started:
                                             screen_mode = "fool_video"
@@ -2997,10 +3125,7 @@ def safe_main():
                     btn_d1.draw(screen, f_tiny, dt)
                     stack_btn.draw(screen, f_tiny, dt)
                 if game.level >= 6:
-                    dt_box_w, dt_box_h = PANEL_W - 120, 90
-                    dt_box_x = PADDING + (PANEL_W - dt_box_w) // 2
-                    dt_box_y = H - dt_box_h - 35
-                    dt_box = pygame.Rect(dt_box_x, dt_box_y, dt_box_w, dt_box_h)
+                    dt_box = get_seer_dice_rect()
                     title_surf = f_small.render("SEER DICE TABLE", True, PINK_D20)
                     title_x = dt_box.centerx - title_surf.get_width() // 2
                     _seer_lbl_y = dt_box.y - 32
@@ -3016,6 +3141,19 @@ def safe_main():
                         for i, cid in enumerate(game.seer_dice_table):
                             dc_x = int(dt_box.x + spacing * (i + 1))
                             draw_d20_static(screen, (dc_x, dc_y), 22, cid, f_seer_bold)
+                    if game.level >= 10:
+                        divine_intervention_btn.draw(screen, f_tiny, dt)
+                        _di_lock = _get_divine_intervention_status_text()
+                        if _di_lock is not None:
+                            _lock_s = f_tiny.render(_di_lock, True, GOLD)
+                            _lock_bg = pygame.Rect(
+                                divine_intervention_btn.rect.centerx - (_lock_s.get_width() // 2) - 6,
+                                divine_intervention_btn.rect.bottom + 6,
+                                _lock_s.get_width() + 12,
+                                _lock_s.get_height() + 4,
+                            )
+                            draw_round_rect(screen, _lock_bg, (0, 0, 0, 180), 6)
+                            screen.blit(_lock_s, (_lock_bg.x + 6, _lock_bg.y + 2))
 
                 # 4. HORIZONTAL DIVIDER LINE
                 line_y = 80 + HAND_CARD_H + 95
@@ -3412,6 +3550,25 @@ def safe_main():
                     video_frame = pygame.transform.smoothscale(frame_surface, (dw, dh))
                     screen.blit(video_frame, ((W - dw) // 2, (H - dh) // 2))
 
+            elif screen_mode == "greedy_pot_popup":
+                background = greedy_pot_state.get("background")
+                if background is not None:
+                    screen.blit(background, (0, 0))
+                else:
+                    screen.fill((8, 6, 18))
+                overlay = pygame.Surface((W, H), pygame.SRCALPHA)
+                overlay.fill((0, 0, 0, 120))
+                screen.blit(overlay, (0, 0))
+                if greedy_pot_state["frames"]:
+                    frame_surface = greedy_pot_state["frames"][min(greedy_pot_state["frame_index"], len(greedy_pot_state["frames"]) - 1)]
+                    fw, fh = frame_surface.get_size()
+                    max_w = int(W * 0.46)
+                    max_h = int(H * 0.46)
+                    scale = min(max_w / fw, max_h / fh, 1.0)
+                    dw, dh = max(1, int(fw * scale)), max(1, int(fh * scale))
+                    gif_frame = pygame.transform.smoothscale(frame_surface, (dw, dh))
+                    screen.blit(gif_frame, ((W - dw) // 2, (H - dh) // 2))
+
             elif screen_mode in ["deck", "vanish_view", "world_restore_view", "prophet_selection", "ppf_selection", "stack_selection", "major_selection"]:
                 # Render looping video background for prophet_selection and deck
                 _active_bg = None
@@ -3487,7 +3644,10 @@ def safe_main():
                     pygame.draw.rect(screen, GOLD, (_g_track_x_d, _g_handle_y_d, _g_sb_w_d, _g_handle_h_d))
                 exit_view_btn.draw(screen, f_small, dt)
 
-            if current_roll_anim: current_roll_anim.draw(screen, f_seer_dice_sim, f_seer_massive)
+            if current_roll_anim:
+                current_roll_anim.draw(screen, f_seer_dice_sim, f_seer_massive)
+            if divine_roll_anim:
+                divine_roll_anim.draw(screen, f_seer_dice_sim, f_seer_massive)
 
             if confirm_dialog is not None:
                 _ov = pygame.Surface((W, H), pygame.SRCALPHA)
