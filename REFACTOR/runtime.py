@@ -454,6 +454,8 @@ def safe_main():
             "Rest_Button.png",
             "Fortune_Card_Stamp.png",
             "Major_Fortune_Card Stamp.png",
+            "Glossary_Button.png",
+            "Spell_Library.png",
         ]
         preloaded_ui_images = {}
         hand_tex, view_tex, preview_tex_hd, preview_bgs, thumb_tex, total_steps, cur_step = {}, {}, {}, {}, {}, len(cards_raw) * 4 + 3 + len(_menu_element_files), 0
@@ -788,8 +790,8 @@ def safe_main():
         fortune_save_file_btn = Button((fortune_setup_box.x + 490, fortune_setup_box.bottom - 72, 150, 46), "Save To File", primary=True, fantasy=True)
         fortune_load_file_btn = Button((fortune_setup_box.x + 650, fortune_setup_box.bottom - 72, 150, 46), "Load From File", primary=True, fantasy=True)
         fortune_back_btn = Button((fortune_setup_box.centerx + 130, fortune_setup_box.bottom - 72, 210, 46), "Main Menu", warning=True, fantasy=True)
-        fortune_glossary_btn = Button((fortune_setup_box.right - 470, fortune_setup_box.bottom - 72, 210, 46), "Glossary", cyan=True, fantasy=True)
-        fortune_spell_library_btn = Button((fortune_setup_box.right - 245, fortune_setup_box.bottom - 72, 210, 46), "Spell Library", pink=True, fantasy=True)
+        fortune_glossary_btn = Button((fortune_setup_box.right - 470, fortune_setup_box.bottom - 72, 210, 46), "Glossary", cyan=True, fantasy=True, image=preloaded_ui_images.get("Glossary_Button.png"))
+        fortune_spell_library_btn = Button((fortune_setup_box.right - 245, fortune_setup_box.bottom - 72, 210, 46), "Spell Library", pink=True, fantasy=True, image=preloaded_ui_images.get("Spell_Library.png"))
         fortune_view_back_btn = Button((fortune_setup_box.x + 40, fortune_setup_box.bottom - 72, 210, 46), "Back to Loadout", warning=True, fantasy=True)
         fortune_lvl_dd = FantasyLevelStepper((fortune_setup_box.right - 270, fortune_setup_box.y + 24, 230, 46), 1, 20, game.level)
         fortune_card_buttons = []
@@ -1130,7 +1132,7 @@ def safe_main():
                 return f"Slot ({slot_idx}) - Empty"
             saved_at = payload.get("saved_at", "Unknown time")
             lvl = payload.get("game", {}).get("level", 1)
-            day = payload.get("game", {}).get("days_passed", 0)
+            day = int(clamp(payload.get("game", {}).get("days_passed", 0) + 1, 1, 7))
             return f"Slot ({slot_idx}) - L{lvl} D{day} - {saved_at}"
 
         def _refresh_slot_labels():
@@ -1797,7 +1799,7 @@ def safe_main():
         def get_seer_dice_rect():
             dt_box_w, dt_box_h = PANEL_W - 120, 90
             dt_box_x = PADDING + (PANEL_W - dt_box_w) // 2
-            dt_box_y = H - dt_box_h - 145
+            dt_box_y = H - dt_box_h - 45
             return pygame.Rect(dt_box_x, dt_box_y, dt_box_w, dt_box_h)
 
         while running:
@@ -1832,7 +1834,13 @@ def safe_main():
             _zone_btn_x = _major_zone_x + HAND_CARD_W + 50
             _zone_btn_w = max(180, min(260, W - _zone_btn_x - 80))
             _zone_btn_h = 52
-            ppf_btn.rect = pygame.Rect(_zone_btn_x, _major_zone_y, _zone_btn_w, _zone_btn_h)
+            _fortune_zone_y = 80 + normal_card_zone_y_offset + HAND_GRID_SPACING_Y + fortune_major_card_zone_y_offset
+            _fortune_use_center_y = _fortune_zone_y + HAND_CARD_H + 8 + 15
+            _ppf_w = min(ui_w, 240)
+            _ppf_right = undo_btn.rect.x - _divine_gap
+            _ppf_x = _ppf_right - _ppf_w
+            _ppf_y = int(_fortune_use_center_y + 67 - (_zone_btn_h / 2))
+            ppf_btn.rect = pygame.Rect(_ppf_x, _ppf_y, _ppf_w, _zone_btn_h)
             major_btn.rect = pygame.Rect(_zone_btn_x, _major_zone_y + _zone_btn_h + 18, _zone_btn_w, _zone_btn_h)
             # Position Draw 1 / Stack Top just above the Draw of Fate title
             _div_top = fate_r.y - 105  # divider_box top
@@ -3620,6 +3628,14 @@ def safe_main():
                 _controls_x = vz_rect.x - ((_rest_sz * 2) + _btn_gap)
                 hamburger_btn.rect = pygame.Rect(W-50, PADDING, 35, 35)
                 hamburger_btn.draw(screen, f_tiny, dt)
+                _day_box = pygame.Rect(hamburger_btn.rect.right - 160, hamburger_btn.rect.bottom + 13, 160, 56)
+                _current_day = int(clamp(game.days_passed + 1, 1, 7))
+                draw_round_rect(screen, _day_box, (22, 18, 34, 235), 10)
+                pygame.draw.rect(screen, (212, 168, 96), _day_box, 1, 10)
+                _day_caption = f_tiny.render("Cycle of Fate", True, (212, 168, 96))
+                _day_text = f_small.render(f"Day {_current_day} of 7", True, (248, 231, 199))
+                screen.blit(_day_caption, (_day_box.centerx - _day_caption.get_width() // 2, _day_box.y + 8))
+                screen.blit(_day_text, (_day_box.centerx - _day_text.get_width() // 2, _day_box.bottom - _day_text.get_height() - 8))
                 if top_menu_open:
                     _menu_item_h = 35
                     _menu_gap = 4

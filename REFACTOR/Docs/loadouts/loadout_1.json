@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "slot_index": 0,
+  "saved_at": "2026-02-28 14:40:59",
+  "loadout": {
+    "name": "Devil May Cry",
+    "fortune_ids": [
+      5,
+      6,
+      11,
+      10,
+      15,
+      14,
+      19,
+      18,
+      12
+    ],
+    "major_id": 16
+  }
+}

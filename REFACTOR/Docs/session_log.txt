@@ -274,3 +274,51 @@ TypeError: Button.__init__() got an unexpected keyword argument 'blue'
 14:28:00 [INFO]  Loading video backend: cv2
 14:28:00 [INFO]  Scanning JSON... Found 80 bolded fields.
 14:33:48 [INFO]  Autosaved to slot 1.
+14:36:23 [INFO]  Loading video backend: cv2
+14:36:23 [INFO]  Scanning JSON... Found 80 bolded fields.
+14:38:20 [INFO]  Loading video backend: cv2
+14:38:20 [INFO]  Scanning JSON... Found 80 bolded fields.
+14:39:55 [INFO]  Loading video backend: cv2
+14:39:55 [INFO]  Scanning JSON... Found 80 bolded fields.
+14:45:42 [INFO]  Autosaved to slot 1.
+14:47:05 [INFO]  Loading video backend: cv2
+14:47:05 [INFO]  Scanning JSON... Found 80 bolded fields.
+14:52:52 [INFO]  Autosaved to slot 1.
+14:57:53 [INFO]  Autosaved to slot 2.
+15:02:53 [INFO]  Autosaved to slot 3.
+15:07:53 [INFO]  Autosaved to slot 4.
+15:12:53 [INFO]  Autosaved to slot 5.
+15:17:53 [INFO]  Autosaved to slot 6.
+15:22:53 [INFO]  Autosaved to slot 7.
+15:27:53 [INFO]  Autosaved to slot 8.
+15:32:53 [INFO]  Autosaved to slot 9.
+15:37:53 [INFO]  Autosaved to slot 10.
+15:42:53 [INFO]  Autosaved to slot 1.
+15:47:53 [INFO]  Autosaved to slot 2.
+15:53:11 [INFO]  Loading video backend: cv2
+15:53:11 [INFO]  Scanning JSON... Found 80 bolded fields.
+15:58:23 [INFO]  Loading video backend: cv2
+15:58:23 [INFO]  Scanning JSON... Found 80 bolded fields.
+16:04:11 [INFO]  Autosaved to slot 1.
+16:09:11 [INFO]  Autosaved to slot 2.
+16:13:12 [INFO]  Loading video backend: cv2
+16:13:12 [INFO]  Scanning JSON... Found 80 bolded fields.
+16:19:00 [INFO]  Autosaved to slot 1.
+16:24:01 [INFO]  Autosaved to slot 2.
+16:29:01 [INFO]  Autosaved to slot 3.
+16:34:01 [INFO]  Autosaved to slot 4.
+16:39:01 [INFO]  Autosaved to slot 5.
+16:44:01 [INFO]  Autosaved to slot 6.
+16:49:01 [INFO]  Autosaved to slot 7.
+16:54:01 [INFO]  Autosaved to slot 8.
+16:59:01 [INFO]  Autosaved to slot 9.
+20:15:22 [INFO]  Loading video backend: cv2
+20:15:22 [INFO]  Scanning JSON... Found 80 bolded fields.
+22:25:04 [INFO]  Loading video backend: cv2
+22:25:04 [INFO]  Scanning JSON... Found 80 bolded fields.
+22:30:59 [INFO]  Autosaved to slot 1.
+22:35:59 [INFO]  Autosaved to slot 2.
+22:38:01 [INFO]  Loading video backend: cv2
+22:38:01 [INFO]  Scanning JSON... Found 80 bolded fields.
+22:41:20 [INFO]  Loading video backend: cv2
+22:41:20 [INFO]  Scanning JSON... Found 80 bolded fields.
