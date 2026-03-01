@@ -640,8 +640,8 @@ class Button:
     click_channel = None
     sfx_enabled = True
 
-    def __init__(self, rect, text, primary=False, danger=False, warning=False, gold=False, disabled=False, fire=False, green=False, cyan=False, pink=False, image=None, image_height_mult=1.0, fantasy=False):
-        self.rect, self.text, self.primary, self.danger, self.warning, self.gold, self.disabled, self.fire, self.green, self.cyan, self.pink = pygame.Rect(rect), text, primary, danger, warning, gold, disabled, fire, green, cyan, pink; self.hover, self.particles = False, [FireParticle((self.rect.left, self.rect.right), self.rect.top) for _ in range(15)] if fire else []; self.image = image; self.image_height_mult = image_height_mult; self.fantasy = fantasy
+    def __init__(self, rect, text, primary=False, danger=False, warning=False, gold=False, disabled=False, fire=False, green=False, cyan=False, pink=False, image=None, image_height_mult=1.0, fantasy=False, pulse_frame=False):
+        self.rect, self.text, self.primary, self.danger, self.warning, self.gold, self.disabled, self.fire, self.green, self.cyan, self.pink = pygame.Rect(rect), text, primary, danger, warning, gold, disabled, fire, green, cyan, pink; self.hover, self.particles = False, [FireParticle((self.rect.left, self.rect.right), self.rect.top) for _ in range(15)] if fire else []; self.image = image; self.image_height_mult = image_height_mult; self.fantasy = fantasy; self.pulse_frame = pulse_frame
     def draw(self, surf, font, dt):
         if self.image:
             img_h = int(self.rect.h * self.image_height_mult)
@@ -656,6 +656,30 @@ class Button:
                 surf.blit(bright, self.rect.topleft)
             else:
                 surf.blit(img, self.rect.topleft)
+            if self.pulse_frame:
+                pulse = (math.sin(pygame.time.get_ticks() * 0.006) + 1) / 2
+                frame_surf = pygame.Surface((self.rect.w, self.rect.h), pygame.SRCALPHA)
+                inner_margin = max(6, min(self.rect.w, self.rect.h) // 18)
+                if self.pink:
+                    base_col = (236, 126, 194)
+                    hover_col = (255, 176, 224)
+                elif self.cyan:
+                    base_col = (120, 232, 255)
+                    hover_col = (190, 246, 255)
+                else:
+                    base_col = (235, 190, 60)
+                    hover_col = (255, 228, 140)
+                edge_col = hover_col if self.hover and not self.disabled else base_col
+                edge_alpha = 150 if self.disabled else int(165 + pulse * 55)
+                glow_alpha = 35 if self.disabled else int(32 + pulse * 38)
+                inner_rect = pygame.Rect(inner_margin, inner_margin, max(8, self.rect.w - inner_margin * 2), max(8, self.rect.h - inner_margin * 2))
+                for inset, alpha_scale in ((0, 1.0), (4, 0.7), (8, 0.45)):
+                    glow_rect = inner_rect.inflate(-inset * 2, -inset * 2)
+                    if glow_rect.w <= 0 or glow_rect.h <= 0:
+                        continue
+                    pygame.draw.rect(frame_surf, (*edge_col, int(glow_alpha * alpha_scale)), glow_rect, border_radius=12)
+                pygame.draw.rect(frame_surf, (*edge_col, edge_alpha), inner_rect, 3, 12)
+                surf.blit(frame_surf, self.rect.topleft)
             return
         if self.disabled: bg = (40, 40, 40)
         elif self.fantasy and self.green: bg = (34, 102, 56)

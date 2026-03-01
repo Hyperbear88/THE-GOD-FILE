@@ -322,3 +322,112 @@ TypeError: Button.__init__() got an unexpected keyword argument 'blue'
 22:38:01 [INFO]  Scanning JSON... Found 80 bolded fields.
 22:41:20 [INFO]  Loading video backend: cv2
 22:41:20 [INFO]  Scanning JSON... Found 80 bolded fields.
+22:47:24 [INFO]  Loading video backend: cv2
+22:47:24 [INFO]  Scanning JSON... Found 80 bolded fields.
+22:55:32 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+22:55:33 [INFO]  Loading video backend: imageio
+22:55:33 [INFO]  Scanning JSON... Found 80 bolded fields.
+22:58:44 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+22:58:45 [INFO]  Loading video backend: imageio
+22:58:45 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:04:05 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+23:04:06 [INFO]  Loading video backend: imageio
+23:04:06 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:07:09 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+23:07:10 [INFO]  Loading video backend: imageio
+23:07:10 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:11:14 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+23:11:15 [INFO]  Loading video backend: imageio
+23:11:15 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:14:35 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+23:14:35 [INFO]  Loading video backend: imageio
+23:14:35 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:18:54 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+23:18:54 [INFO]  Loading video backend: imageio
+23:18:54 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:21:36 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+23:21:36 [INFO]  Loading video backend: imageio
+23:21:36 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:25:37 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+23:25:37 [INFO]  Loading video backend: imageio
+23:25:37 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:28:08 [INFO]  Loading video backend: cv2
+23:28:08 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:40:55 [INFO]  Loading video backend: cv2
+23:40:55 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:43:29 [INFO]  Loading video backend: cv2
+23:43:29 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:46:35 [INFO]  Loading video backend: cv2
+23:46:35 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:50:19 [INFO]  Loading video backend: cv2
+23:50:19 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:51:35 [INFO]  Loading video backend: cv2
+23:51:35 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:55:41 [INFO]  Loading video backend: cv2
+23:55:41 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:59:42 [INFO]  Loading video backend: cv2
+23:59:42 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:02:18 [INFO]  Loading video backend: cv2
+00:02:18 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:03:56 [INFO]  Loading video backend: cv2
+00:03:56 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:06:36 [INFO]  Loading video backend: cv2
+00:06:36 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:09:58 [INFO]  Loading video backend: cv2
+00:09:58 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:15:44 [INFO]  Loading video backend: cv2
+00:15:44 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:18:07 [INFO]  Loading video backend: cv2
+00:18:07 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:23:10 [INFO]  Loading video backend: cv2
+00:23:10 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:26:54 [INFO]  Loading video backend: cv2
+00:26:54 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:29:17 [INFO]  Loading video backend: cv2
+00:29:17 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:32:00 [INFO]  Loading video backend: cv2
+00:32:00 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:37:44 [INFO]  Autosaved to slot 1.
+00:38:16 [INFO]  Loading video backend: cv2
+00:38:16 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:44:33 [INFO]  Loading video backend: cv2
+00:44:33 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:48:20 [INFO]  Loading video backend: cv2
+00:48:20 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:51:17 [INFO]  Loading video backend: cv2
+00:51:17 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:58:00 [INFO]  Loading video backend: cv2
+00:58:00 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:03:53 [INFO]  Autosaved to slot 1.
+01:04:43 [INFO]  Loading video backend: cv2
+01:04:43 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:10:54 [INFO]  Loading video backend: cv2
+01:10:54 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:16:34 [INFO]  Autosaved to slot 1.
+01:22:52 [INFO]  Autosaved to slot 2.
+01:25:51 [INFO]  Loading video backend: cv2
+01:25:51 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:30:24 [INFO]  Loading video backend: cv2
+01:30:24 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:35:32 [INFO]  Loading video backend: cv2
+01:35:32 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:41:12 [INFO]  Autosaved to slot 1.
+01:44:47 [INFO]  Loading video backend: cv2
+01:44:47 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:49:17 [INFO]  Loading video backend: cv2
+01:49:17 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:54:57 [INFO]  Autosaved to slot 1.
+01:55:30 [INFO]  Loading video backend: cv2
+01:55:30 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:58:27 [INFO]  Loading video backend: cv2
+01:58:27 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:03:22 [INFO]  Loading video backend: cv2
+02:03:22 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:06:24 [INFO]  Loading video backend: cv2
+02:06:24 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:10:40 [INFO]  Loading video backend: cv2
+02:10:40 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:12:52 [INFO]  Loading video backend: cv2
+02:12:52 [INFO]  Scanning JSON... Found 80 bolded fields.
+02:21:42 [INFO]  Loading video backend: cv2
+02:21:42 [INFO]  Scanning JSON... Found 80 bolded fields.

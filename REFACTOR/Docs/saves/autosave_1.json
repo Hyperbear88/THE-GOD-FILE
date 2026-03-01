@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "saved_at": "2026-02-28 22:30:59",
-  "screen_mode": "fortune_setup",
+  "saved_at": "2026-03-01 01:54:57",
+  "screen_mode": "fortune_spell_list_view",
   "scroll_y": 0,
   "history_overlay_open": false,
   "history_scroll": 0,
@@ -9,371 +9,57 @@
   "rest_menu_open": false,
   "game": {
     "deck": [
-      7,
       19,
-      6,
-      2,
-      18,
-      17,
-      13,
-      5,
-      8,
-      3,
-      9,
       4,
+      8,
+      13,
       16,
-      20,
+      14,
       15,
+      6,
+      10,
+      5,
+      3,
+      12,
       11,
-      14
+      20,
+      18,
+      1,
+      7,
+      17,
+      9,
+      2
     ],
-    "hand": [
-      {
-        "id": 10,
-        "mode": "normal",
-        "orientation": "upright",
-        "flip": 0,
-        "scroll_up": 0,
-        "scroll_inv": 0,
-        "max_sc_up": 212,
-        "max_sc_inv": 115,
-        "is_vanishing": false,
-        "tapped": false
-      },
-      {
-        "id": 12,
-        "mode": "normal",
-        "orientation": "upright",
-        "flip": 0,
-        "scroll_up": 0,
-        "scroll_inv": 0,
-        "max_sc_up": 0,
-        "max_sc_inv": 0,
-        "is_vanishing": false,
-        "tapped": false
-      },
-      {
-        "id": 1,
-        "mode": "normal",
-        "orientation": "upright",
-        "flip": 0,
-        "scroll_up": 0,
-        "scroll_inv": 0,
-        "max_sc_up": 401,
-        "max_sc_inv": 115,
-        "is_vanishing": false,
-        "tapped": false
-      }
-    ],
+    "hand": [],
     "fortune_zone": [],
     "major_zone": [],
     "vanished": [],
     "stacked": null,
-    "first_three_ids": [
-      10,
-      12,
-      1
-    ],
-    "seer_dice_table": [
-      10,
-      12
-    ],
+    "first_three_ids": [],
+    "seer_dice_table": [],
     "days_until_major": 0,
-    "days_passed": 1,
+    "days_passed": 0,
     "shuffle_time": 0.0,
-    "history_log": [
-      {
-        "text": "[22:26] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
-        "card_ids": []
-      },
-      {
-        "text": "[22:26] Drew 1 card(s): The Empress",
-        "card_ids": [
-          4
-        ]
-      },
-      {
-        "text": "[22:26] Level changed to 19: hand returned to deck. Deck shuffled.",
-        "card_ids": []
-      },
-      {
-        "text": "[22:26] Prophet of Fortune: The Hermit selected.",
-        "card_ids": [
-          10
-        ]
-      },
-      {
-        "text": "[22:26] Drew 3 card(s): The Hermit, The Hanged Man, The Fool",
-        "card_ids": [
-          10,
-          12,
-          1
-        ]
-      }
-    ],
-    "history": [
-      {
-        "deck": [
-          20,
-          8,
-          7,
-          12,
-          13,
-          4,
-          2,
-          10,
-          19,
-          16,
-          3,
-          1,
-          14,
-          6,
-          11,
-          18,
-          5,
-          17,
-          9,
-          15
-        ],
-        "hand": [],
-        "fortune_zone": [],
-        "major_zone": [],
-        "vanished": [],
-        "stacked": null,
-        "f3": [],
-        "cd": 0,
-        "days": 0,
-        "limit": 1,
-        "table": [],
-        "history": [],
-        "level": 1,
-        "ppf": 3,
-        "used_major": [],
-        "major_cooldown": false,
-        "major_pending": false,
-        "divine_weekly": false,
-        "divine_rest": false,
-        "seer_filled": 0,
-        "draw_of_fate": 0,
-        "draw_of_fate_cur": 0,
-        "fortune_loadouts": [
-          {
-            "name": "Devil May Cry",
-            "fortune_ids": [
-              5,
-              6,
-              11,
-              10,
-              15,
-              14,
-              19,
-              18,
-              12
-            ],
-            "major_id": 16
-          },
-          {
-            "name": "Loadout 2",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 3",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 4",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 5",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 6",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 7",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 8",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 9",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 10",
-            "fortune_ids": [],
-            "major_id": null
-          }
-        ],
-        "active_fortune_loadout": 0
-      },
-      {
-        "deck": [
-          20,
-          16,
-          6,
-          19,
-          11,
-          3,
-          12,
-          17,
-          18,
-          14,
-          13,
-          9,
-          5,
-          1,
-          10,
-          8,
-          2,
-          15,
-          7
-        ],
-        "hand": [
-          {
-            "id": 4,
-            "mode": "normal",
-            "orientation": "upright",
-            "flip": 0,
-            "scroll_up": 0,
-            "scroll_inv": 0,
-            "max_sc_up": 0,
-            "max_sc_inv": 0,
-            "is_vanishing": false,
-            "tapped": false
-          }
-        ],
-        "fortune_zone": [],
-        "major_zone": [],
-        "vanished": [],
-        "stacked": null,
-        "f3": [
-          4
-        ],
-        "cd": 0,
-        "days": 1,
-        "limit": 3,
-        "table": [
-          4
-        ],
-        "history": [
-          {
-            "text": "[22:26] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
-            "card_ids": []
-          },
-          {
-            "text": "[22:26] Drew 1 card(s): The Empress",
-            "card_ids": [
-              4
-            ]
-          }
-        ],
-        "level": 19,
-        "ppf": 3,
-        "used_major": [],
-        "major_cooldown": false,
-        "major_pending": false,
-        "divine_weekly": false,
-        "divine_rest": false,
-        "seer_filled": 1,
-        "draw_of_fate": 0,
-        "draw_of_fate_cur": 0,
-        "fortune_loadouts": [
-          {
-            "name": "Devil May Cry",
-            "fortune_ids": [
-              5,
-              6,
-              11,
-              10,
-              15,
-              14,
-              19,
-              18,
-              12
-            ],
-            "major_id": 16
-          },
-          {
-            "name": "Loadout 2",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 3",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 4",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 5",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 6",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 7",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 8",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 9",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 10",
-            "fortune_ids": [],
-            "major_id": null
-          }
-        ],
-        "active_fortune_loadout": 0
-      }
-    ],
+    "history_log": [],
+    "history": [],
     "redo_history": [],
-    "toast_msg": "Drew 3 card(s): The Hermit, The Hanged Man, The Fool",
+    "toast_msg": "",
     "toast_timer": 0.0,
-    "level": 19,
+    "level": 1,
     "used_major_ids": [],
-    "hand_limit": 3,
+    "hand_limit": 1,
     "ppf_charges": 3,
     "draw_queue": [],
-    "draw_timer": -0.03699999999999993,
+    "draw_timer": 0.0,
     "is_drawing": false,
     "major_fortune_used_this_week": false,
     "major_fortune_activation_pending": false,
     "divine_intervention_used_this_week": false,
     "divine_intervention_failed_until_long_rest": false,
     "shuffle_anim_timer": 0.0,
-    "seer_slots_filled_today": 3,
-    "draw_of_fate_uses": 3,
-    "draw_of_fate_current": 3,
+    "seer_slots_filled_today": 0,
+    "draw_of_fate_uses": 0,
+    "draw_of_fate_current": 0,
     "fortune_loadouts": [
       {
         "name": "Devil May Cry",
