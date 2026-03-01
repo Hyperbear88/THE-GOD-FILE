@@ -68,6 +68,17 @@ def safe_main():
 
             log_event("Loading video disabled: no usable backend found.", is_error=True)
 
+        def _close_loading_bg_video():
+            if _loading_bg_video["cap"] is not None:
+                _loading_bg_video["cap"].release()
+                _loading_bg_video["cap"] = None
+            if _loading_bg_video["reader"] is not None:
+                try:
+                    _loading_bg_video["reader"].close()
+                except Exception:
+                    pass
+                _loading_bg_video["reader"] = None
+
         _open_loading_bg_video()
         # Keep units consistent with render-time timestamps (seconds).
         _loading_last_time = [pygame.time.get_ticks() / 1000.0]
@@ -425,6 +436,19 @@ def safe_main():
         fortune_spell_class_options = ["all"]
         fortune_spell_school_options = ["all"]
 
+        def _format_glossary_term(_term):
+            _clean = re.sub(r"\s+", " ", str(_term).strip())
+            if not _clean:
+                return ""
+
+            def _capitalize_word(_match):
+                _word = _match.group(0)
+                if len(_word) > 1 and _word.isupper():
+                    return _word
+                return _word[:1].upper() + _word[1:].lower()
+
+            return re.sub(r"[A-Za-z]+(?:'[A-Za-z]+)?", _capitalize_word, _clean)
+
         def _collect_bold_terms(_node, _acc):
             if isinstance(_node, dict):
                 for _v in _node.values():
@@ -434,7 +458,7 @@ def safe_main():
                     _collect_bold_terms(_v, _acc)
             elif isinstance(_node, str):
                 for _m in re.findall(r"\*\*(.*?)\*\*", _node):
-                    _t = str(_m).strip()
+                    _t = _format_glossary_term(_m)
                     if _t:
                         _acc.add(_t)
 
@@ -506,16 +530,6 @@ def safe_main():
         vanish_pile_frame = fade_edges_to_alpha(vanish_pile_frame, feather=26)
         cur_step += 1
         if not _animate_loading_step(_asset_pct(cur_step), "Interface Textures", v_face_hand, duration=0.1): return
-        # Release loading bg video so the file can be reopened later
-        if _loading_bg_video["cap"] is not None:
-            _loading_bg_video["cap"].release()
-            _loading_bg_video["cap"] = None
-        if _loading_bg_video["reader"] is not None:
-            try:
-                _loading_bg_video["reader"].close()
-            except Exception:
-                pass
-            _loading_bg_video["reader"] = None
         v_face_view, v_face_deck = pygame.transform.smoothscale(v_face_hand, (VIEW_CARD_W, VIEW_CARD_H)), pygame.transform.smoothscale(v_face_hand, (160, 224))
         cur_step += 1
         if not _animate_loading_step(_asset_pct(cur_step), "Finalizing Visual Assets", v_face_hand, duration=0.1): return
@@ -677,6 +691,9 @@ def safe_main():
             if _frac >= 1.0:
                 break
 
+        # Keep the loading background video active until the loading screen is fully done.
+        _close_loading_bg_video()
+
         # BUTTON IMAGES
         def _load_btn_img(fname):
             if fname in preloaded_ui_images:
@@ -712,6 +729,7 @@ def safe_main():
         _img_save_as = _load_btn_img("Save_As_Button.png")
         _img_fate_card = _load_btn_img("Fate_Card_Button.png")
         _img_spell_list = _load_btn_img("Spell_List.png")
+        _img_library_bg = _load_btn_img("Library_BG.png")
         _img_spell_library_bg = _load_btn_img("Spell_Library_BG.png")
         _img_glossary_bg = _load_btn_img("Glossary_BG.png")
 
@@ -783,7 +801,7 @@ def safe_main():
         settings_btn = Button((menu_box_rect.centerx - 90, menu_box_rect.y+596, 180, 95), "Settings", fantasy=True, image=_img_options)
         menu_quit_btn = Button((menu_box_rect.centerx - 90, menu_box_rect.y+705, 180, 95), "Exit game", danger=True, fantasy=True, image=_img_exit)
         library_box_rect = pygame.Rect(W//2 - 270, H//2 - 240, 540, 620)
-        library_loadout_btn = Button((library_box_rect.centerx - 120, library_box_rect.y + 168, 240, 110), "Fortune Loadout", gold=True, fantasy=True, image=_img_fortune_loadout_menu)
+        library_loadout_btn = Button((library_box_rect.centerx - 120, library_box_rect.y + 168, 240, 110), "Fortune Loadout", gold=True, fantasy=True, image=_img_fortune_loadout_menu, pulse_frame=True)
         library_glossary_btn = Button((library_box_rect.centerx - 120, library_box_rect.y + 298, 240, 110), "Glossary", cyan=True, fantasy=True, image=preloaded_ui_images.get("Glossary_Button.png"), pulse_frame=True)
         library_spell_list_btn = Button((library_box_rect.centerx - 120, library_box_rect.y + 428, 240, 110), "Spell List", pink=True, fantasy=True, image=_img_spell_list, pulse_frame=True)
         library_back_btn = Button((library_box_rect.centerx - 110, library_box_rect.bottom - 72, 220, 46), "Main Menu", warning=True, fantasy=True)
@@ -920,6 +938,7 @@ def safe_main():
         settings_music_dd.selected_index = 0 if menu_music_enabled else 1
         game.audio_enabled = audio_enabled
         game.sfx_enabled = sfx_enabled
+        current_menu_music_track = None
         Button.click_sound = _sfx_button_press
         try: Button.click_channel = pygame.mixer.Channel(0)
         except: Button.click_channel = None
@@ -2022,7 +2041,7 @@ def safe_main():
             
             # Update looping background videos only when their screen is active
             _active_loop_videos = []
-            if screen_mode == "prophet_selection":
+            if screen_mode in ("prophet_selection", "ppf_selection"):
                 _active_loop_videos = [prophet_bg_video]
             elif screen_mode == "deck":
                 _active_loop_videos = [deck_bg_video]
@@ -2277,6 +2296,7 @@ def safe_main():
                                 pygame.mixer.music.stop()
                             except Exception:
                                 pass
+                            current_menu_music_track = None
                         _persist_settings()
                     if settings_fx_btn.handle_event(e):
                         sfx_enabled = not sfx_enabled
@@ -3114,21 +3134,32 @@ def safe_main():
 
             # --- DRAWING ---
             screen.fill((10, 12, 18))
-            # Play menu music in menu/settings if enabled
-            if screen_mode in ["menu", "library", "settings", "slot_menu", "fortune_setup", "fortune_spell_list_view", "fortune_glossary_view"] and menu_music_enabled and audio_enabled:
+            # Play screen-specific music for menu-style views.
+            _menu_music_track = {
+                "library": LIBRARY_MUSIC,
+                "fortune_spell_list_view": SPELL_LIBRARY_MUSIC,
+                "fortune_glossary_view": GLOSSARY_MUSIC,
+                "ppf_selection": PPF_BG_MUSIC,
+                "major_selection": PPF_BG_MUSIC,
+            }.get(screen_mode, MAIN_MENU_MUSIC)
+            if not os.path.exists(_menu_music_track):
+                _menu_music_track = MAIN_MENU_MUSIC
+            if screen_mode in ["menu", "library", "settings", "slot_menu", "fortune_setup", "fortune_spell_list_view", "fortune_glossary_view", "ppf_selection", "major_selection"] and menu_music_enabled and audio_enabled:
                 try:
                     pygame.mixer.music.set_volume(menu_music_volume / 100.0)
                 except Exception:
                     pass
-                if not pygame.mixer.music.get_busy() or pygame.mixer.music.get_pos() == -1:
+                if current_menu_music_track != _menu_music_track or not pygame.mixer.music.get_busy() or pygame.mixer.music.get_pos() == -1:
                     try:
-                        pygame.mixer.music.load(MAIN_MENU_MUSIC)
+                        pygame.mixer.music.load(_menu_music_track)
                         pygame.mixer.music.play(-1)
+                        current_menu_music_track = _menu_music_track
                     except Exception as e:
                         log_event(f"Music error: {e}", True)
             else:
                 if pygame.mixer.music.get_busy():
                     pygame.mixer.music.stop()
+                current_menu_music_track = None
             
             if screen_mode == "menu":
                 screen.blit(menu_bg, (0, 0))
@@ -3173,7 +3204,10 @@ def safe_main():
                 menu_lvl_dd.draw_menu(screen, f_small)
 
             elif screen_mode == "library":
-                screen.blit(menu_bg, (0, 0))
+                if _img_library_bg is not None:
+                    screen.blit(pygame.transform.smoothscale(_img_library_bg, (W, H)), (0, 0))
+                else:
+                    screen.blit(menu_bg, (0, 0))
                 _vignette = pygame.Surface((W, H), pygame.SRCALPHA)
                 _vignette.fill((10, 6, 14, 105))
                 screen.blit(_vignette, (0, 0))
@@ -3307,14 +3341,17 @@ def safe_main():
                 settings_music_dd.draw_menu(screen, f_small)
 
             elif screen_mode == "fortune_setup":
-                screen.blit(menu_bg, (0, 0))
+                if _img_library_bg is not None:
+                    screen.blit(pygame.transform.smoothscale(_img_library_bg, (W, H)), (0, 0))
+                else:
+                    screen.blit(menu_bg, (0, 0))
                 _vignette = pygame.Surface((W, H), pygame.SRCALPHA)
                 _vignette.fill((10, 6, 14, 110))
                 screen.blit(_vignette, (0, 0))
                 _outer = fortune_setup_box.inflate(22, 24)
-                draw_round_rect(screen, _outer, (36, 20, 12, 220), 24)
+                _blit_alpha_round_rect(screen, _outer, (36, 20, 12, 108), 24)
                 pygame.draw.rect(screen, (120, 86, 42, 220), _outer, 3, 24)
-                draw_round_rect(screen, fortune_setup_box, (18, 14, 24, 160), 20)
+                _blit_alpha_round_rect(screen, fortune_setup_box, (18, 14, 24, 84), 20)
                 pygame.draw.rect(screen, (235, 190, 60, 180), fortune_setup_box, 2, 20)
                 _title = f_fortune_title.render("FORTUNE CARD SELECTION", True, GOLD)
                 screen.blit(_title, (fortune_setup_box.centerx - _title.get_width() // 2, fortune_setup_box.y + 20))
@@ -4178,7 +4215,7 @@ def safe_main():
             elif screen_mode in ["deck", "vanish_view", "world_restore_view", "prophet_selection", "ppf_selection", "stack_selection", "major_selection"]:
                 # Render looping video background for prophet_selection and deck
                 _active_bg = None
-                if screen_mode == "prophet_selection": _active_bg = prophet_bg_video
+                if screen_mode in ("prophet_selection", "ppf_selection"): _active_bg = prophet_bg_video
                 elif screen_mode == "deck": _active_bg = deck_bg_video
                 elif screen_mode == "vanish_view": _active_bg = vanished_bg_video
                 if _active_bg and _active_bg["frame_surface"] is not None:
