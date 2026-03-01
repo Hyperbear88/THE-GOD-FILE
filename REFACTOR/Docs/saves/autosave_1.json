@@ -1,66 +1,125 @@
 {
   "version": 1,
-  "saved_at": "2026-03-01 19:08:29",
+  "saved_at": "2026-03-01 22:49:05",
   "screen_mode": "normal",
   "scroll_y": 0,
   "history_overlay_open": false,
   "history_scroll": 0,
-  "palm_reading_selection": "D",
+  "palm_reading_selection": null,
   "top_menu_open": false,
   "rest_menu_open": false,
+  "fortune_loadouts": [
+    {
+      "name": "dantheman",
+      "fortune_ids": [
+        2,
+        3,
+        5,
+        6,
+        11,
+        10,
+        7,
+        9
+      ],
+      "major_id": 16,
+      "level": 1
+    },
+    {
+      "name": "bait",
+      "fortune_ids": [
+        6,
+        5,
+        11,
+        10,
+        17,
+        15,
+        19,
+        18
+      ],
+      "major_id": 16,
+      "level": 1
+    },
+    {
+      "name": "Loadout 3",
+      "fortune_ids": [],
+      "major_id": null,
+      "level": 1
+    },
+    {
+      "name": "Loadout 4",
+      "fortune_ids": [],
+      "major_id": null,
+      "level": 1
+    },
+    {
+      "name": "Loadout 5",
+      "fortune_ids": [],
+      "major_id": null,
+      "level": 1
+    },
+    {
+      "name": "Loadout 6",
+      "fortune_ids": [],
+      "major_id": null,
+      "level": 1
+    },
+    {
+      "name": "Loadout 7",
+      "fortune_ids": [],
+      "major_id": null,
+      "level": 1
+    },
+    {
+      "name": "Loadout 8",
+      "fortune_ids": [],
+      "major_id": null,
+      "level": 1
+    },
+    {
+      "name": "Loadout 9",
+      "fortune_ids": [],
+      "major_id": null,
+      "level": 1
+    },
+    {
+      "name": "Loadout 10",
+      "fortune_ids": [],
+      "major_id": null,
+      "level": 1
+    }
+  ],
+  "active_fortune_loadout": 0,
   "game": {
     "deck": [
-      1,
-      2,
-      8,
-      19,
       15,
+      19,
       14,
+      8,
+      16,
       12,
-      18,
-      5,
-      7,
-      6,
-      3,
-      13,
-      11,
-      17,
       9,
+      18,
+      7,
+      17,
+      11,
+      2,
+      3,
+      1,
+      20,
+      5,
+      4,
+      13,
       10
     ],
     "hand": [
       {
-        "id": 4,
+        "id": 6,
         "mode": "normal",
         "orientation": "upright",
         "flip": 0,
         "scroll_up": 0,
         "scroll_inv": 0,
-        "max_sc_up": 0,
-        "max_sc_inv": 0,
-        "is_vanishing": false,
-        "tapped": false
-      },
-      {
-        "id": 20,
-        "mode": "normal",
-        "orientation": "upright",
-        "flip": 0,
-        "scroll_up": 0,
-        "scroll_inv": 0,
-        "max_sc_up": 50,
-        "max_sc_inv": 115,
-        "is_vanishing": false,
-        "tapped": false
-      },
-      {
-        "id": 16,
-        "mode": "normal",
-        "orientation": "upright",
-        "flip": 0,
-        "scroll_up": 0,
-        "scroll_inv": 0,
-        "max_sc_up": 77,
+        "max_sc_up": 212,
         "max_sc_inv": 115,
         "is_vanishing": false,
         "tapped": false
@@ -71,89 +130,53 @@
     "vanished": [],
     "stacked": null,
     "first_three_ids": [
-      4,
-      20,
-      16
+      6
     ],
     "seer_dice_table": [
-      4,
-      20,
-      16
+      6
     ],
     "days_until_major": 0,
     "days_passed": 1,
     "shuffle_time": 0.0,
     "history_log": [
       {
-        "text": "[18:23] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+        "text": "[22:43] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
         "card_ids": []
       },
       {
-        "text": "[18:23] Drew 1 card(s): The World",
-        "card_ids": [
-          20
-        ]
-      },
-      {
-        "text": "[18:23] Level changed to 19: hand returned to deck. Deck shuffled.",
+        "text": "[22:43] All save slots are occupied. Choose a slot to overwrite and continue this new game.",
         "card_ids": []
       },
       {
-        "text": "[18:23] Prophet of Fortune: The Magician selected.",
+        "text": "[22:43] Drew 1 card(s): The Hierophant",
         "card_ids": [
-          2
-        ]
-      },
-      {
-        "text": "[18:23] Drew 3 card(s): The Magician, The Moon, Death",
-        "card_ids": [
-          2,
-          17,
-          13
-        ]
-      },
-      {
-        "text": "[19:03] Level changed to 20: hand returned to deck. Deck shuffled.",
-        "card_ids": []
-      },
-      {
-        "text": "[19:03] Prophet of Fortune: The Empress selected.",
-        "card_ids": [
-          4
-        ]
-      },
-      {
-        "text": "[19:03] Drew 3 card(s): The Empress, The World, The Star",
-        "card_ids": [
-          4,
-          20,
-          16
+          6
         ]
       }
     ],
     "history": [
       {
         "deck": [
-          20,
-          17,
-          5,
-          11,
-          1,
+          8,
+          2,
+          10,
           12,
           19,
-          7,
-          18,
-          9,
-          10,
-          8,
+          11,
           3,
-          16,
           6,
-          2,
+          4,
+          7,
+          9,
+          5,
+          16,
+          18,
           15,
+          17,
+          1,
           14,
-          13,
-          4
+          20,
+          13
         ],
         "hand": [],
         "fortune_zone": [],
@@ -178,424 +201,187 @@
         "draw_of_fate_cur": 0,
         "fortune_loadouts": [
           {
-            "name": "Loadout 1",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 2",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 3",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 4",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 5",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 6",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 7",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 8",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 9",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 10",
-            "fortune_ids": [],
-            "major_id": null
-          }
-        ],
-        "active_fortune_loadout": 0
-      },
-      {
-        "deck": [
-          1,
-          10,
-          15,
-          11,
-          17,
-          5,
-          14,
-          18,
-          6,
-          7,
-          13,
-          2,
-          12,
-          3,
-          19,
-          16,
-          4,
-          8,
-          9
-        ],
-        "hand": [
-          {
-            "id": 20,
-            "mode": "normal",
-            "orientation": "upright",
-            "flip": 0,
-            "scroll_up": 0,
-            "scroll_inv": 0,
-            "max_sc_up": 50,
-            "max_sc_inv": 115,
-            "is_vanishing": false,
-            "tapped": false
-          }
-        ],
-        "fortune_zone": [],
-        "major_zone": [],
-        "vanished": [],
-        "stacked": null,
-        "f3": [
-          20
-        ],
-        "cd": 0,
-        "days": 1,
-        "limit": 3,
-        "table": [
-          20
-        ],
-        "history": [
-          {
-            "text": "[18:23] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
-            "card_ids": []
-          },
-          {
-            "text": "[18:23] Drew 1 card(s): The World",
-            "card_ids": [
-              20
-            ]
-          }
-        ],
-        "level": 19,
-        "ppf": 3,
-        "used_major": [],
-        "major_cooldown": false,
-        "major_pending": false,
-        "divine_weekly": false,
-        "divine_rest": false,
-        "seer_filled": 1,
-        "draw_of_fate": 0,
-        "draw_of_fate_cur": 0,
-        "fortune_loadouts": [
-          {
-            "name": "Loadout 1",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 2",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 3",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 4",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 5",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 6",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 7",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 8",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 9",
-            "fortune_ids": [],
-            "major_id": null
-          },
-          {
-            "name": "Loadout 10",
-            "fortune_ids": [],
-            "major_id": null
-          }
-        ],
-        "active_fortune_loadout": 0
-      },
-      {
-        "deck": [
-          3,
-          10,
-          1,
-          12,
-          9,
-          19,
-          8,
-          11,
-          16,
-          6,
-          5,
-          4,
-          14,
-          18,
-          20,
-          7,
-          15
-        ],
-        "hand": [
-          {
-            "id": 2,
-            "mode": "normal",
-            "orientation": "upright",
-            "flip": 0,
-            "scroll_up": 0,
-            "scroll_inv": 0,
-            "max_sc_up": 482,
-            "max_sc_inv": 115,
-            "is_vanishing": false,
-            "tapped": false
-          },
-          {
-            "id": 17,
-            "mode": "normal",
-            "orientation": "upright",
-            "flip": 0,
-            "scroll_up": 0,
-            "scroll_inv": 0,
-            "max_sc_up": 50,
-            "max_sc_inv": 115,
-            "is_vanishing": false,
-            "tapped": false
-          },
-          {
-            "id": 13,
-            "mode": "normal",
-            "orientation": "upright",
-            "flip": 0,
-            "scroll_up": 0,
-            "scroll_inv": 0,
-            "max_sc_up": 185,
-            "max_sc_inv": 115,
-            "is_vanishing": false,
-            "tapped": false
-          }
-        ],
-        "fortune_zone": [],
-        "major_zone": [],
-        "vanished": [],
-        "stacked": null,
-        "f3": [
-          2,
-          17,
-          13
-        ],
-        "cd": 0,
-        "days": 1,
-        "limit": 3,
-        "table": [
-          2,
-          17,
-          13
-        ],
-        "history": [
-          {
-            "text": "[18:23] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
-            "card_ids": []
-          },
-          {
-            "text": "[18:23] Drew 1 card(s): The World",
-            "card_ids": [
-              20
-            ]
-          },
-          {
-            "text": "[18:23] Level changed to 19: hand returned to deck. Deck shuffled.",
-            "card_ids": []
-          },
-          {
-            "text": "[18:23] Prophet of Fortune: The Magician selected.",
-            "card_ids": [
-              2
-            ]
-          },
-          {
-            "text": "[18:23] Drew 3 card(s): The Magician, The Moon, Death",
-            "card_ids": [
+            "name": "dantheman",
+            "fortune_ids": [
               2,
-              17,
-              13
-            ]
-          }
-        ],
-        "level": 20,
-        "ppf": 3,
-        "used_major": [],
-        "major_cooldown": false,
-        "major_pending": false,
-        "divine_weekly": false,
-        "divine_rest": false,
-        "seer_filled": 3,
-        "draw_of_fate": 3,
-        "draw_of_fate_cur": 3,
-        "fortune_loadouts": [
-          {
-            "name": "Loadout 1",
-            "fortune_ids": [],
-            "major_id": null
+              3,
+              5,
+              6,
+              11,
+              10,
+              7,
+              9
+            ],
+            "major_id": 16,
+            "level": 1
           },
           {
-            "name": "Loadout 2",
-            "fortune_ids": [],
-            "major_id": null
+            "name": "bait",
+            "fortune_ids": [
+              6,
+              5,
+              11,
+              10,
+              17,
+              15,
+              19,
+              18
+            ],
+            "major_id": 16,
+            "level": 1
           },
           {
             "name": "Loadout 3",
             "fortune_ids": [],
-            "major_id": null
+            "major_id": null,
+            "level": 1
           },
           {
             "name": "Loadout 4",
             "fortune_ids": [],
-            "major_id": null
+            "major_id": null,
+            "level": 1
           },
           {
             "name": "Loadout 5",
             "fortune_ids": [],
-            "major_id": null
+            "major_id": null,
+            "level": 1
           },
           {
             "name": "Loadout 6",
             "fortune_ids": [],
-            "major_id": null
+            "major_id": null,
+            "level": 1
           },
           {
             "name": "Loadout 7",
             "fortune_ids": [],
-            "major_id": null
+            "major_id": null,
+            "level": 1
           },
           {
             "name": "Loadout 8",
             "fortune_ids": [],
-            "major_id": null
+            "major_id": null,
+            "level": 1
           },
           {
             "name": "Loadout 9",
             "fortune_ids": [],
-            "major_id": null
+            "major_id": null,
+            "level": 1
           },
           {
             "name": "Loadout 10",
             "fortune_ids": [],
-            "major_id": null
+            "major_id": null,
+            "level": 1
           }
         ],
         "active_fortune_loadout": 0
       }
     ],
     "redo_history": [],
-    "toast_msg": "Drew 3 card(s): The Empress, The World, The Star",
+    "toast_msg": "Drew 1 card(s): The Hierophant",
     "toast_timer": 0.0,
-    "level": 20,
+    "level": 1,
     "used_major_ids": [],
-    "hand_limit": 3,
+    "hand_limit": 1,
     "ppf_charges": 3,
     "draw_queue": [],
-    "draw_timer": -0.06100000000000001,
+    "draw_timer": -0.004000000000000115,
     "is_drawing": false,
     "major_fortune_used_this_week": false,
     "major_fortune_activation_pending": false,
     "divine_intervention_used_this_week": false,
     "divine_intervention_failed_until_long_rest": false,
     "shuffle_anim_timer": 0.0,
-    "seer_slots_filled_today": 3,
-    "draw_of_fate_uses": 3,
-    "draw_of_fate_current": 3,
+    "seer_slots_filled_today": 1,
+    "draw_of_fate_uses": 0,
+    "draw_of_fate_current": 0,
     "fortune_loadouts": [
       {
-        "name": "Loadout 1",
-        "fortune_ids": [],
-        "major_id": null
+        "name": "dantheman",
+        "fortune_ids": [
+          2,
+          3,
+          5,
+          6,
+          11,
+          10,
+          7,
+          9
+        ],
+        "major_id": 16,
+        "level": 1
       },
       {
-        "name": "Loadout 2",
-        "fortune_ids": [],
-        "major_id": null
+        "name": "bait",
+        "fortune_ids": [
+          6,
+          5,
+          11,
+          10,
+          17,
+          15,
+          19,
+          18
+        ],
+        "major_id": 16,
+        "level": 1
       },
       {
         "name": "Loadout 3",
         "fortune_ids": [],
-        "major_id": null
+        "major_id": null,
+        "level": 1
       },
       {
         "name": "Loadout 4",
         "fortune_ids": [],
-        "major_id": null
+        "major_id": null,
+        "level": 1
       },
       {
         "name": "Loadout 5",
         "fortune_ids": [],
-        "major_id": null
+        "major_id": null,
+        "level": 1
       },
       {
         "name": "Loadout 6",
         "fortune_ids": [],
-        "major_id": null
+        "major_id": null,
+        "level": 1
       },
       {
         "name": "Loadout 7",
         "fortune_ids": [],
-        "major_id": null
+        "major_id": null,
+        "level": 1
       },
       {
         "name": "Loadout 8",
         "fortune_ids": [],
-        "major_id": null
+        "major_id": null,
+        "level": 1
       },
       {
         "name": "Loadout 9",
         "fortune_ids": [],
-        "major_id": null
+        "major_id": null,
+        "level": 1
       },
       {
         "name": "Loadout 10",
         "fortune_ids": [],
-        "major_id": null
+        "major_id": null,
+        "level": 1
       }
     ],
     "active_fortune_loadout": 0
   },
-  "save_kind": "autosave"
+  "save_kind": "autosave",
+  "save_slot": 1
 }

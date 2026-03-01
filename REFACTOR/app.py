@@ -1,11 +1,19 @@
-if __package__:
-    from .runtime import safe_main
-else:
-    import os
-    import sys
+import os
+import sys
 
-    sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-    from REFACTOR.runtime import safe_main
+
+def _resolve_safe_main():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    if script_dir not in sys.path:
+        sys.path.insert(0, script_dir)
+    from runtime import safe_main as _safe_main
+    return _safe_main
+
+
+def main():
+    _resolve_safe_main()()
+
 
 if __name__ == "__main__":
-    safe_main()
+    main()

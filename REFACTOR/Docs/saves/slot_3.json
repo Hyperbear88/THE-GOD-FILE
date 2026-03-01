@@ -1,0 +1,387 @@
+{
+  "version": 1,
+  "saved_at": "2026-03-01 22:51:39",
+  "screen_mode": "slot_menu",
+  "scroll_y": 0,
+  "history_overlay_open": false,
+  "history_scroll": 0,
+  "palm_reading_selection": null,
+  "top_menu_open": false,
+  "rest_menu_open": false,
+  "fortune_loadouts": [
+    {
+      "name": "dantheman",
+      "fortune_ids": [
+        2,
+        3,
+        5,
+        6,
+        11,
+        10,
+        7,
+        9
+      ],
+      "major_id": 16,
+      "level": 1
+    },
+    {
+      "name": "bait",
+      "fortune_ids": [
+        6,
+        5,
+        11,
+        10,
+        17,
+        15,
+        19,
+        18
+      ],
+      "major_id": 16,
+      "level": 1
+    },
+    {
+      "name": "Loadout 3",
+      "fortune_ids": [],
+      "major_id": null,
+      "level": 1
+    },
+    {
+      "name": "Loadout 4",
+      "fortune_ids": [],
+      "major_id": null,
+      "level": 1
+    },
+    {
+      "name": "Loadout 5",
+      "fortune_ids": [],
+      "major_id": null,
+      "level": 1
+    },
+    {
+      "name": "Loadout 6",
+      "fortune_ids": [],
+      "major_id": null,
+      "level": 1
+    },
+    {
+      "name": "Loadout 7",
+      "fortune_ids": [],
+      "major_id": null,
+      "level": 1
+    },
+    {
+      "name": "Loadout 8",
+      "fortune_ids": [],
+      "major_id": null,
+      "level": 1
+    },
+    {
+      "name": "Loadout 9",
+      "fortune_ids": [],
+      "major_id": null,
+      "level": 1
+    },
+    {
+      "name": "Loadout 10",
+      "fortune_ids": [],
+      "major_id": null,
+      "level": 1
+    }
+  ],
+  "active_fortune_loadout": 0,
+  "game": {
+    "deck": [
+      11,
+      20,
+      5,
+      4,
+      2,
+      17,
+      19,
+      18,
+      16,
+      8,
+      12,
+      3,
+      15,
+      1,
+      7,
+      6,
+      14,
+      13,
+      10
+    ],
+    "hand": [
+      {
+        "id": 9,
+        "mode": "normal",
+        "orientation": "upright",
+        "flip": 0.0,
+        "scroll_up": 0,
+        "scroll_inv": 0,
+        "max_sc_up": 0,
+        "max_sc_inv": 0,
+        "is_vanishing": false,
+        "tapped": false
+      }
+    ],
+    "fortune_zone": [],
+    "major_zone": [],
+    "vanished": [],
+    "stacked": null,
+    "first_three_ids": [
+      9
+    ],
+    "seer_dice_table": [
+      9
+    ],
+    "days_until_major": 0,
+    "days_passed": 1,
+    "shuffle_time": 0.0,
+    "history_log": [
+      {
+        "text": "[22:51] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+        "card_ids": []
+      },
+      {
+        "text": "[22:51] All save slots are occupied. Choose a slot to overwrite and continue this new game.",
+        "card_ids": []
+      },
+      {
+        "text": "[22:51] Drew 1 card(s): Strength",
+        "card_ids": [
+          9
+        ]
+      }
+    ],
+    "history": [
+      {
+        "deck": [
+          20,
+          18,
+          3,
+          16,
+          17,
+          9,
+          7,
+          10,
+          15,
+          12,
+          6,
+          4,
+          11,
+          1,
+          8,
+          2,
+          14,
+          13,
+          5,
+          19
+        ],
+        "hand": [],
+        "fortune_zone": [],
+        "major_zone": [],
+        "vanished": [],
+        "stacked": null,
+        "f3": [],
+        "cd": 0,
+        "days": 0,
+        "limit": 1,
+        "table": [],
+        "history": [],
+        "level": 1,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": false,
+        "major_pending": false,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 0,
+        "draw_of_fate": 0,
+        "draw_of_fate_cur": 0,
+        "fortune_loadouts": [
+          {
+            "name": "dantheman",
+            "fortune_ids": [
+              2,
+              3,
+              5,
+              6,
+              11,
+              10,
+              7,
+              9
+            ],
+            "major_id": 16,
+            "level": 1
+          },
+          {
+            "name": "bait",
+            "fortune_ids": [
+              6,
+              5,
+              11,
+              10,
+              17,
+              15,
+              19,
+              18
+            ],
+            "major_id": 16,
+            "level": 1
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null,
+            "level": 1
+          },
+          {
+            "name": "Loadout 4",
+            "fortune_ids": [],
+            "major_id": null,
+            "level": 1
+          },
+          {
+            "name": "Loadout 5",
+            "fortune_ids": [],
+            "major_id": null,
+            "level": 1
+          },
+          {
+            "name": "Loadout 6",
+            "fortune_ids": [],
+            "major_id": null,
+            "level": 1
+          },
+          {
+            "name": "Loadout 7",
+            "fortune_ids": [],
+            "major_id": null,
+            "level": 1
+          },
+          {
+            "name": "Loadout 8",
+            "fortune_ids": [],
+            "major_id": null,
+            "level": 1
+          },
+          {
+            "name": "Loadout 9",
+            "fortune_ids": [],
+            "major_id": null,
+            "level": 1
+          },
+          {
+            "name": "Loadout 10",
+            "fortune_ids": [],
+            "major_id": null,
+            "level": 1
+          }
+        ],
+        "active_fortune_loadout": 0
+      }
+    ],
+    "redo_history": [],
+    "toast_msg": "Drew 1 card(s): Strength",
+    "toast_timer": 1.1940000000000053,
+    "level": 1,
+    "used_major_ids": [],
+    "hand_limit": 1,
+    "ppf_charges": 3,
+    "draw_queue": [],
+    "draw_timer": -0.007999999999999993,
+    "is_drawing": false,
+    "major_fortune_used_this_week": false,
+    "major_fortune_activation_pending": false,
+    "divine_intervention_used_this_week": false,
+    "divine_intervention_failed_until_long_rest": false,
+    "shuffle_anim_timer": 0.0,
+    "seer_slots_filled_today": 1,
+    "draw_of_fate_uses": 0,
+    "draw_of_fate_current": 0,
+    "fortune_loadouts": [
+      {
+        "name": "dantheman",
+        "fortune_ids": [
+          2,
+          3,
+          5,
+          6,
+          11,
+          10,
+          7,
+          9
+        ],
+        "major_id": 16,
+        "level": 1
+      },
+      {
+        "name": "bait",
+        "fortune_ids": [
+          6,
+          5,
+          11,
+          10,
+          17,
+          15,
+          19,
+          18
+        ],
+        "major_id": 16,
+        "level": 1
+      },
+      {
+        "name": "Loadout 3",
+        "fortune_ids": [],
+        "major_id": null,
+        "level": 1
+      },
+      {
+        "name": "Loadout 4",
+        "fortune_ids": [],
+        "major_id": null,
+        "level": 1
+      },
+      {
+        "name": "Loadout 5",
+        "fortune_ids": [],
+        "major_id": null,
+        "level": 1
+      },
+      {
+        "name": "Loadout 6",
+        "fortune_ids": [],
+        "major_id": null,
+        "level": 1
+      },
+      {
+        "name": "Loadout 7",
+        "fortune_ids": [],
+        "major_id": null,
+        "level": 1
+      },
+      {
+        "name": "Loadout 8",
+        "fortune_ids": [],
+        "major_id": null,
+        "level": 1
+      },
+      {
+        "name": "Loadout 9",
+        "fortune_ids": [],
+        "major_id": null,
+        "level": 1
+      },
+      {
+        "name": "Loadout 10",
+        "fortune_ids": [],
+        "major_id": null,
+        "level": 1
+      }
+    ],
+    "active_fortune_loadout": 0
+  },
+  "save_kind": "slot",
+  "save_slot": 3
+}
