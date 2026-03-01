@@ -748,20 +748,24 @@ class Button:
 
 class Dropdown:
     def __init__(self, rect, items, max_visible=8, fantasy=False):
-        self.rect, self.items, self.selected_index, self.is_open = pygame.Rect(rect), items, 0, False; self.scroll_offset, self.max_visible, self.item_h = 0, max_visible, 35; self.fantasy = fantasy
+        self.rect, self.items, self.selected_index, self.is_open = pygame.Rect(rect), items, 0, False; self.scroll_offset, self.max_visible, self.item_h = 0, max_visible, 35; self.fantasy = fantasy; self.open_up = False
+    def _menu_rect(self):
+        _menu_h = min(len(self.items), self.max_visible) * self.item_h
+        _menu_y = self.rect.y - _menu_h if self.open_up else self.rect.bottom
+        return pygame.Rect(self.rect.x, _menu_y, self.rect.w, _menu_h)
     def handle_event(self, e):
         if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
             if self.rect.collidepoint(e.pos): self.is_open = not self.is_open; return True
             if self.is_open:
-                menu_rect = pygame.Rect(self.rect.x, self.rect.bottom, self.rect.w, min(len(self.items), self.max_visible) * self.item_h)
+                menu_rect = self._menu_rect()
                 if menu_rect.collidepoint(e.pos): 
-                    relative_y = e.pos[1] - self.rect.bottom
+                    relative_y = e.pos[1] - menu_rect.y
                     self.selected_index = (relative_y // self.item_h) + self.scroll_offset
                     self.is_open = False; return True
                     
                 self.is_open = False
         if self.is_open and e.type == pygame.MOUSEWHEEL:
-            menu_rect = pygame.Rect(self.rect.x, self.rect.bottom, self.rect.w, min(len(self.items), self.max_visible) * self.item_h)
+            menu_rect = self._menu_rect()
             if menu_rect.collidepoint(pygame.mouse.get_pos()): 
                 self.scroll_offset = clamp(self.scroll_offset - e.y, 0, max(0, len(self.items) - self.max_visible)); return True
         return False
@@ -774,12 +778,12 @@ class Dropdown:
         else: surf.blit(font.render("Spent / Empty", True, (130, 116, 96) if self.fantasy else (100, 100, 110)), (self.rect.x + 10, self.rect.y + 7))
     def draw_menu(self, surf, font):
         if not self.is_open: return
-        visible_count = min(len(self.items), self.max_visible); menu_rect = pygame.Rect(self.rect.x, self.rect.bottom, self.rect.w, visible_count * self.item_h); pygame.draw.rect(surf, (48, 34, 21) if self.fantasy else (20, 25, 40), menu_rect); pygame.draw.rect(surf, (212, 168, 96, 170) if self.fantasy else (255, 255, 255, 50), menu_rect, 1)
+        visible_count = min(len(self.items), self.max_visible); menu_rect = self._menu_rect(); pygame.draw.rect(surf, (48, 34, 21) if self.fantasy else (20, 25, 40), menu_rect); pygame.draw.rect(surf, (212, 168, 96, 170) if self.fantasy else (255, 255, 255, 50), menu_rect, 1)
         
         for i in range(visible_count):
             idx = i + self.scroll_offset
             if idx >= len(self.items): break
-            r = pygame.Rect(self.rect.x, self.rect.bottom + i * self.item_h, self.rect.w, self.item_h)
+            r = pygame.Rect(self.rect.x, menu_rect.y + i * self.item_h, self.rect.w, self.item_h)
             if r.collidepoint(pygame.mouse.get_pos()): pygame.draw.rect(surf, (90, 67, 40) if self.fantasy else (40, 60, 100), r)
             if idx == self.selected_index: pygame.draw.rect(surf, (204, 156, 82) if self.fantasy else (60, 80, 150), r, 2)
             txt = font.render(str(self.items[idx][1]), True, (246, 230, 196) if self.fantasy else (255, 255, 255)); surf.blit(txt, (r.x + 15, r.y + (self.item_h // 2 - txt.get_height() // 2)))

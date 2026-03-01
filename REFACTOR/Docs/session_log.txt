@@ -464,3 +464,82 @@ TypeError: Button.__init__() got an unexpected keyword argument 'blue'
 12:56:28 [INFO]  Scanning JSON... Found 80 bolded fields.
 13:07:18 [INFO]  Loading video backend: cv2
 13:07:18 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:18:59 [INFO]  Loading video backend: cv2
+13:18:59 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:26:31 [INFO]  Loading video backend: cv2
+13:26:31 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:29:39 [INFO]  Loading video backend: cv2
+13:29:39 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:35:33 [INFO]  Loading video backend: cv2
+13:35:33 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:43:52 [INFO]  Loading video backend: cv2
+13:43:52 [INFO]  Scanning JSON... Found 80 bolded fields.
+14:00:34 [INFO]  Loading video backend: cv2
+14:00:34 [INFO]  Scanning JSON... Found 80 bolded fields.
+14:07:27 [INFO]  Loading video backend: cv2
+14:07:27 [INFO]  Scanning JSON... Found 80 bolded fields.
+14:14:50 [INFO]  Loading video backend: cv2
+14:14:50 [INFO]  Scanning JSON... Found 80 bolded fields.
+14:18:50 [INFO]  Loading video backend: cv2
+14:18:50 [INFO]  Scanning JSON... Found 80 bolded fields.
+14:29:36 [INFO]  Loading video backend: cv2
+14:29:36 [INFO]  Scanning JSON... Found 80 bolded fields.
+14:43:03 [INFO]  Loading video backend: cv2
+14:43:03 [INFO]  Scanning JSON... Found 80 bolded fields.
+14:56:09 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+14:56:10 [INFO]  Loading video backend: imageio
+14:56:10 [INFO]  Scanning JSON... Found 80 bolded fields.
+15:11:36 [INFO]  Autosaved to slot 1.
+15:12:14 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+15:12:14 [INFO]  Loading video backend: imageio
+15:12:14 [INFO]  Scanning JSON... Found 80 bolded fields.
+15:20:17 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+15:20:18 [INFO]  Loading video backend: imageio
+15:20:18 [INFO]  Scanning JSON... Found 80 bolded fields.
+15:24:45 [INFO]  Loading video backend: cv2
+15:24:45 [INFO]  Scanning JSON... Found 80 bolded fields.
+15:30:41 [INFO]  Loading video backend: cv2
+15:30:41 [INFO]  Scanning JSON... Found 80 bolded fields.
+15:36:03 [INFO]  Loading video backend: cv2
+15:36:03 [INFO]  Scanning JSON... Found 80 bolded fields.
+15:44:11 [INFO]  Loading video backend: cv2
+15:44:11 [INFO]  Scanning JSON... Found 80 bolded fields.
+15:47:38 [INFO]  Loading video backend: cv2
+15:47:38 [INFO]  Scanning JSON... Found 80 bolded fields.
+15:53:38 [INFO]  Autosaved to slot 1.
+15:58:38 [INFO]  Autosaved to slot 2.
+16:01:12 [INFO]  Loading video backend: cv2
+16:01:12 [INFO]  Scanning JSON... Found 80 bolded fields.
+16:12:50 [INFO]  Autosaved to slot 1.
+16:17:50 [INFO]  Autosaved to slot 2.
+16:20:27 [INFO]  Loading video backend: cv2
+16:20:27 [INFO]  Scanning JSON... Found 80 bolded fields.
+16:29:11 [INFO]  Autosaved to slot 1.
+16:34:11 [INFO]  Autosaved to slot 2.
+16:39:11 [INFO]  Autosaved to slot 3.
+16:44:11 [INFO]  Autosaved to slot 4.
+16:49:12 [INFO]  Autosaved to slot 5.
+16:54:12 [INFO]  Autosaved to slot 6.
+16:59:12 [INFO]  Autosaved to slot 7.
+17:04:12 [INFO]  Autosaved to slot 8.
+17:09:12 [INFO]  Autosaved to slot 9.
+17:14:12 [INFO]  Autosaved to slot 10.
+17:19:12 [INFO]  Autosaved to slot 1.
+17:25:48 [INFO]  Loading video backend: cv2
+17:25:48 [INFO]  Scanning JSON... Found 80 bolded fields.
+17:33:02 [INFO]  Autosaved to slot 1.
+17:37:20 [INFO]  Loading video backend: cv2
+17:37:20 [INFO]  Scanning JSON... Found 80 bolded fields.
+17:40:05 [INFO]  Loading video backend: cv2
+17:40:05 [INFO]  Scanning JSON... Found 80 bolded fields.
+17:45:52 [INFO]  Autosaved to slot 1.
+17:50:07 [INFO]  Loading video backend: cv2
+17:50:07 [INFO]  Scanning JSON... Found 80 bolded fields.
+17:55:02 [INFO]  Loading video backend: cv2
+17:55:02 [INFO]  Scanning JSON... Found 80 bolded fields.
+17:59:49 [ERROR] Traceback (most recent call last):
+  File "C:\Users\danie\Desktop\BACKUPs\REFACTOR\runtime.py", line 3311, in safe_main
+    game.toast_msg, game.toast_timer = "Major Fortune is on weekly cooldown. You must wait for the weekly reset, which happens after 7 long rests."
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: too many values to unpack (expected 2)
+

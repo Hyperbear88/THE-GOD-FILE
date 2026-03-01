@@ -737,6 +737,7 @@ def safe_main():
             "History_Button.png",
             "Turn_Undead_Button.png",
             "Destroy_Undead_Button.png",
+            "Palm_Reading_Button.png",
             "Settings_Menu_Image.png",
             "Draw_of_Fate_Token.png",
             "Side_Panel_Image.png",
@@ -1027,6 +1028,7 @@ def safe_main():
         _img_save = _load_btn_img("Save_Button.png")
         _img_save_as = _load_btn_img("Save_As_Button.png")
         _img_fate_card = _load_btn_img("Fate_Card_Button.png")
+        _img_palm_reading = _load_btn_img("Palm_Reading_Button.png")
         _img_spell_list = _load_btn_img("Spell_List.png")
         _img_library_bg = _load_btn_img("Library_BG.png")
         _img_spell_library_bg = _load_btn_img("Spell_Library_BG.png")
@@ -1063,6 +1065,15 @@ def safe_main():
         draw_of_fate_slider = IntSlider((ui_x + 35, H - 200, ui_w - 70, 34), 0, 6, game.draw_of_fate_uses)
         turn_undead_btn = Button((ui_x, H - 160, (ui_w - 10) // 2, 42), "Turn Undead", green=True, image=_img_turn_undead)
         destroy_undead_btn = Button((ui_x + (ui_w - 10) // 2 + 10, H - 160, (ui_w - 10) // 2, 42), "Destroy Undead", danger=True, image=_img_destroy_undead)
+        palm_reading_btn = Button((0, 0, 120, 120), "Palm Reading", gold=True, image=_img_palm_reading)
+        palm_reading_type_dropdown = Dropdown((0, 0, 158, 42), [("attack_roll", "Attack Roll"), ("ability_check", "Ability Check"), ("saving_throw", "Saving Throw")], fantasy=True)
+        palm_reading_type_dropdown.open_up = True
+        palm_reading_text = ""
+        palm_reading_text_active = False
+        palm_reading_text_open = True
+        palm_reading_text_toggle_btn = Button((0, 0, 34, 34), ">", primary=True, fantasy=True)
+        palm_reading_a_btn = Button((0, 0, 54, 54), "A", green=True, fantasy=True)
+        palm_reading_d_btn = Button((0, 0, 54, 54), "D", danger=True, fantasy=True)
         undo_btn = Button((ui_x, H - 110, 90, 90), "", warning=True, image=_img_undo)
         divine_intervention_btn = Button((ui_x, H - 110, 90, 90), "", gold=True, image=_img_divine_intervention)
         redo_btn = Button((ui_x, H - 110, 90, 90), "", primary=True, image=_img_redo)
@@ -1078,6 +1089,8 @@ def safe_main():
         rest_menu_btn = Button((W-240, H-810, 150, 150), "Rest", primary=True, image=_img_rest)
         rest_menu_open = False
         top_menu_open = False
+        palm_reading_menu_open = False
+        palm_reading_selection = None
 
         def _get_glossary_view_layout():
             _panel = pygame.Rect(fortune_setup_box.x + 40, fortune_setup_box.y + 120, fortune_setup_box.w - 80, fortune_setup_box.h - 230)
@@ -1089,6 +1102,53 @@ def safe_main():
             _list_panel = pygame.Rect(_inner.x, _inner.y, _inner.w - _detail_w - _gap, _inner.h)
             _detail_panel = pygame.Rect(_list_panel.right + _gap, _inner.y, _inner.right - (_list_panel.right + _gap), _inner.h)
             return _panel, _list_panel, _detail_panel
+
+        def _glossary_top_controls_layout(_list_panel):
+            _search_h = 38
+            _dd_w = 132
+            _outer_pad = 12
+            _row_gap = 8
+            _search_w = max(120, _list_panel.w - (_outer_pad * 2) - _dd_w - 8)
+            _search_rect = pygame.Rect(_list_panel.x + _outer_pad, _list_panel.y + _outer_pad, _search_w, _search_h)
+            _dd_rect = pygame.Rect(_search_rect.right + 8, _search_rect.y, _dd_w, _search_h)
+            _grid_top = _search_rect.bottom + _row_gap
+            _grid_rect = pygame.Rect(_list_panel.x + 4, _grid_top, _list_panel.w - 8, max(90, _list_panel.bottom - _grid_top - 4))
+            return _search_rect, _dd_rect, _grid_rect
+
+        def _get_filtered_glossary_terms():
+            _query = fortune_glossary_search.strip().lower()
+            _filtered = []
+            for _term in fortune_glossary_terms:
+                _term_l = _term.lower()
+                if _query and _query not in _term_l:
+                    continue
+                if fortune_glossary_filter != "all" and (not _term_l or _term_l[0] != fortune_glossary_filter):
+                    continue
+                _filtered.append(_term)
+            return _filtered
+
+        def _get_glossary_list_geometry(_list_panel, _terms):
+            _cols = 3 if _list_panel.w >= 560 else 2
+            _row_h = 44
+            _col_gap = 14
+            _row_gap = 10
+            _rows = max(1, math.ceil(len(_terms) / _cols))
+            _content_h = (_rows * _row_h) + max(0, (_rows - 1) * _row_gap)
+            _clip, _track_rect, _handle_rect, _max_scroll = _fantasy_scrollbar_geometry(_list_panel.inflate(-12, -12), _content_h, fortune_glossary_scroll)
+            _item_area = pygame.Rect(_clip.x, _clip.y, max(120, _clip.w - _track_rect.w - 8), _clip.h)
+            _item_w = max(90, (_item_area.w - ((_cols - 1) * _col_gap)) // _cols)
+            return {
+                "cols": _cols,
+                "row_h": _row_h,
+                "col_gap": _col_gap,
+                "row_gap": _row_gap,
+                "clip": _clip,
+                "item_area": _item_area,
+                "track_rect": _track_rect,
+                "handle_rect": _handle_rect,
+                "max_scroll": _max_scroll,
+                "item_w": _item_w,
+            }
 
         def _wrap_glossary_detail_text(_font, _text, _max_w):
             if _max_w <= 0:
@@ -1176,6 +1236,7 @@ def safe_main():
         fortune_glossary_btn = Button((fortune_setup_box.right - 340, fortune_setup_box.bottom - 126, 140, 94), "Glossary", cyan=True, fantasy=True, image=preloaded_ui_images.get("Glossary_Button.png"), pulse_frame=True)
         fortune_spell_library_btn = Button((fortune_setup_box.right - 185, fortune_setup_box.bottom - 126, 140, 94), "Spell Library", pink=True, fantasy=True, image=preloaded_ui_images.get("Spell_Library.png"), pulse_frame=True)
         fortune_view_back_btn = Button((fortune_setup_box.x + 40, fortune_setup_box.bottom - 72, 210, 46), "Back to Loadout", warning=True, fantasy=True)
+        glossary_letter_dropdown = Dropdown((0, 0, 132, 38), [("all", "All")] + [(chr(97 + i), chr(65 + i)) for i in range(26)], max_visible=8, fantasy=True)
         fortune_lvl_dd = FantasyLevelStepper((fortune_setup_box.right - 270, fortune_setup_box.y + 24, 230, 46), 1, 20, game.level)
         fortune_card_buttons = []
         fortune_section_headers = []
@@ -1369,6 +1430,9 @@ def safe_main():
         fortune_spell_list_scroll = 0
         fortune_glossary_scroll = 0
         selected_glossary_term = None
+        fortune_glossary_search = ""
+        fortune_glossary_filter = "all"
+        fortune_glossary_search_active = False
         fortune_spell_search = ""
         fortune_spell_filter = "all"
         fortune_spell_class_filter = "all"
@@ -1568,6 +1632,39 @@ def safe_main():
                 "autosave_interval_min": autosave_interval_min,
             })
 
+        def _sync_level_steppers(level):
+            _level = int(clamp(level, 1, 20))
+            menu_lvl_dd.set_value(_level)
+            lvl_change_dd.set_value(_level)
+            fortune_lvl_dd.set_value(_level)
+
+        def _sync_palm_reading_toggle_buttons():
+            _a_selected = palm_reading_selection == "A"
+            _d_selected = palm_reading_selection == "D"
+            palm_reading_a_btn.primary = False
+            palm_reading_a_btn.gold = _a_selected
+            palm_reading_a_btn.warning = False
+            palm_reading_a_btn.danger = False
+            palm_reading_a_btn.fire = False
+            palm_reading_a_btn.green = not _a_selected
+            palm_reading_a_btn.cyan = False
+            palm_reading_a_btn.pink = False
+            palm_reading_d_btn.primary = False
+            palm_reading_d_btn.gold = _d_selected
+            palm_reading_d_btn.warning = False
+            palm_reading_d_btn.danger = not _d_selected
+            palm_reading_d_btn.fire = False
+            palm_reading_d_btn.green = False
+            palm_reading_d_btn.cyan = False
+            palm_reading_d_btn.pink = False
+
+        def _get_palm_reading_text_rect():
+            _text_w = 220
+            _text_h = 72
+            _text_x = palm_reading_text_toggle_btn.rect.right + 8
+            _text_y = palm_reading_btn.rect.y + 28
+            return pygame.Rect(_text_x, _text_y, _text_w, _text_h)
+
         def _open_settings(return_mode):
             nonlocal screen_mode, settings_return_mode
             settings_return_mode = return_mode
@@ -1578,6 +1675,7 @@ def safe_main():
             game.normalize_fortune_loadouts()
             game.enforce_fortune_selection()
             game.hand_limit = game.get_base_limit()
+            _sync_level_steppers(game.level)
             if game.level >= 17:
                 total = game.reset_for_level_change(skip_draw=True)
                 return "prophet_selection", total - 1
@@ -1724,6 +1822,7 @@ def safe_main():
                 "scroll_y": scroll_y,
                 "history_overlay_open": history_overlay_open,
                 "history_scroll": history_scroll,
+                "palm_reading_selection": palm_reading_selection,
                 "top_menu_open": False,
                 "rest_menu_open": False,
                 "game": game.to_save_payload()
@@ -1832,7 +1931,7 @@ def safe_main():
                     pass
 
         def _apply_loaded_payload(payload, loaded_label="save file"):
-            nonlocal screen_mode, scroll_y, history_overlay_open, history_scroll, top_menu_open, rest_menu_open, autosave_last_time
+            nonlocal screen_mode, scroll_y, history_overlay_open, history_scroll, top_menu_open, rest_menu_open, autosave_last_time, palm_reading_menu_open, palm_reading_selection
             if not payload or "game" not in payload:
                 game.toast_msg = "Selected file is not a valid save."
                 game.toast_timer = TOAST_DURATION
@@ -1842,18 +1941,37 @@ def safe_main():
             game.sfx_enabled = sfx_enabled
             game.sfx_channel = Button.click_channel
             draw_of_fate_slider.set_value(game.draw_of_fate_uses)
-            lvl_change_dd.selected_index = clamp(game.level - 1, 0, 19)
-            menu_lvl_dd.selected_index = clamp(game.level - 1, 0, 19)
+            _sync_level_steppers(game.level)
             screen_mode = payload.get("screen_mode", "normal")
             scroll_y = payload.get("scroll_y", 0)
             history_overlay_open = bool(payload.get("history_overlay_open", False))
             history_scroll = int(payload.get("history_scroll", 0))
+            palm_reading_selection = payload.get("palm_reading_selection")
+            if palm_reading_selection not in ("A", "D", None):
+                palm_reading_selection = None
+            palm_reading_menu_open = False
             top_menu_open = False
             rest_menu_open = False
             autosave_last_time = time.time()
             game.toast_msg = f"Loaded {loaded_label}"
             game.toast_timer = TOAST_DURATION
             return True
+
+        def _clear_persisted_fortune_loadouts():
+            try:
+                os.makedirs(FORTUNE_LOADOUT_DIR, exist_ok=True)
+            except Exception:
+                return
+            for _fname in os.listdir(FORTUNE_LOADOUT_DIR):
+                if not _fname.lower().endswith(".json"):
+                    continue
+                _path = os.path.join(FORTUNE_LOADOUT_DIR, _fname)
+                if not os.path.isfile(_path):
+                    continue
+                try:
+                    os.remove(_path)
+                except Exception as ex:
+                    log_event(f"Failed to remove persisted fortune loadout {_path}: {ex}", True)
 
         def _read_slot(slot_idx):
             payload = _load_slot_payload(slot_idx)
@@ -1864,23 +1982,35 @@ def safe_main():
             return _apply_loaded_payload(payload, f"slot {slot_idx}")
 
         def _start_new_game():
-            nonlocal game, screen_mode, scroll_y, prophet_remaining_draws, autosave_last_time
-            _prev_loadouts = copy.deepcopy(game.fortune_loadouts)
-            _prev_active = game.active_fortune_loadout
+            nonlocal game, screen_mode, scroll_y, prophet_remaining_draws, autosave_last_time, fortune_selected_loadout_idx, fortune_edit_loadout, fortune_name_edit_idx, fortune_name_input, fortune_scroll_y, history_overlay_open, history_scroll, top_menu_open, rest_menu_open, palm_reading_menu_open, palm_reading_selection, palm_reading_text, palm_reading_text_active, palm_reading_text_open
+            _clear_persisted_fortune_loadouts()
             game = Game(cards_raw)
             game.level = menu_lvl_dd.get_selected()
-            game.fortune_loadouts = _prev_loadouts
-            game.active_fortune_loadout = _prev_active
             game.normalize_fortune_loadouts()
-            lvl_change_dd.selected_index = game.level - 1
+            fortune_selected_loadout_idx = game.active_fortune_loadout
+            fortune_edit_loadout = copy.deepcopy(game.fortune_loadouts[fortune_selected_loadout_idx])
+            fortune_name_edit_idx = None
+            fortune_name_input = ""
+            fortune_scroll_y = 0
+            _sync_level_steppers(game.level)
             game.hand_limit = game.get_base_limit()
             game.draw_of_fate_uses = game.get_draw_of_fate_uses_by_level()
             game.draw_of_fate_current = game.draw_of_fate_uses
+            game.enforce_fortune_selection(add_history_entry=False)
             draw_of_fate_slider.set_value(game.draw_of_fate_uses)
             game.audio_enabled = audio_enabled
             game.sfx_enabled = sfx_enabled
             game.sfx_channel = Button.click_channel
             autosave_last_time = time.time()
+            history_overlay_open = False
+            history_scroll = 0
+            top_menu_open = False
+            rest_menu_open = False
+            palm_reading_menu_open = False
+            palm_reading_selection = None
+            palm_reading_text = ""
+            palm_reading_text_active = False
+            palm_reading_text_open = True
             if game.level >= 17:
                 total = game.long_rest(skip_draw=True)
                 prophet_remaining_draws = total - 1
@@ -2415,17 +2545,34 @@ def safe_main():
                 surf = pygame.transform.rotate(surf, 180)
             return surf
 
-        def get_draw_of_fate_rect():
-            dt_box_w, dt_box_h = PANEL_W - 120, 90
-            dt_box_x = PADDING + (PANEL_W - dt_box_w) // 2
-            dt_box_y = H - dt_box_h - 35
-            return pygame.Rect(dt_box_x, dt_box_y - 405, dt_box_w, 34)
-
         def get_seer_dice_rect():
             dt_box_w, dt_box_h = PANEL_W - 120, 90
             dt_box_x = PADDING + (PANEL_W - dt_box_w) // 2
             dt_box_y = H - dt_box_h - 45
             return pygame.Rect(dt_box_x, dt_box_y, dt_box_w, dt_box_h)
+
+        def _get_sidebar_action_layout():
+            _draw_btn_h = 90
+            _sidebar_gap = 18
+            _palm_btn_size = 120
+            _fate_section_gap = 22
+            _palm_above_seer_gap = 12
+            _draw_btn_y = lvl_change_dd.rect.bottom + _sidebar_gap
+            dt_box_w = PANEL_W - 120
+            dt_box_x = PADDING + (PANEL_W - dt_box_w) // 2
+            _seer_rect = get_seer_dice_rect()
+            _seer_label_top = _seer_rect.y - 34
+            _palm_btn_y = _seer_label_top - _palm_above_seer_gap - _palm_btn_size
+            _fate_section_top = _draw_btn_y + _draw_btn_h + _fate_section_gap
+            _fate_y = _fate_section_top + 139
+            return {
+                "draw_btn_y": _draw_btn_y,
+                "palm_btn_y": _palm_btn_y,
+                "fate_rect": pygame.Rect(dt_box_x, _fate_y, dt_box_w, 34),
+            }
+
+        def get_draw_of_fate_rect():
+            return _get_sidebar_action_layout()["fate_rect"]
 
         while running:
             dt = clock.tick(FPS)/1000.0; m_pos = pygame.mouse.get_pos(); 
@@ -2439,29 +2586,39 @@ def safe_main():
             if divine_result_banner_timer <= 0:
                 divine_result_banner_text = None
                 divine_result_banner_title = None
-            if autosave_enabled and screen_mode not in (
-                "menu",
-                "settings",
-                "slot_menu",
-                "library",
-                "fortune_setup",
-                "fortune_spell_list_view",
-                "fortune_glossary_view",
-                "fool_video",
-                "greedy_pot_popup",
-            ):
+            if autosave_enabled and screen_mode == "normal":
                 _autosave_interval_s = autosave_interval_min * 60
                 if (time.time() - autosave_last_time) >= _autosave_interval_s:
                     if _write_autosave(autosave_next_slot):
                         log_event(f"Autosaved to slot {autosave_next_slot}.")
                         autosave_next_slot = (autosave_next_slot % MAX_AUTOSAVE_SLOTS) + 1
                     autosave_last_time = time.time()
-            draw_of_fate_slider.rect = get_draw_of_fate_rect()
-            fate_r = get_draw_of_fate_rect()
+            _sidebar_action_layout = _get_sidebar_action_layout()
+            fate_r = _sidebar_action_layout["fate_rect"]
+            draw_of_fate_slider.rect = fate_r
             half_w = (fate_r.w - 10) // 2
             turn_undead_btn.rect = pygame.Rect(fate_r.x, fate_r.bottom + 8, half_w, half_w)
             destroy_undead_btn.rect = pygame.Rect(fate_r.x + half_w + 10, fate_r.bottom + 8, half_w, half_w)
-            _seer_rect = get_seer_dice_rect()
+            _palm_btn_size = 132
+            _palm_btn_y = _sidebar_action_layout["palm_btn_y"] - 18
+            _palm_dropdown_w = _palm_btn_size
+            _palm_dropdown_h = 42
+            _palm_dropdown_gap = 8
+            _palm_col_w = 54
+            _palm_col_h = 42
+            _palm_col_gap = 8
+            _palm_stack_h = _palm_btn_size + _palm_dropdown_gap + _palm_col_h + _palm_dropdown_gap + _palm_dropdown_h
+            _palm_group_x = ui_x + ui_w - _palm_btn_size - 24
+            palm_reading_btn.rect = pygame.Rect(_palm_group_x, _palm_btn_y, _palm_btn_size, _palm_btn_size)
+            palm_reading_type_dropdown.rect = pygame.Rect(_palm_group_x, palm_reading_btn.rect.bottom + _palm_dropdown_gap + _palm_col_h + _palm_dropdown_gap, _palm_dropdown_w, _palm_dropdown_h)
+            _palm_ad_total_w = (_palm_col_w * 2) + _palm_col_gap
+            _palm_ad_x = palm_reading_btn.rect.centerx - (_palm_ad_total_w // 2)
+            _palm_ad_y = palm_reading_btn.rect.bottom + _palm_dropdown_gap
+            palm_reading_a_btn.rect = pygame.Rect(_palm_ad_x, _palm_ad_y, _palm_col_w, _palm_col_h)
+            palm_reading_d_btn.rect = pygame.Rect(palm_reading_a_btn.rect.right + _palm_col_gap, _palm_ad_y, _palm_col_w, _palm_col_h)
+            palm_reading_text_toggle_btn.rect = pygame.Rect(palm_reading_btn.rect.right + 6, palm_reading_btn.rect.centery - 17, 34, 34)
+            palm_reading_text_toggle_btn.text = ">" if palm_reading_text_open else "<"
+            _sync_palm_reading_toggle_buttons()
             _divine_size = 90
             _divine_gap = 18
             _divine_y = H - _divine_size - 18
@@ -2472,18 +2629,16 @@ def safe_main():
             _major_zone_y = 80 + normal_card_zone_y_offset + HAND_GRID_SPACING_Y + fortune_major_card_zone_y_offset
             _zone_btn_x = _major_zone_x + HAND_CARD_W + 50
             _zone_btn_w = max(180, min(260, W - _zone_btn_x - 80))
-            _zone_btn_h = 104
+            _zone_btn_h = 118
             _zone_btn_gap = 18
             _ppf_y = _major_zone_y + _zone_btn_h + _zone_btn_gap
             library_btn.rect = pygame.Rect(_zone_btn_x, _ppf_y - _zone_btn_h - _zone_btn_gap, _zone_btn_w, _zone_btn_h)
             past_present_future_btn.rect = pygame.Rect(_zone_btn_x, _ppf_y, _zone_btn_w, _zone_btn_h)
             fated_card_btn.rect = pygame.Rect(_zone_btn_x, _ppf_y + _zone_btn_h + _zone_btn_gap, _zone_btn_w, _zone_btn_h)
-            # Position Draw 1 / Stack Top just above the Draw of Fate title
-            _div_top = fate_r.y - 105  # divider_box top
-            _title_y = _div_top - 38   # Draw of Fate label y
             _d1_half = (ui_w - 10) // 2
-            btn_d1.rect = pygame.Rect(ui_x, _title_y - 108, _d1_half, 90)
-            stack_btn.rect = pygame.Rect(ui_x + _d1_half + 10, _title_y - 108, _d1_half, 90)
+            _draw_btn_y = _sidebar_action_layout["draw_btn_y"]
+            btn_d1.rect = pygame.Rect(ui_x, _draw_btn_y, _d1_half, 90)
+            stack_btn.rect = pygame.Rect(ui_x + _d1_half + 10, _draw_btn_y, _d1_half, 90)
 
             if card_videos_enabled and screen_mode == "fool_video" and fool_video_state["cap"] is not None:
                 fool_video_state["accum"] += dt
@@ -2678,13 +2833,7 @@ def safe_main():
                 if screen_mode == "menu":
                     if menu_lvl_dd.handle_event(e):
                         selected_level = menu_lvl_dd.get_selected()
-                        game.level = selected_level
-                        game.normalize_fortune_loadouts()
-                        game.enforce_fortune_selection()
-                        game.draw_of_fate_uses = game.get_draw_of_fate_uses_by_level()
-                        game.draw_of_fate_current = game.draw_of_fate_uses
-                        draw_of_fate_slider.set_value(game.draw_of_fate_uses)
-                        lvl_change_dd.selected_index = game.level - 1
+                        _sync_level_steppers(selected_level)
                     if start_game_btn.handle_event(e):
                         _load_most_recent_save()
                     if new_game_btn.handle_event(e):
@@ -2707,6 +2856,11 @@ def safe_main():
                         _open_fortune_setup("library")
                     if library_glossary_btn.handle_event(e):
                         fortune_glossary_scroll = 0
+                        fortune_glossary_search = ""
+                        fortune_glossary_filter = "all"
+                        fortune_glossary_search_active = False
+                        glossary_letter_dropdown.selected_index = 0
+                        glossary_letter_dropdown.is_open = False
                         screen_mode = "fortune_glossary_view"
                     if library_spell_list_btn.handle_event(e):
                         fortune_spell_list_scroll = 0
@@ -2837,8 +2991,7 @@ def safe_main():
                         game.draw_of_fate_uses = game.get_draw_of_fate_uses_by_level()
                         game.draw_of_fate_current = game.draw_of_fate_uses
                         draw_of_fate_slider.set_value(game.draw_of_fate_uses)
-                        menu_lvl_dd.set_value(game.level)
-                        lvl_change_dd.set_value(game.level)
+                        _sync_level_steppers(game.level)
                         game.normalize_fortune_loadouts()
                         fortune_edit_loadout = _clamp_loadout_for_current_level(game.fortune_loadouts[fortune_selected_loadout_idx])
                         game.enforce_fortune_selection()
@@ -3024,32 +3177,66 @@ def safe_main():
 
                 elif screen_mode == "fortune_glossary_view":
                     _glossary_panel, _glossary_list_panel, _glossary_detail_panel = _get_glossary_view_layout()
-                    _glossary_cols = 3 if _glossary_list_panel.w >= 560 else 2
-                    _row_h = 44
-                    _col_gap = 14
-                    _row_gap = 10
-                    _glossary_rows = max(1, math.ceil(len(fortune_glossary_terms) / _glossary_cols))
-                    _content_h = (_glossary_rows * _row_h) + max(0, (_glossary_rows - 1) * _row_gap)
-                    _glossary_clip, _glossary_track_rect, _glossary_handle_rect, _glossary_max_scroll = _fantasy_scrollbar_geometry(_glossary_list_panel.inflate(-12, -12), _content_h, fortune_glossary_scroll)
-                    _item_w = (_glossary_clip.w - ((_glossary_cols - 1) * _col_gap)) // _glossary_cols
+                    _glossary_search_rect, _glossary_dd_rect, _glossary_grid_panel = _glossary_top_controls_layout(_glossary_list_panel)
+                    glossary_letter_dropdown.rect = _glossary_dd_rect
+                    _dropdown_changed = glossary_letter_dropdown.handle_event(e)
+                    if _dropdown_changed:
+                        _new_filter = str(glossary_letter_dropdown.get_selected())
+                        if _new_filter != fortune_glossary_filter:
+                            fortune_glossary_filter = _new_filter
+                            fortune_glossary_scroll = 0
+                        if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                            fortune_glossary_search_active = False
+                        continue
+                    _glossary_terms = _get_filtered_glossary_terms()
+                    if selected_glossary_term not in _glossary_terms:
+                        selected_glossary_term = _glossary_terms[0] if _glossary_terms else None
+                        fortune_glossary_scroll = 0
+                    _glossary_geom = _get_glossary_list_geometry(_glossary_grid_panel, _glossary_terms)
+                    _glossary_cols = _glossary_geom["cols"]
+                    _row_h = _glossary_geom["row_h"]
+                    _col_gap = _glossary_geom["col_gap"]
+                    _row_gap = _glossary_geom["row_gap"]
+                    _glossary_clip = _glossary_geom["clip"]
+                    _glossary_item_area = _glossary_geom["item_area"]
+                    _glossary_track_rect = _glossary_geom["track_rect"]
+                    _glossary_handle_rect = _glossary_geom["handle_rect"]
+                    _glossary_max_scroll = _glossary_geom["max_scroll"]
+                    _item_w = _glossary_geom["item_w"]
+                    fortune_glossary_scroll = int(clamp(fortune_glossary_scroll, 0, _glossary_max_scroll))
                     if e.type == pygame.MOUSEBUTTONUP and e.button == 1:
                         glossary_sb_dragging = False
                     if e.type == pygame.MOUSEMOTION and glossary_sb_dragging and _glossary_max_scroll > 0:
                         _rel = clamp(e.pos[1] - _glossary_track_rect.y - (_glossary_handle_rect.h // 2), 0, _glossary_track_rect.h - _glossary_handle_rect.h)
                         fortune_glossary_scroll = int(_rel / max(1, _glossary_track_rect.h - _glossary_handle_rect.h) * _glossary_max_scroll)
-                    if e.type == pygame.MOUSEWHEEL and _glossary_list_panel.collidepoint(m_pos):
+                    if e.type == pygame.MOUSEWHEEL and _glossary_grid_panel.collidepoint(m_pos):
                         fortune_glossary_scroll = int(clamp(fortune_glossary_scroll - e.y * 48, 0, _glossary_max_scroll))
+                    if e.type == pygame.KEYDOWN and fortune_glossary_search_active:
+                        if e.key == pygame.K_BACKSPACE:
+                            fortune_glossary_search = fortune_glossary_search[:-1]
+                            fortune_glossary_scroll = 0
+                        elif e.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_TAB):
+                            pass
+                        elif e.unicode and e.unicode.isprintable():
+                            if len(fortune_glossary_search) < 48:
+                                fortune_glossary_search += e.unicode
+                                fortune_glossary_scroll = 0
                     if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and _glossary_max_scroll > 0 and _glossary_track_rect.collidepoint(e.pos):
                         glossary_sb_dragging = True
                         _rel = clamp(e.pos[1] - _glossary_track_rect.y - (_glossary_handle_rect.h // 2), 0, _glossary_track_rect.h - _glossary_handle_rect.h)
                         fortune_glossary_scroll = int(_rel / max(1, _glossary_track_rect.h - _glossary_handle_rect.h) * _glossary_max_scroll)
                         continue
-                    if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and _glossary_clip.collidepoint(e.pos):
-                        for _i, _term in enumerate(fortune_glossary_terms):
+                    if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                        if _glossary_search_rect.collidepoint(e.pos):
+                            fortune_glossary_search_active = True
+                        else:
+                            fortune_glossary_search_active = False
+                    if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and _glossary_item_area.collidepoint(e.pos):
+                        for _i, _term in enumerate(_glossary_terms):
                             _col = _i % _glossary_cols
                             _row = _i // _glossary_cols
-                            _rx = _glossary_clip.x + _col * (_item_w + _col_gap)
-                            _ry = _glossary_clip.y + 2 + (_row * (_row_h + _row_gap)) - fortune_glossary_scroll
+                            _rx = _glossary_item_area.x + _col * (_item_w + _col_gap)
+                            _ry = _glossary_item_area.y + (_row * (_row_h + _row_gap)) - fortune_glossary_scroll
                             _rr = pygame.Rect(_rx, _ry, _item_w, _row_h)
                             if _rr.bottom < _glossary_clip.y or _rr.top > _glossary_clip.bottom:
                                 continue
@@ -3058,6 +3245,8 @@ def safe_main():
                                 break
                     if fortune_view_back_btn.handle_event(e):
                         screen_mode = "library"
+                        fortune_glossary_search_active = False
+                        glossary_letter_dropdown.is_open = False
                 
                 elif screen_mode == "preview_view":
                     if exit_view_btn.handle_event(e): 
@@ -3307,7 +3496,30 @@ def safe_main():
                             prophet_remaining_draws = remaining_draws
                             scroll_y = 0
                             draw_of_fate_slider.set_value(game.draw_of_fate_uses)
-                            menu_lvl_dd.selected_index = game.level - 1
+                            _sync_level_steppers(game.level)
+                    _palm_text_rect = _get_palm_reading_text_rect()
+                    if e.type == pygame.KEYDOWN and palm_reading_text_active:
+                        if e.key == pygame.K_BACKSPACE:
+                            palm_reading_text = palm_reading_text[:-1]
+                        elif e.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_TAB):
+                            pass
+                        elif e.unicode and e.unicode.isprintable() and len(palm_reading_text) < 64:
+                            palm_reading_text += e.unicode
+                    if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                        _palm_controls_hit = (
+                            palm_reading_btn.rect.collidepoint(e.pos) or
+                            (palm_reading_menu_open and palm_reading_text_toggle_btn.rect.collidepoint(e.pos)) or
+                            (palm_reading_menu_open and palm_reading_type_dropdown.rect.collidepoint(e.pos)) or
+                            (palm_reading_menu_open and palm_reading_text_open and _palm_text_rect.collidepoint(e.pos)) or
+                            (palm_reading_menu_open and (
+                                palm_reading_a_btn.rect.collidepoint(e.pos) or
+                                palm_reading_d_btn.rect.collidepoint(e.pos)
+                            ))
+                        )
+                        if palm_reading_menu_open and palm_reading_text_open and _palm_text_rect.collidepoint(e.pos):
+                            palm_reading_text_active = True
+                        elif not _palm_controls_hit:
+                            palm_reading_text_active = False
                     if game.level >= 2 and draw_of_fate_slider.handle_event(e):
                         game.draw_of_fate_uses = draw_of_fate_slider.value
                         game.draw_of_fate_current = min(game.draw_of_fate_current, game.draw_of_fate_uses)
@@ -3315,6 +3527,21 @@ def safe_main():
                     if stack_btn.handle_event(e): game.save_state(); game.draw_of_fate_current = max(0, game.draw_of_fate_current - 1); screen_mode, scroll_y = "stack_selection", 0
                     if library_btn.handle_event(e):
                         _open_library("normal")
+                    if palm_reading_menu_open and palm_reading_type_dropdown.handle_event(e):
+                        continue
+                    if palm_reading_btn.handle_event(e):
+                        palm_reading_menu_open = not palm_reading_menu_open
+                        if not palm_reading_menu_open:
+                            palm_reading_text_active = False
+                            palm_reading_type_dropdown.is_open = False
+                    if palm_reading_menu_open and palm_reading_text_toggle_btn.handle_event(e):
+                        palm_reading_text_open = not palm_reading_text_open
+                        palm_reading_text_active = False
+                        continue
+                    if palm_reading_menu_open and palm_reading_a_btn.handle_event(e):
+                        palm_reading_selection = None if palm_reading_selection == "A" else "A"
+                    if palm_reading_menu_open and palm_reading_d_btn.handle_event(e):
+                        palm_reading_selection = None if palm_reading_selection == "D" else "D"
                     if game.level >= 6 and past_present_future_btn.handle_event(e) and not past_present_future_btn.disabled: screen_mode, scroll_y = "ppf_selection", 0
                     if game.level >= 2 and rest_menu_open and short_rest_btn.handle_event(e): game.short_rest(); rest_menu_open = False
                     if game.level >= 2 and turn_undead_btn.handle_event(e): game.save_state(); game.draw_of_fate_current = max(0, game.draw_of_fate_current - 1); game.add_history("Used Turn Undead.")
@@ -4169,7 +4396,7 @@ def safe_main():
                 pygame.draw.rect(screen, _cyan_edge, fortune_setup_box, 2, 20)
                 _title = f_fortune_title.render("GLOSSARY", True, _cyan_soft)
                 screen.blit(_title, (fortune_setup_box.centerx - _title.get_width() // 2, fortune_setup_box.y + 20))
-                _hint = f_fortune_small.render("Click a term to see a short D&D explanation on the right", True, (206, 238, 248))
+                _hint = f_fortune_small.render("Search/filter terms, then click one to see a short D&D explanation on the right", True, (206, 238, 248))
                 screen.blit(_hint, (fortune_setup_box.centerx - _hint.get_width() // 2, fortune_setup_box.y + 82))
                 _panel, _list_panel, _detail_panel = _get_glossary_view_layout()
                 _blit_alpha_round_rect(screen, _panel, (20, 18, 30, 96), 12)
@@ -4178,27 +4405,44 @@ def safe_main():
                 pygame.draw.rect(screen, (102, 220, 255, 90), _list_panel, 1, 12)
                 _blit_alpha_round_rect(screen, _detail_panel, (20, 22, 34, 156), 12)
                 pygame.draw.rect(screen, (102, 220, 255, 120), _detail_panel, 1, 12)
-                _list_title = f_fortune_subtitle.render("Terms", True, _cyan_soft)
-                screen.blit(_list_title, (_list_panel.x + 16, _list_panel.y + 12))
-                _detail_title = f_fortune_subtitle.render("Meaning", True, _cyan_soft)
-                screen.blit(_detail_title, (_detail_panel.x + 16, _detail_panel.y + 12))
-                if selected_glossary_term not in fortune_glossary_terms:
-                    selected_glossary_term = None
-                _cols = 3 if _list_panel.w >= 560 else 2
-                _row_h = 44
-                _col_gap = 14
-                _row_gap = 10
-                _glossary_rows = max(1, math.ceil(len(fortune_glossary_terms) / _cols))
-                _content_h = (_glossary_rows * _row_h) + max(0, (_glossary_rows - 1) * _row_gap)
-                _clip, _sb_track_rect, _sb_handle_rect, _glossary_max_scroll_draw = _fantasy_scrollbar_geometry(_list_panel.inflate(-12, -42), _content_h, fortune_glossary_scroll)
-                _item_w = (_clip.w - ((_cols - 1) * _col_gap)) // _cols
+                _search_rect, _dd_rect, _grid_panel = _glossary_top_controls_layout(_list_panel)
+                glossary_letter_dropdown.rect = _dd_rect
+                _sel_letter = str(glossary_letter_dropdown.get_selected())
+                if _sel_letter != fortune_glossary_filter:
+                    fortune_glossary_filter = _sel_letter
+                draw_round_rect(screen, _search_rect, (20, 18, 30, 230), 10)
+                pygame.draw.rect(screen, _cyan_soft if fortune_glossary_search_active else _cyan_edge, _search_rect, 2, 10)
+                _search_hint = "Search terms..."
+                _search_text = fortune_glossary_search if fortune_glossary_search else _search_hint
+                _search_col = (224, 248, 255) if fortune_glossary_search else (138, 170, 184)
+                _search_surf = f_fortune_small.render(_search_text, True, _search_col)
+                screen.blit(_search_surf, (_search_rect.x + 12, _search_rect.centery - _search_surf.get_height() // 2))
+                if fortune_glossary_search_active and (pygame.time.get_ticks() // 500) % 2 == 0:
+                    _cx = _search_rect.x + 12 + _search_surf.get_width() + 2
+                    pygame.draw.line(screen, _cyan_soft, (_cx, _search_rect.y + 9), (_cx, _search_rect.bottom - 9), 2)
+                glossary_letter_dropdown.draw_base(screen, f_fortune_small)
+                _glossary_terms = _get_filtered_glossary_terms()
+                if selected_glossary_term not in _glossary_terms:
+                    selected_glossary_term = _glossary_terms[0] if _glossary_terms else None
+                _glossary_geom = _get_glossary_list_geometry(_grid_panel, _glossary_terms)
+                _cols = _glossary_geom["cols"]
+                _row_h = _glossary_geom["row_h"]
+                _col_gap = _glossary_geom["col_gap"]
+                _row_gap = _glossary_geom["row_gap"]
+                _clip = _glossary_geom["clip"]
+                _item_area = _glossary_geom["item_area"]
+                _sb_track_rect = _glossary_geom["track_rect"]
+                _sb_handle_rect = _glossary_geom["handle_rect"]
+                _glossary_max_scroll_draw = _glossary_geom["max_scroll"]
+                _item_w = _glossary_geom["item_w"]
+                fortune_glossary_scroll = int(clamp(fortune_glossary_scroll, 0, _glossary_max_scroll_draw))
                 _clip_prev = screen.get_clip()
                 screen.set_clip(_clip)
-                for _i, _term in enumerate(fortune_glossary_terms):
+                for _i, _term in enumerate(_glossary_terms):
                     _col = _i % _cols
                     _row = _i // _cols
-                    _rx = _clip.x + _col * (_item_w + _col_gap)
-                    _ry = _clip.y + 2 + (_row * (_row_h + _row_gap)) - fortune_glossary_scroll
+                    _rx = _item_area.x + _col * (_item_w + _col_gap)
+                    _ry = _item_area.y + (_row * (_row_h + _row_gap)) - fortune_glossary_scroll
                     _rr = pygame.Rect(_rx, _ry, _item_w, _row_h)
                     if _rr.bottom < _clip.y or _rr.top > _clip.bottom:
                         continue
@@ -4220,6 +4464,10 @@ def safe_main():
                 screen.set_clip(_clip_prev)
                 if _glossary_max_scroll_draw > 0:
                     _draw_fantasy_scrollbar(screen, _sb_track_rect, _sb_handle_rect, _cyan_edge, _cyan_soft)
+                glossary_letter_dropdown.draw_menu(screen, f_fortune_small)
+                if not _glossary_terms:
+                    _none = f_fortune_small.render("No terms match your search/filter.", True, (196, 230, 240))
+                    screen.blit(_none, (_grid_panel.centerx - _none.get_width() // 2, _grid_panel.centery - _none.get_height() // 2))
                 _detail_inner = _detail_panel.inflate(-24, -28)
                 if selected_glossary_term:
                     _title_font = f_fortune_header if f_fortune_header.size(selected_glossary_term)[0] <= _detail_inner.w else f_fortune_small
@@ -4336,6 +4584,31 @@ def safe_main():
                     screen.blit(_du_lbl, (_du_lbl_x, _du_lbl_y))
                     btn_d1.draw(screen, f_tiny, dt)
                     stack_btn.draw(screen, f_tiny, dt)
+                if palm_reading_menu_open:
+                    _palm_title = f_small.render("Palm Reading", True, GOLD)
+                    _palm_title_x = palm_reading_btn.rect.centerx - (_palm_title.get_width() // 2)
+                    _palm_title_y = palm_reading_btn.rect.y - _palm_title.get_height() - 8
+                    _palm_title_bg = pygame.Rect(_palm_title_x - 6, _palm_title_y - 2, _palm_title.get_width() + 12, _palm_title.get_height() + 4)
+                    draw_round_rect(screen, _palm_title_bg, (0, 0, 0, 180), 6)
+                    screen.blit(_palm_title, (_palm_title_x, _palm_title_y))
+                    palm_reading_text_toggle_btn.draw(screen, f_small, dt)
+                    if palm_reading_text_open:
+                        _palm_text_rect = _get_palm_reading_text_rect()
+                        draw_round_rect(screen, _palm_text_rect, (20, 18, 30, 230), 10)
+                        pygame.draw.rect(screen, GOLD if palm_reading_text_active else (212, 168, 96), _palm_text_rect, 2, 10)
+                        _palm_text_hint = "Type here..."
+                        _palm_text_value = palm_reading_text if palm_reading_text else _palm_text_hint
+                        _palm_text_color = (236, 218, 182) if palm_reading_text else (138, 126, 110)
+                        _palm_text_surf = f_small.render(_palm_text_value, True, _palm_text_color)
+                        screen.blit(_palm_text_surf, (_palm_text_rect.x + 12, _palm_text_rect.centery - _palm_text_surf.get_height() // 2))
+                        if palm_reading_text_active and (pygame.time.get_ticks() // 500) % 2 == 0:
+                            _cx = min(_palm_text_rect.right - 10, _palm_text_rect.x + 12 + _palm_text_surf.get_width() + 2)
+                            pygame.draw.line(screen, GOLD, (_cx, _palm_text_rect.y + 9), (_cx, _palm_text_rect.bottom - 9), 2)
+                    palm_reading_type_dropdown.draw_base(screen, f_small)
+                    palm_reading_a_btn.draw(screen, f_small, dt)
+                    palm_reading_d_btn.draw(screen, f_small, dt)
+                    palm_reading_type_dropdown.draw_menu(screen, f_small)
+                palm_reading_btn.draw(screen, f_tiny, dt)
                 if game.level >= 6:
                     dt_box = get_seer_dice_rect()
                     title_surf = f_small.render("SEER DICE TABLE", True, PINK_D20)

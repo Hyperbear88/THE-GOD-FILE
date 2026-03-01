@@ -319,6 +319,7 @@ class Game:
         self.stacked = None
         self.first_three_ids = []
         self.seer_dice_table = []
+        self.seer_slots_filled_today = 0
         self.hand_limit = self.get_base_limit()
         self.draw_of_fate_uses = self.get_draw_of_fate_uses_by_level()
         self.draw_of_fate_current = self.draw_of_fate_uses
