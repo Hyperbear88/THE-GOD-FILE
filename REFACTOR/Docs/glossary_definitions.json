@@ -1,0 +1,715 @@
+{
+  "entries": [
+    {
+      "term": "Ability Check",
+      "aliases": ["Ability Checks"],
+      "definition": "An ability check is a D20 Test that uses one of the six abilities, or a skill tied to that ability, to overcome a challenge."
+    },
+    {
+      "term": "Ability Score and Modifier",
+      "definition": "Every creature has six ability scores: Strength, Dexterity, Constitution, Intelligence, Wisdom, and Charisma. Each score has a modifier that you add when a rule calls for that ability."
+    },
+    {
+      "term": "Action",
+      "aliases": ["Actions"],
+      "definition": "On your turn, you can normally take one action. Common actions include Attack, Dash, Disengage, Dodge, Help, Hide, Influence, Magic, Ready, Search, Study, and Utilize."
+    },
+    {
+      "term": "Adventure",
+      "definition": "An adventure is a series of encounters that together create a story."
+    },
+    {
+      "term": "Advantage",
+      "definition": "If you have Advantage on a D20 Test, roll two d20s and use the higher result. Multiple sources of Advantage do not stack, and Advantage cancels Disadvantage."
+    },
+    {
+      "term": "Alignment",
+      "definition": "Alignment broadly describes a creature's moral outlook and attitude toward order. The nine alignments combine good, evil, or neutral with lawful, chaotic, or neutral."
+    },
+    {
+      "term": "Ally",
+      "definition": "A creature is your ally if it is in your party, is your friend, is fighting on your side, or the rules or DM say it counts as your ally."
+    },
+    {
+      "term": "Area of Effect",
+      "definition": "Many spells and features affect an area such as a cone, cube, cylinder, emanation, line, or sphere. An area of effect has a point of origin, and blocked lines usually stop the effect unless the rules say otherwise."
+    },
+    {
+      "term": "Armor Class",
+      "aliases": ["AC"],
+      "definition": "Armor Class is the target number an attack roll must meet or beat to hit you. Your default AC is 10 plus your Dexterity modifier unless another rule gives you a different base calculation."
+    },
+    {
+      "term": "Armor Training",
+      "definition": "Armor training lets you wear that armor without its penalties. Without the proper training, armor can impose Disadvantage on Strength and Dexterity D20 Tests and can stop spellcasting, and an untrained Shield gives no AC bonus."
+    },
+    {
+      "term": "Attack",
+      "aliases": ["Attack Action", "Attack [Action]"],
+      "definition": "The Attack action lets you make one attack with a weapon or an Unarmed Strike. As part of it, you can equip or unequip one weapon, and if you have multiple attacks you can move between them."
+    },
+    {
+      "term": "Attack Roll",
+      "definition": "An attack roll is a D20 Test used when you attack with a weapon, an Unarmed Strike, or a spell."
+    },
+    {
+      "term": "Attitude",
+      "definition": "A monster's attitude toward a character is usually Friendly, Hostile, or Indifferent. That attitude affects how easy it is to Influence the creature."
+    },
+    {
+      "term": "Attunement",
+      "definition": "Some magic items require Attunement before you can use their magical properties. A creature can normally be attuned to no more than three magic items at once."
+    },
+    {
+      "term": "Blinded",
+      "aliases": ["Blinded [Condition]"],
+      "definition": "While Blinded, you cannot see and automatically fail ability checks that require sight. Attack rolls against you have Advantage, and your attack rolls have Disadvantage."
+    },
+    {
+      "term": "Blindsight",
+      "definition": "Blindsight lets you perceive within a set range without relying on normal sight. Within that range, you can notice things even in Darkness or while Blinded, so long as they are not behind Total Cover."
+    },
+    {
+      "term": "Bloodied",
+      "definition": "A creature is Bloodied when it has half its hit points or fewer remaining."
+    },
+    {
+      "term": "Bonus Action",
+      "aliases": ["Bonus Actions"],
+      "definition": "A Bonus Action is a special action you can take on the same turn as your action, but only if a rule specifically gives you one. You can take at most one Bonus Action on a turn."
+    },
+    {
+      "term": "Breaking Objects",
+      "definition": "Breaking Objects covers how objects take damage, including their AC, hit points, and any special limits such as a damage threshold."
+    },
+    {
+      "term": "Bright Light",
+      "definition": "Bright Light is normal illumination."
+    },
+    {
+      "term": "Burning",
+      "aliases": ["Burning [Hazard]"],
+      "definition": "A burning creature or object takes 1d4 fire damage at the start of each of its turns until the fire is put out by rolling on the ground, dousing it, submerging it, or suffocating it."
+    },
+    {
+      "term": "Burrow Speed",
+      "definition": "A Burrow Speed lets a creature move through sand, earth, mud, or ice. It does not let the creature move through solid rock unless another trait says it can."
+    },
+    {
+      "term": "Campaign",
+      "definition": "A campaign is a series of adventures."
+    },
+    {
+      "term": "Cantrip",
+      "definition": "A cantrip is a level 0 spell that can be cast without using a spell slot."
+    },
+    {
+      "term": "Carrying Capacity",
+      "definition": "Carrying Capacity is how much weight a creature can carry before the rules for load and movement start to matter."
+    },
+    {
+      "term": "Challenge Rating",
+      "aliases": ["CR"],
+      "definition": "Challenge Rating summarizes how dangerous a monster is and helps the DM judge rewards and encounter difficulty."
+    },
+    {
+      "term": "Character Sheet",
+      "definition": "A character sheet is the paper or digital record you use to track your character's game information."
+    },
+    {
+      "term": "Charmed",
+      "aliases": ["Charmed [Condition]"],
+      "definition": "While Charmed, you cannot attack the charmer or target the charmer with damaging abilities or magical effects. The charmer also has Advantage on social ability checks involving you."
+    },
+    {
+      "term": "Climbing",
+      "definition": "Climbing normally costs 1 extra foot of movement for every foot climbed, or 2 extra feet in Difficult Terrain. A Climb Speed ignores that extra cost."
+    },
+    {
+      "term": "Climb Speed",
+      "definition": "A Climb Speed lets you move up vertical surfaces without paying the extra movement cost of normal climbing."
+    },
+    {
+      "term": "Concentration",
+      "definition": "Some spells and effects require Concentration to remain active. Concentration ends if you start another Concentration effect, fail the Constitution save after taking damage, become Incapacitated, or die."
+    },
+    {
+      "term": "Condition",
+      "aliases": ["Conditions"],
+      "definition": "A condition is a temporary game state with specific rules. Conditions normally do not stack with themselves, except for Exhaustion, and the core conditions are Blinded, Charmed, Deafened, Exhaustion, Frightened, Grappled, Incapacitated, Invisible, Paralyzed, Petrified, Poisoned, Prone, Restrained, Stunned, and Unconscious."
+    },
+    {
+      "term": "Cone",
+      "aliases": ["Cone [Area of Effect]"],
+      "definition": "A Cone extends in straight lines from a point of origin in a direction the creator chooses. Its width at any point equals its distance from the origin."
+    },
+    {
+      "term": "Cover",
+      "definition": "Cover protects a target behind an obstacle. Half Cover gives +2 AC and Dexterity saving throws, Three-Quarters Cover gives +5, and Total Cover prevents direct targeting."
+    },
+    {
+      "term": "Crawling",
+      "definition": "Crawling costs 1 extra foot of movement for every foot moved, or 2 extra feet in Difficult Terrain."
+    },
+    {
+      "term": "Creature",
+      "definition": "Any being in the game, including a player character, is a creature."
+    },
+    {
+      "term": "Creature Type",
+      "definition": "Creature Type is the rules tag that identifies what kind of being a creature is, such as Humanoid, Fey, Fiend, Undead, or Beast. Some rules affect certain creature types differently."
+    },
+    {
+      "term": "Critical Hit",
+      "definition": "If you roll a natural 20 on an attack roll, you score a Critical Hit. The attack hits automatically, and you roll all of the attack's damage dice twice."
+    },
+    {
+      "term": "Cube",
+      "aliases": ["Cube [Area of Effect]"],
+      "definition": "A Cube is an area of effect that extends from a point of origin located on one of its faces. The effect that creates it sets the length of each side."
+    },
+    {
+      "term": "Curses",
+      "definition": "A curse is a harmful magical effect placed on a creature or object. The effect itself defines what the curse does and how it can be ended."
+    },
+    {
+      "term": "Cylinder",
+      "aliases": ["Cylinder [Area of Effect]"],
+      "definition": "A Cylinder is an area of effect with a circular base and a height. Its point of origin is at the center of the top or bottom circle and is included in the area."
+    },
+    {
+      "term": "D20 Test",
+      "definition": "A D20 Test is any ability check, attack roll, or saving throw."
+    },
+    {
+      "term": "Damage",
+      "definition": "Damage is harm that reduces a creature's or object's hit points."
+    },
+    {
+      "term": "Damage Roll",
+      "definition": "A damage roll is a die roll, plus any relevant modifiers, that determines how much damage a hit or effect deals."
+    },
+    {
+      "term": "Damage Threshold",
+      "definition": "A creature or object with a damage threshold ignores damage from a single attack or effect unless that one instance of damage meets or exceeds the threshold."
+    },
+    {
+      "term": "Damage Types",
+      "definition": "Damage Types classify harm such as acid, bludgeoning, cold, fire, force, lightning, necrotic, piercing, poison, psychic, radiant, slashing, and thunder. Other rules like Resistance and Immunity refer to these types."
+    },
+    {
+      "term": "Darkness",
+      "definition": "An area of Darkness is Heavily Obscured."
+    },
+    {
+      "term": "Darkvision",
+      "definition": "Darkvision lets you see in Dim Light as if it were Bright Light and in Darkness as if it were Dim Light within a listed range. Colors in Darkness appear only as shades of gray."
+    },
+    {
+      "term": "Dash",
+      "aliases": ["Dash Action", "Dash [Action]"],
+      "definition": "Dash gives you extra movement for the current turn equal to your Speed after modifiers. If you have a special speed, you can use that speed for the Dash instead."
+    },
+    {
+      "term": "Dead",
+      "definition": "A dead creature has no hit points and cannot regain them until revived by magic. When revived, ongoing conditions, curses, and some other effects can still remain if their duration has not ended."
+    },
+    {
+      "term": "Deafened",
+      "aliases": ["Deafened [Condition]"],
+      "definition": "While Deafened, you cannot hear and automatically fail ability checks that require hearing."
+    },
+    {
+      "term": "Death Saving Throw",
+      "aliases": ["Death Saving Throws", "Death Save", "Death Saves"],
+      "definition": "A player character makes a Death Saving Throw when they start their turn at 0 hit points. Three successes stabilize them, and three failures mean death."
+    },
+    {
+      "term": "Dehydration",
+      "aliases": ["Dehydration [Hazard]"],
+      "definition": "A creature that drinks less than half the water it needs for a day gains 1 level of Exhaustion at day's end. That Exhaustion cannot be removed until the creature drinks the full required amount."
+    },
+    {
+      "term": "Difficult Terrain",
+      "definition": "In Difficult Terrain, every foot of movement costs 1 extra foot. The extra cost does not stack with itself."
+    },
+    {
+      "term": "Difficulty Class",
+      "aliases": ["DC"],
+      "definition": "A Difficulty Class is the target number for an ability check or saving throw."
+    },
+    {
+      "term": "Dim Light",
+      "definition": "An area with Dim Light is Lightly Obscured."
+    },
+    {
+      "term": "Disadvantage",
+      "definition": "If you have Disadvantage on a D20 Test, roll two d20s and use the lower result. Multiple sources of Disadvantage do not stack, and Disadvantage cancels Advantage."
+    },
+    {
+      "term": "Disengage",
+      "aliases": ["Disengage Action", "Disengage [Action]"],
+      "definition": "If you take the Disengage action, your movement does not provoke Opportunity Attacks for the rest of the turn."
+    },
+    {
+      "term": "Dodge",
+      "aliases": ["Dodge Action", "Dodge [Action]"],
+      "definition": "Dodge gives attackers Disadvantage against you if you can see them, and gives you Advantage on Dexterity saving throws, until the start of your next turn. You lose those benefits if you become Incapacitated or your Speed becomes 0."
+    },
+    {
+      "term": "Emanation",
+      "aliases": ["Emanation [Area of Effect]"],
+      "definition": "An Emanation radiates outward in all directions from a creature or object and usually moves with that origin."
+    },
+    {
+      "term": "Encounter",
+      "definition": "An encounter is a scene in an adventure that involves social interaction, exploration, combat, or a mix of those pillars."
+    },
+    {
+      "term": "Enemy",
+      "definition": "A creature is your enemy if it fights against you, actively tries to harm you, or the rules or DM say it counts as your enemy."
+    },
+    {
+      "term": "Exhaustion",
+      "aliases": ["Exhaustion [Condition]"],
+      "definition": "Exhaustion is cumulative. Each level reduces your D20 Tests by 2 and your Speed by 5 feet, and 6 levels kills you. A Long Rest normally removes 1 level."
+    },
+    {
+      "term": "Experience Points",
+      "aliases": ["XP"],
+      "definition": "Characters earn Experience Points for overcoming challenges and completing adventures. Gaining enough XP increases your level."
+    },
+    {
+      "term": "Expertise",
+      "definition": "Expertise doubles your Proficiency Bonus for a chosen skill proficiency. You cannot gain Expertise in the same skill more than once."
+    },
+    {
+      "term": "Falling",
+      "aliases": ["Falling [Hazard]"],
+      "definition": "A falling creature takes 1d6 bludgeoning damage for every 10 feet fallen, to a maximum of 20d6, and usually lands Prone unless it avoids the damage."
+    },
+    {
+      "term": "Flying",
+      "definition": "Flying lets a creature move through the air. A flying creature usually falls if it becomes Incapacitated, becomes Prone, or its Fly Speed becomes 0, unless it can hover."
+    },
+    {
+      "term": "Fly Speed",
+      "aliases": ["Flying Speed"],
+      "definition": "A Fly Speed is the distance you can move through the air on your turn."
+    },
+    {
+      "term": "Friendly",
+      "aliases": ["Friendly [Attitude]"],
+      "definition": "A Friendly creature views you favorably. You have Advantage on checks to Influence it."
+    },
+    {
+      "term": "Frightened",
+      "aliases": ["Frightened [Condition]"],
+      "definition": "While Frightened, you have Disadvantage on ability checks and attack rolls while the source of fear is in line of sight, and you cannot willingly move closer to that source."
+    },
+    {
+      "term": "Grappled",
+      "aliases": ["Grappled [Condition]"],
+      "definition": "While Grappled, your Speed is 0 and cannot increase, you have Disadvantage on attacks against targets other than the grappler, and the grappler can drag or carry you when it moves."
+    },
+    {
+      "term": "Grappling",
+      "definition": "Grappling is a way to seize another creature, usually with an Unarmed Strike. A successful grapple gives the target the Grappled condition until it escapes or the grapple ends."
+    },
+    {
+      "term": "Hazard",
+      "definition": "A hazard is an environmental danger such as burning, dehydration, falling, malnutrition, or suffocation."
+    },
+    {
+      "term": "Healing",
+      "definition": "Healing restores lost hit points."
+    },
+    {
+      "term": "Heavily Obscured",
+      "definition": "When you try to see something in a Heavily Obscured area, you effectively have the Blinded condition for that sight."
+    },
+    {
+      "term": "Help",
+      "aliases": ["Help Action", "Help [Action]"],
+      "definition": "Help lets you assist an ally's next ability check with a chosen skill or tool, or give Advantage to the next attack roll against an enemy within 5 feet of you."
+    },
+    {
+      "term": "Heroic Inspiration",
+      "definition": "Heroic Inspiration lets a player character reroll a die immediately after rolling it, but the new roll must be used."
+    },
+    {
+      "term": "Hide",
+      "aliases": ["Hide Action", "Hide [Action]"],
+      "definition": "Hide lets you try to become concealed with a Dexterity (Stealth) check while heavily obscured or behind strong cover and out of enemy sight. On a success, you count as Invisible while hidden until something reveals you."
+    },
+    {
+      "term": "High Jump",
+      "definition": "A High Jump lets you leap upward a number of feet equal to 3 plus your Strength modifier if you move at least 10 feet first, or half that from a standing jump."
+    },
+    {
+      "term": "Hit Point Dice",
+      "aliases": ["Hit Dice"],
+      "definition": "Hit Point Dice help determine a creature's hit point maximum and can be spent during a Short Rest to regain hit points."
+    },
+    {
+      "term": "Hit Points",
+      "aliases": ["HP"],
+      "definition": "Hit Points measure how difficult a creature or object is to destroy. Damage lowers hit points, healing restores them, and they cannot go below 0."
+    },
+    {
+      "term": "Hostile",
+      "aliases": ["Hostile [Attitude]"],
+      "definition": "A Hostile creature views you unfavorably. You have Disadvantage on checks to Influence it."
+    },
+    {
+      "term": "Hover",
+      "definition": "Hover lets a flying creature stay aloft in situations where it would normally fall."
+    },
+    {
+      "term": "Illusions",
+      "definition": "Illusions are magical effects that deceive senses or the mind. Their own rules explain what they imitate and how they interact with the world."
+    },
+    {
+      "term": "Immunity",
+      "aliases": ["Immunities"],
+      "definition": "If you have Immunity to a damage type or condition, that damage or condition does not affect you."
+    },
+    {
+      "term": "Improvised Weapons",
+      "definition": "An improvised weapon is a makeshift object used as a weapon. It usually deals 1d4 damage, often has a thrown range of 20/60, and normally does not add your Proficiency Bonus unless a rule says otherwise."
+    },
+    {
+      "term": "Incapacitated",
+      "aliases": ["Incapacitated [Condition]"],
+      "definition": "While Incapacitated, you cannot take actions, Bonus Actions, or Reactions, your Concentration ends, you cannot speak, and you have Disadvantage on Initiative if you were Incapacitated when combat begins."
+    },
+    {
+      "term": "Indifferent",
+      "aliases": ["Indifferent [Attitude]"],
+      "definition": "An Indifferent creature has no strong desire to help or hinder you. This is the default attitude for many monsters."
+    },
+    {
+      "term": "Influence",
+      "aliases": ["Influence Action", "Influence [Action]"],
+      "definition": "Influence is the action used to urge a monster to do something through roleplay and an ability check if needed. The creature's attitude and your approach decide whether the check is easy, hard, or unnecessary."
+    },
+    {
+      "term": "Initiative",
+      "aliases": ["Initiative Rolls", "nitiative"],
+      "definition": "Initiative determines turn order in combat. Some games use an Initiative score instead of a roll, usually 10 plus your Dexterity modifier with adjustments for Advantage or Disadvantage."
+    },
+    {
+      "term": "Invisible",
+      "aliases": ["Invisible [Condition]"],
+      "definition": "While Invisible, you cannot be affected by effects that require the target to be seen unless the effect's creator can somehow see you. Attack rolls against you have Disadvantage, your attack rolls have Advantage, and you have Advantage on Initiative if you are Invisible when it is rolled."
+    },
+    {
+      "term": "Jumping",
+      "definition": "Jumping covers both Long Jumps and High Jumps."
+    },
+    {
+      "term": "Knocking Out a Creature",
+      "definition": "When you would reduce a creature to 0 hit points with a melee attack, you can leave it at 1 hit point instead. It becomes Unconscious until healed or helped."
+    },
+    {
+      "term": "Lightly Obscured",
+      "definition": "In a Lightly Obscured area, you have Disadvantage on Wisdom (Perception) checks that rely on sight."
+    },
+    {
+      "term": "Line",
+      "aliases": ["Line [Area of Effect]"],
+      "definition": "A Line is an area of effect that extends in a straight path from its point of origin and covers a defined length and width."
+    },
+    {
+      "term": "Long Jump",
+      "definition": "A Long Jump lets you leap horizontally up to your Strength score if you move at least 10 feet first, or half that distance from a standing jump."
+    },
+    {
+      "term": "Long Rest",
+      "definition": "A Long Rest is at least 8 hours of extended downtime, including 6 hours of sleep and no more than 2 hours of light activity. It restores hit points, spent Hit Dice, and many class features, and usually reduces Exhaustion by 1."
+    },
+    {
+      "term": "Magic",
+      "aliases": ["Magic Action", "Magic [Action]"],
+      "definition": "The Magic action is used to cast a spell with a casting time of an action or to activate a feature or magic item that requires a Magic action."
+    },
+    {
+      "term": "Magical Effect",
+      "definition": "An effect is magical if it comes from a spell, a magic item, or a rule that explicitly says it is magical."
+    },
+    {
+      "term": "Malnutrition",
+      "aliases": ["Malnutrition [Hazard]"],
+      "definition": "A creature that eats too little can gain Exhaustion from malnutrition, and that Exhaustion cannot be removed until the creature eats its full required amount of food."
+    },
+    {
+      "term": "Monster",
+      "definition": "A monster is any creature controlled by the DM, even if it is friendly or harmless."
+    },
+    {
+      "term": "Nonplayer Character",
+      "aliases": ["NPC"],
+      "definition": "A Nonplayer Character is a monster with a personal name and distinct personality."
+    },
+    {
+      "term": "Object",
+      "definition": "An object is a nonliving, distinct thing. Large composite things like buildings are usually made of multiple objects."
+    },
+    {
+      "term": "Occupied Space",
+      "definition": "A space is occupied if a creature is in it or if it is completely filled by objects."
+    },
+    {
+      "term": "Opportunity Attacks",
+      "aliases": ["Opportunity Attack"],
+      "definition": "You can make an Opportunity Attack as a Reaction when a creature you can see leaves your reach using its movement options. The attack happens just before it leaves your reach."
+    },
+    {
+      "term": "Paralyzed",
+      "aliases": ["Paralyzed [Condition]"],
+      "definition": "While Paralyzed, you are Incapacitated, your Speed is 0, you automatically fail Strength and Dexterity saving throws, attack rolls against you have Advantage, and hits from within 5 feet are Critical Hits."
+    },
+    {
+      "term": "Passive Perception",
+      "definition": "Passive Perception is a creature's always-on awareness score, usually 10 plus its Wisdom (Perception) bonus, adjusted by 5 for Advantage or Disadvantage."
+    },
+    {
+      "term": "Per Day",
+      "definition": "If something can be used a certain number of times per day, you normally must finish a Long Rest before regaining those uses."
+    },
+    {
+      "term": "Petrified",
+      "aliases": ["Petrified [Condition]"],
+      "definition": "While Petrified, you become a solid inanimate substance, are Incapacitated, your Speed is 0, attacks against you have Advantage, you automatically fail Strength and Dexterity saves, you have Resistance to all damage, and you have Immunity to the Poisoned condition."
+    },
+    {
+      "term": "Player Character",
+      "aliases": ["PC"],
+      "definition": "A Player Character is a character controlled by a player."
+    },
+    {
+      "term": "Poisoned",
+      "aliases": ["Poisoned [Condition]"],
+      "definition": "While Poisoned, you have Disadvantage on attack rolls and ability checks."
+    },
+    {
+      "term": "Possession",
+      "definition": "Possession is an effect where another creature or entity controls or inhabits a target. The effect that causes it explains the details and how it can be ended."
+    },
+    {
+      "term": "Proficiency",
+      "definition": "If you are proficient with a skill, tool, weapon, or saving throw, you add your Proficiency Bonus to the relevant D20 Test."
+    },
+    {
+      "term": "Prone",
+      "aliases": ["Prone [Condition]"],
+      "definition": "While Prone, you can only crawl or spend movement equal to half your Speed to stand. Your attack rolls have Disadvantage, nearby attackers have Advantage against you, and distant attackers have Disadvantage."
+    },
+    {
+      "term": "Reach",
+      "definition": "A creature's reach is the distance from which it can target something in melee, usually 5 feet unless a rule says otherwise."
+    },
+    {
+      "term": "Reaction",
+      "aliases": ["Reactions"],
+      "definition": "A Reaction is an instant response to a trigger. You can take at most one Reaction per round, and you regain it at the start of your next turn."
+    },
+    {
+      "term": "Ready",
+      "aliases": ["Ready Action", "Ready [Action]"],
+      "definition": "Ready lets you prepare a Reaction for a specific trigger before your next turn. You can ready an action, movement, or a spell, but readied spells require Concentration."
+    },
+    {
+      "term": "Resistance",
+      "aliases": ["Resistances"],
+      "definition": "Resistance halves damage of the listed type, rounding down. Resistance applies only once to any single instance of damage."
+    },
+    {
+      "term": "Restrained",
+      "aliases": ["Restrained [Condition]"],
+      "definition": "While Restrained, your Speed is 0, attacks against you have Advantage, your attack rolls have Disadvantage, and you have Disadvantage on Dexterity saving throws."
+    },
+    {
+      "term": "Ritual",
+      "definition": "If you can cast a spell as a Ritual, the casting takes 10 minutes longer but does not expend a spell slot."
+    },
+    {
+      "term": "Round Down",
+      "definition": "When the rules tell you to divide or multiply and you get a fraction, round down unless a rule specifically says to round up."
+    },
+    {
+      "term": "Saving Throw",
+      "aliases": ["Save", "Saving Throws"],
+      "definition": "A saving throw is a defensive roll used to avoid or resist a harmful effect. A creature can choose to fail a saving throw, and if it lacks the relevant ability score it automatically fails."
+    },
+    {
+      "term": "Search",
+      "aliases": ["Search Action", "Search [Action]"],
+      "definition": "Search is the action used to make a Wisdom check to notice something that is not obvious, such as a hidden creature, tracks, a cause of death, or a creature's mood."
+    },
+    {
+      "term": "Shape-Shifting",
+      "definition": "Shape-shifting changes your form, but ongoing conditions, spells, curses, and similar effects usually carry over unless the effect says otherwise."
+    },
+    {
+      "term": "Short Rest",
+      "definition": "A Short Rest is 1 hour of downtime with no strenuous activity. It lets you spend Hit Dice to heal and recharge features that recover on a Short Rest."
+    },
+    {
+      "term": "Simultaneous Effects",
+      "definition": "If two or more things happen at the same time on a turn, the creature whose turn it is decides the order in which they happen."
+    },
+    {
+      "term": "Size",
+      "definition": "A creature or object can be Tiny, Small, Medium, Large, Huge, or Gargantuan. Size affects space in combat and can affect other rules like carrying or grappling."
+    },
+    {
+      "term": "Skill",
+      "definition": "A skill is an area of specialization tied to an ability check. If you are proficient in a skill, you add your Proficiency Bonus to checks made with it."
+    },
+    {
+      "term": "Speed",
+      "definition": "Speed is how many feet a creature can move on its turn. Special speeds such as burrow, climb, fly, and swim follow the same basic movement rules unless stated otherwise."
+    },
+    {
+      "term": "Spell",
+      "definition": "A spell is a magical effect with the characteristics described in the spellcasting rules."
+    },
+    {
+      "term": "Spell Attack",
+      "definition": "A spell attack is an attack roll made as part of a spell or other magical effect."
+    },
+    {
+      "term": "Spellcasting Focus",
+      "definition": "A Spellcasting Focus is an object some spellcasters can use instead of a spell's non-costly, non-consumed material components."
+    },
+    {
+      "term": "Sphere",
+      "aliases": ["Sphere [Area of Effect]"],
+      "definition": "A Sphere is an area of effect that extends outward in all directions from a point of origin. The listed radius sets its size."
+    },
+    {
+      "term": "Stable",
+      "definition": "A creature is Stable when it has 0 hit points but is no longer making Death Saving Throws."
+    },
+    {
+      "term": "Stat Block",
+      "definition": "A stat block is the rules summary for a monster, including its size, creature type, AC, Initiative, hit points, Speed, abilities, skills, defenses, traits, and actions."
+    },
+    {
+      "term": "Study",
+      "aliases": ["Study Action", "Study [Action]"],
+      "definition": "Study is the action used to make an Intelligence check to recall or analyze information from memory, books, clues, magic, history, nature, religion, traps, or similar knowledge."
+    },
+    {
+      "term": "Stunned",
+      "aliases": ["Stunned [Condition]"],
+      "definition": "While Stunned, you are Incapacitated, automatically fail Strength and Dexterity saving throws, and attack rolls against you have Advantage."
+    },
+    {
+      "term": "Suffocation",
+      "aliases": ["Suffocation [Hazard]"],
+      "definition": "A creature can hold its breath for a limited time before suffocation starts. Once out of breath, it gains 1 level of Exhaustion at the end of each of its turns until it can breathe again."
+    },
+    {
+      "term": "Surprise",
+      "definition": "A surprised creature is caught unawares at the start of combat and has Disadvantage on its Initiative roll."
+    },
+    {
+      "term": "Swimming",
+      "definition": "Swimming normally costs 1 extra foot of movement for every foot moved, or 2 extra feet in Difficult Terrain. A Swim Speed ignores that extra cost."
+    },
+    {
+      "term": "Swim Speed",
+      "definition": "A Swim Speed lets you move through water without paying the extra movement cost of normal swimming."
+    },
+    {
+      "term": "Target",
+      "definition": "A target is the creature or object chosen by an attack, spell, or other effect."
+    },
+    {
+      "term": "Telepathy",
+      "definition": "Telepathy is a magical way to communicate mentally with another creature within range. It does not usually require a shared language, but the other creature must be able to understand at least one language or also be telepathic."
+    },
+    {
+      "term": "Teleportation",
+      "definition": "Teleportation instantly moves a creature or object from one place to another without crossing the space in between and without provoking Opportunity Attacks."
+    },
+    {
+      "term": "Temporary Hit Points",
+      "definition": "Temporary Hit Points are extra hit points from a buffer effect. They absorb damage before your normal hit points are reduced."
+    },
+    {
+      "term": "Tapped",
+      "aliases": ["Tapped Cards", "Tapped Card"],
+      "definition": "A Tapped card stays in your hand while its lingering effect remains active. When you end the effect, shuffle it away, use it up, or it expires, the card becomes Vanished."
+    },
+    {
+      "term": "Tremorsense",
+      "definition": "Tremorsense lets a creature pinpoint moving creatures and objects within range if both are touching the same surface or liquid. It does not detect creatures in the air and does not count as sight."
+    },
+    {
+      "term": "Truesight",
+      "definition": "Truesight lets you see through normal and magical Darkness, notice Invisible creatures and objects, see through visual illusions, perceive true forms, and see into the Ethereal Plane within range."
+    },
+    {
+      "term": "Unarmed Strike",
+      "definition": "An Unarmed Strike is a melee attack using your body. It can deal damage, grapple a target, or shove a target depending on the option you choose."
+    },
+    {
+      "term": "Unconscious",
+      "aliases": ["Unconscious [Condition]"],
+      "definition": "While Unconscious, you are Incapacitated and Prone, drop what you are holding, your Speed is 0, attacks against you have Advantage, you automatically fail Strength and Dexterity saving throws, nearby hits are Critical Hits, and you are unaware of your surroundings."
+    },
+    {
+      "term": "Unoccupied Space",
+      "definition": "A space is unoccupied if no creature is in it and it is not completely filled by objects."
+    },
+    {
+      "term": "Upright and Reverse Cards",
+      "aliases": ["Upright/Reverse Cards", "Upright Cards", "Reverse Cards"],
+      "definition": "Each Major Arcana card in the Tarot deck has two abilities tied to its Upright and Reverse meanings. Each time that card is drawn, you choose which of the two abilities to use."
+    },
+    {
+      "term": "Utilize",
+      "aliases": ["Utilize Action", "Utilize [Action]"],
+      "definition": "Utilize is the action you take when using an object requires a full action instead of being part of another action."
+    },
+    {
+      "term": "Vanished",
+      "aliases": ["Vanished Cards", "Vanished Card", "Vanishes"],
+      "definition": "A Vanished card cannot be used again until you finish a Long Rest. Vanished cards return to the deck when their effect expires, and abilities or spells granted by those cards end when the cards are shuffled back into the deck at your next Long Rest."
+    },
+    {
+      "term": "Vulnerability",
+      "aliases": ["Vulnerabilities"],
+      "definition": "Vulnerability doubles damage of the listed type. It applies only once to any single instance of damage."
+    },
+    {
+      "term": "Weapon",
+      "definition": "A weapon is an object in the Simple or Martial weapon category."
+    },
+    {
+      "term": "Weapon Attack",
+      "definition": "A weapon attack is an attack roll made with a weapon."
+    },
+    {
+      "term": "Fortune Cards",
+      "aliases": ["Fortune Card"],
+      "definition": "You gain three special Fortune Cards in your Tarot deck. Each has its own Fortune effect plus the normal Tarot Table effect, and you can keep one Tapped Fortune Card beyond your normal hand size."
+    },
+    {
+      "term": "Past, Present and Future",
+      "definition": "Once per turn, or as a free action out of combat, you can pull one Fortune Card directly from your deck and use it without rolling on the Tarot Table. You can do this up to three times per Long Rest."
+    },
+    {
+      "term": "Major Fortune Cards",
+      "aliases": ["Major Fortune Card", "Fated Card"],
+      "definition": "You add one of three Major Fortune Cards to your deck. You can pull that Fated Card directly instead of rolling on the Tarot Table, but once used it cannot be used again until a week has passed."
+    },
+    {
+      "term": "Seer Dice",
+      "definition": "When you finish a Long Rest and roll on the Tarot Table for Deck of Fortune Tarot Reading, record those numbers as Seer Dice. Once per turn, you can replace an attack roll, saving throw, or ability check made by you or a creature you can see with one of those numbers, and each recorded number can be used only once before it is lost at your next Long Rest."
+    }
+  ]
+}

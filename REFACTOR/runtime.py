@@ -309,6 +309,24 @@ def safe_main():
         log_event(f"Scanning JSON... Found {len(results)} bolded fields.")
         fortune_spell_entries = []
         fortune_glossary_terms = []
+        _glossary_ability_notes = {
+            "strength": "Strength checks cover raw physical power, lifting, forcing objects open, and similar feats of might.",
+            "dexterity": "Dexterity checks cover agility, balance, reflexes, stealth, and fine motor control.",
+            "constitution": "Constitution checks are uncommon and usually measure endurance, stamina, or resistance to prolonged strain.",
+            "intelligence": "Intelligence checks cover memory, deduction, study, analysis, and recalling learned information.",
+            "wisdom": "Wisdom checks cover perception, intuition, awareness, survival sense, and practical judgement.",
+            "charisma": "Charisma checks cover confidence, presence, influence, deception, performance, and force of personality.",
+        }
+        _glossary_skill_notes = {
+            "deception": "Deception is used when you lie, mislead, bluff, or conceal the truth.",
+            "history": "History is used to recall lore, people, kingdoms, wars, legends, and past events.",
+            "insight": "Insight is used to read motives, body language, sincerity, or emotional state.",
+            "intimidation": "Intimidation is used to threaten, pressure, or overawe someone into compliance.",
+            "investigation": "Investigation is used to examine clues, search carefully, and draw conclusions from evidence.",
+            "perception": "Perception is used to notice hidden creatures, details, sounds, movement, or danger.",
+            "performance": "Performance is used when entertaining an audience through music, acting, speech, or similar display.",
+            "persuasion": "Persuasion is used to influence someone through tact, honesty, diplomacy, or good social grace.",
+        }
         _spell_library_data_path = os.path.join(DOCS_DIR, "spell_library_data.json")
         try:
             _raw_spells = []
@@ -449,6 +467,100 @@ def safe_main():
 
             return re.sub(r"[A-Za-z]+(?:'[A-Za-z]+)?", _capitalize_word, _clean)
 
+        _glossary_term_aliases = {
+            "10ft": "10 Feet",
+            "30ft": "30 Feet",
+            "60ft": "60 Feet",
+            "actions": "Action",
+            "saving throws": "Saving Throw",
+            "immunities": "Immunity",
+            "vulnerabilities": "Vulnerability",
+            "vanishes": "Vanished",
+            "intelligence checks": "Intelligence Check",
+            "persuasion checks": "Persuasion Check",
+            "strength checks": "Strength Check",
+        }
+
+        def _canonicalize_glossary_term(_term):
+            _formatted = _format_glossary_term(_term)
+            if not _formatted:
+                return ""
+            _alias_key = re.sub(r"\s+", " ", _formatted.strip().lower())
+            _canonical = _glossary_term_aliases.get(_alias_key, _formatted)
+            _canonical = re.sub(r"\bAbility Checks\b", "Ability Check", _canonical)
+            _canonical = re.sub(r"\bSaving Throws\b", "Saving Throw", _canonical)
+            _canonical = re.sub(r"\bChecks\b", "Check", _canonical)
+            _canonical = re.sub(r"\bRolls\b", "Roll", _canonical)
+
+            _compress_patterns = (
+                (r"^(.+?) Ability Check (And|Or) \1 Saving Throw$", r"\1 Ability Check \2 Saving Throw"),
+                (r"^(.+?) Check (And|Or) \1 Saving Throw$", r"\1 Check \2 Saving Throw"),
+                (
+                    r"^(.+?) Ability Check And Saving Throw (And|Or) (.+?) Ability Check And Saving Throw$",
+                    r"\1 \2 \3 Ability Check And Saving Throw",
+                ),
+                (
+                    r"^(.+?) Check And Saving Throw (And|Or) (.+?) Ability Check And Saving Throw$",
+                    r"\1 \2 \3 Ability Check And Saving Throw",
+                ),
+                (
+                    r"^(.+?) Ability Check And Saving Throw (And|Or) (.+?) Check And Saving Throw$",
+                    r"\1 \2 \3 Ability Check And Saving Throw",
+                ),
+                (
+                    r"^(.+?) Check And Saving Throw (And|Or) (.+?) Check And Saving Throw$",
+                    r"\1 \2 \3 Check And Saving Throw",
+                ),
+                (r"^(.+?) Ability Check (And|Or) (.+?) Ability Check$", r"\1 \2 \3 Ability Check"),
+                (r"^(.+?) Saving Throw (And|Or) (.+?) Saving Throw$", r"\1 \2 \3 Saving Throw"),
+                (r"^(.+?) Check (And|Or) (.+?) Check$", r"\1 \2 \3 Check"),
+            )
+            _previous = None
+            while _canonical != _previous:
+                _previous = _canonical
+                for _pattern, _replacement in _compress_patterns:
+                    _canonical = re.sub(_pattern, _replacement, _canonical)
+
+            return re.sub(r"\s+", " ", _canonical).strip(" ,")
+
+        def _glossary_term_dedupe_key(_term):
+            _canonical = _canonicalize_glossary_term(_term)
+            if not _canonical:
+                return ""
+            _key = re.sub(r"\s+", " ", _canonical.strip().lower())
+            _key = re.sub(r"\bability checks\b", "ability check", _key)
+            _key = re.sub(r"\bsaving throws\b", "saving throw", _key)
+            _key = re.sub(r"\bchecks\b", "check", _key)
+            _key = re.sub(r"\b(?:and|or)\b", "&", _key)
+            _key = re.sub(r"\s*,\s*", ", ", _key)
+            _key = re.sub(r"\s+", " ", _key).strip(" ,")
+            return _key
+
+        _curated_glossary_entries = {}
+        try:
+            _glossary_defs_path = docs_or_resource_path("glossary_definitions.json")
+            if os.path.exists(_glossary_defs_path):
+                with open(_glossary_defs_path, "r", encoding="utf-8") as _gdf:
+                    _glossary_payload = json.load(_gdf)
+                for _entry in (_glossary_payload.get("entries", []) if isinstance(_glossary_payload, dict) else []):
+                    if not isinstance(_entry, dict):
+                        continue
+                    _term = _format_glossary_term(_entry.get("term", ""))
+                    _definition = str(_entry.get("definition", "")).strip()
+                    if not _term or not _definition:
+                        continue
+                    _aliases = [_term] + [
+                        _format_glossary_term(_alias)
+                        for _alias in (_entry.get("aliases") or [])
+                        if _format_glossary_term(_alias)
+                    ]
+                    for _alias in _aliases:
+                        _dk = _glossary_term_dedupe_key(_alias)
+                        if _dk and _dk not in _curated_glossary_entries:
+                            _curated_glossary_entries[_dk] = {"term": _term, "definition": _definition}
+        except Exception as _ex:
+            log_event(f"Could not load curated glossary definitions: {_ex}", is_error=True)
+
         def _collect_bold_terms(_node, _acc):
             if isinstance(_node, dict):
                 for _v in _node.values():
@@ -458,13 +570,166 @@ def safe_main():
                     _collect_bold_terms(_v, _acc)
             elif isinstance(_node, str):
                 for _m in re.findall(r"\*\*(.*?)\*\*", _node):
-                    _t = _format_glossary_term(_m)
-                    if _t:
-                        _acc.add(_t)
+                    _t = _canonicalize_glossary_term(_m)
+                    _k = _glossary_term_dedupe_key(_m)
+                    if _t and _k and _k not in _acc:
+                        _acc[_k] = _curated_glossary_entries.get(_k, {}).get("term", _t)
 
-        _term_set = set()
-        _collect_bold_terms(cards_raw, _term_set)
-        fortune_glossary_terms = sorted(_term_set, key=lambda _t: _t.lower())
+        _term_map = {}
+        if _curated_glossary_entries:
+            for _entry in _curated_glossary_entries.values():
+                _term_key = _glossary_term_dedupe_key(_entry["term"])
+                if _term_key:
+                    _term_map[_term_key] = _entry["term"]
+        else:
+            _collect_bold_terms(cards_raw, _term_map)
+        fortune_glossary_terms = sorted(_term_map.values(), key=lambda _t: _t.lower())
+
+        _glossary_exact_defs = {
+            "action": "In D&D 5e, your action is the main thing you do on your turn, such as Attack, Cast a Spell, Dash, Dodge, Help, Hide, Ready, Search, or Use an Object.",
+            "actions": "Actions are the main tasks a creature can take. Most creatures get one action on their turn unless a feature says otherwise.",
+            "advantage": "When you have advantage, roll two d20s and use the higher result.",
+            "attack roll, ability check, or saving throw": "This applies to any of the three main d20 roll types in 5e: attack rolls, ability checks, or saving throws.",
+            "bonus action": "A bonus action is an extra action you can take on your turn only when a spell, feature, or ability specifically grants one.",
+            "charmed": "A charmed creature cannot attack the charmer or target it with harmful abilities or magical effects, and the charmer has advantage on social checks against it.",
+            "death saving throws": "Death saving throws are made when you start your turn at 0 hit points. Three successes stabilize you; three failures mean you die.",
+            "disadvantage": "When you have disadvantage, roll two d20s and use the lower result.",
+            "exhaustion": "Exhaustion is a stacking penalty in 5e. Each level makes you weaker, slower, or easier to kill until the condition is removed.",
+            "expertise": "Expertise doubles your proficiency bonus for the chosen skill or tool.",
+            "flying speed": "Flying speed is how many feet you can move while flying during your turn.",
+            "frightened": "A frightened creature has disadvantage on ability checks and attack rolls while the source of its fear is in sight, and it cannot willingly move closer to that source.",
+            "grappled": "A grappled creature's speed becomes 0, and it cannot benefit from bonuses to speed until the grapple ends.",
+            "immunities": "Immunities mean the target ignores the listed damage type, condition, or effect entirely.",
+            "immunity": "Immunity means the target ignores the listed damage type, condition, or effect entirely.",
+            "initiative rolls": "Initiative determines turn order at the start of combat. Higher rolls act sooner.",
+            "invulnerable": "Invulnerable is not a standard 5e condition, but it usually means the creature cannot be harmed or affected by the protected damage or effect while it lasts.",
+            "paralyzed": "A paralyzed creature is incapacitated, cannot move or speak, automatically fails Strength and Dexterity saving throws, attack rolls against it have advantage, and hits from nearby attackers are critical hits.",
+            "proficiency bonus": "Your proficiency bonus is the number added to rolls using things you are trained in, such as proficient skills, weapons, tools, or saving throws. It scales with level.",
+            "reaction": "A reaction is an instant response to a trigger, such as an opportunity attack. You get at most one reaction per round, and it refreshes at the start of your turn.",
+            "resistances": "Resistance halves damage of the listed type, after the roll is made.",
+            "restrained": "A restrained creature's speed becomes 0, attack rolls against it have advantage, its own attack rolls have disadvantage, and it has disadvantage on Dexterity saving throws.",
+            "saving throw": "A saving throw is a defensive roll used to resist a harmful effect such as a spell, trap, poison, or condition.",
+            "saving throws": "Saving throws are defensive rolls used to resist harmful effects.",
+            "stunned": "A stunned creature is incapacitated, cannot move, can speak only falteringly, automatically fails Strength and Dexterity saving throws, and attack rolls against it have advantage.",
+            "tapped": "Tapped is not a standard D&D 5e rule term. In this game, it appears to mean a card or effect has already been used and is currently exhausted.",
+            "vanished": "Vanished is not a standard D&D 5e condition. In this game, it appears to mean the card or effect has been removed from normal play and sent to the vanished pile.",
+            "vanishes": "Vanishes is not a standard D&D 5e keyword. Here it appears to mean the card or effect is removed from normal play and sent to the vanished pile.",
+            "vulnerabilities": "Vulnerability doubles damage of the listed type after other modifiers are applied.",
+            "vulnerability": "Vulnerability doubles damage of the listed type after other modifiers are applied.",
+            "walking speed": "Walking speed is how many feet you can move on foot during your turn.",
+            "your next turn": "This lasts until a specified point on your next turn, usually the start or end depending on the exact card text.",
+            "charisma checks and saving throws": "This applies to Charisma ability checks and Charisma saving throws.",
+            "charisma check and saving throw": "This applies to Charisma ability checks and Charisma saving throws.",
+            "dexterity and wisdom ability checks and saving throws": "This applies to Dexterity and Wisdom ability checks and to Dexterity and Wisdom saving throws.",
+            "dexterity and wisdom ability check and saving throw": "This applies to Dexterity and Wisdom ability checks and to Dexterity and Wisdom saving throws.",
+            "dexterity check and saving throws or wisdom ability checks and saving throws": "This refers to either Dexterity checks and Dexterity saving throws, or Wisdom ability checks and Wisdom saving throws, depending on the effect's wording.",
+            "dexterity or wisdom ability check and saving throw": "This refers to Dexterity and Wisdom ability checks and saving throws, depending on the effect's wording.",
+            "wisdom ability check or wisdom saving throw": "This applies to either a Wisdom ability check or a Wisdom saving throw, depending on what the effect calls for.",
+            "wisdom ability check or saving throw": "This applies to either a Wisdom ability check or a Wisdom saving throw, depending on what the effect calls for.",
+        }
+
+        def _normalize_glossary_lookup(_term):
+            _text = re.sub(r"\s+", " ", str(_term).strip().lower())
+            _text = re.sub(r"(\d+)\s*ft\b", r"\1 feet", _text)
+            _text = re.sub(r"\s+", " ", _text).strip(" ,")
+            return _text
+
+        def _join_glossary_terms(_parts, _connector="and"):
+            if not _parts:
+                return ""
+            if len(_parts) == 1:
+                return _parts[0]
+            if len(_parts) == 2:
+                return f"{_parts[0]} {_connector} {_parts[1]}"
+            return f"{', '.join(_parts[:-1])}, {_connector} {_parts[-1]}"
+
+        def _parse_glossary_names(_text):
+            return [
+                _format_glossary_term(_part)
+                for _part in re.split(r"\s*,\s*|\s+and\s+|\s+or\s+", str(_text), flags=re.I)
+                if str(_part).strip()
+            ]
+
+        def _get_glossary_explanation(_term):
+            if not _term:
+                return "Select a term to view a short D&D explanation."
+            _dedupe_key = _glossary_term_dedupe_key(_term)
+            if _dedupe_key in _curated_glossary_entries:
+                return _curated_glossary_entries[_dedupe_key]["definition"]
+            _key = _normalize_glossary_lookup(_term)
+            if _key in _glossary_exact_defs:
+                return _glossary_exact_defs[_key]
+
+            _duration_match = re.fullmatch(r"(\d+)\s+(round|rounds|minute|minutes|hour|hours|week|weeks)", _key)
+            if _duration_match:
+                _value = int(_duration_match.group(1))
+                _unit = _duration_match.group(2)
+                if "round" in _unit:
+                    return f"{_value} round{'s' if _value != 1 else ''} lasts about {_value * 6} seconds in D&D 5e combat."
+                if "minute" in _unit:
+                    return f"{_value} minute{'s' if _value != 1 else ''} is a combat duration equal to about {_value * 10} rounds."
+                if "hour" in _unit:
+                    return f"{_value} hour{'s' if _value != 1 else ''} is a long-form duration used for exploration, travel, rituals, and longer lasting magic."
+                return f"{_value} week{'s' if _value != 1 else ''} is a very long duration used for downtime, curses, blessings, or other extended effects."
+
+            _distance_match = re.fullmatch(r"(\d+)\s+feet", _key)
+            if _distance_match:
+                _feet = int(_distance_match.group(1))
+                _squares = _feet / 5
+                if abs(_squares - int(_squares)) < 0.0001:
+                    _squares_txt = f"{int(_squares)} grid squares"
+                else:
+                    _squares_txt = f"{_squares:.1f} grid squares"
+                return f"{_feet} feet is a range or movement distance in 5e. On a standard 5-foot grid, that is {_squares_txt}."
+
+            _connector = "or" if re.search(r"\bor\b", _key) else "and"
+
+            for _suffix, _kind in (
+                (" ability checks", "ability_checks"),
+                (" checks", "checks"),
+                (" saving throws", "saving_throws"),
+                (" ability check", "ability_checks"),
+                (" check", "checks"),
+                (" saving throw", "saving_throws"),
+            ):
+                if _key.endswith(_suffix):
+                    _base = _key[:-len(_suffix)].strip(" ,")
+                    _names = _parse_glossary_names(_base)
+                    if not _names:
+                        break
+                    _lower_names = [_n.lower() for _n in _names]
+                    if _kind == "ability_checks" and all(_n in _glossary_ability_notes for _n in _lower_names):
+                        _lead = f"This applies to {_join_glossary_terms(_names, _connector)} ability checks."
+                        _detail = " ".join(_glossary_ability_notes[_n] for _n in _lower_names)
+                        return f"{_lead} {_detail}"
+                    if _kind == "checks":
+                        if all(_n in _glossary_skill_notes for _n in _lower_names):
+                            _lead = f"This applies to {_join_glossary_terms(_names, _connector)} checks."
+                            _detail = " ".join(_glossary_skill_notes[_n] for _n in _lower_names)
+                            return f"{_lead} {_detail}"
+                        if all(_n in _glossary_ability_notes for _n in _lower_names):
+                            _lead = f"This applies to {_join_glossary_terms(_names, _connector)} ability checks."
+                            _detail = " ".join(_glossary_ability_notes[_n] for _n in _lower_names)
+                            return f"{_lead} {_detail}"
+                    if _kind == "saving_throws" and all(_n in _glossary_ability_notes for _n in _lower_names):
+                        _lead = f"This applies to {_join_glossary_terms(_names, _connector)} saving throws."
+                        _detail_parts = []
+                        for _n in _lower_names:
+                            if _n == "strength":
+                                _detail_parts.append("Strength saves resist forced movement, crushing force, or effects that overpower your body.")
+                            elif _n == "dexterity":
+                                _detail_parts.append("Dexterity saves avoid sudden hazards, area effects, and things you can dodge.")
+                            elif _n == "constitution":
+                                _detail_parts.append("Constitution saves resist poison, disease, exhaustion, and effects that attack endurance.")
+                            elif _n == "intelligence":
+                                _detail_parts.append("Intelligence saves resist effects that assault memory, logic, or the mind directly.")
+                            elif _n == "wisdom":
+                                _detail_parts.append("Wisdom saves resist fear, charm, perception warping, and other effects that target will or awareness.")
+                            elif _n == "charisma":
+                                _detail_parts.append("Charisma saves resist possession, banishment, and effects that disrupt your sense of self.")
+                        return f"{_lead} {' '.join(_detail_parts)}"
+
+            return "This is a rules term used by the cards. Read the full card text for the exact effect in this build."
         
         _menu_element_files = [
             "Draw_Button_Image.png",
@@ -813,6 +1078,43 @@ def safe_main():
         rest_menu_btn = Button((W-240, H-810, 150, 150), "Rest", primary=True, image=_img_rest)
         rest_menu_open = False
         top_menu_open = False
+
+        def _get_glossary_view_layout():
+            _panel = pygame.Rect(fortune_setup_box.x + 40, fortune_setup_box.y + 120, fortune_setup_box.w - 80, fortune_setup_box.h - 230)
+            _inner = _panel.inflate(-18, -18)
+            _gap = 18
+            _detail_w = max(290, min(420, int(_inner.w * 0.38)))
+            if _inner.w - _detail_w - _gap < 320:
+                _detail_w = max(260, _inner.w - _gap - 320)
+            _list_panel = pygame.Rect(_inner.x, _inner.y, _inner.w - _detail_w - _gap, _inner.h)
+            _detail_panel = pygame.Rect(_list_panel.right + _gap, _inner.y, _inner.right - (_list_panel.right + _gap), _inner.h)
+            return _panel, _list_panel, _detail_panel
+
+        def _wrap_glossary_detail_text(_font, _text, _max_w):
+            if _max_w <= 0:
+                return [str(_text)]
+            _words = str(_text).split()
+            if not _words:
+                return [""]
+            _lines = []
+            _cur = _words[0]
+            for _word in _words[1:]:
+                _test = f"{_cur} {_word}"
+                if _font.size(_test)[0] <= _max_w:
+                    _cur = _test
+                else:
+                    _lines.append(_cur)
+                    _cur = _word
+            _lines.append(_cur)
+            return _lines
+
+        def _fit_glossary_detail_text(_text, _max_w, _max_h):
+            for _font in (f_fortune_body, f_fortune_small, f_preview_body, f_tiny):
+                _lines = _wrap_glossary_detail_text(_font, _text, _max_w)
+                if len(_lines) * _font.get_linesize() <= _max_h:
+                    return _font, _lines
+            _font = f_tiny
+            return _font, _wrap_glossary_detail_text(_font, _text, _max_w)
         exit_view_btn = Button((PADDING, PADDING, 160, 45), "Exit View", primary=True)
         
         menu_box_rect = pygame.Rect(W//2 - 190, H//2 - 350, 380, 820)
@@ -1058,9 +1360,15 @@ def safe_main():
         prophet_remaining_draws, current_roll_anim = 0, None
         divine_roll_anim = None
         divine_roll_result = None
+        divine_result_banner_text = None
+        divine_result_banner_title = None
+        divine_result_banner_success = False
+        divine_result_banner_timer = 0.0
+        divine_result_banner_duration = 6.5
         previous_viewer_mode = None
         fortune_spell_list_scroll = 0
         fortune_glossary_scroll = 0
+        selected_glossary_term = None
         fortune_spell_search = ""
         fortune_spell_filter = "all"
         fortune_spell_class_filter = "all"
@@ -1287,6 +1595,62 @@ def safe_main():
             if game.divine_intervention_failed_until_long_rest:
                 return "Long Rest"
             return None
+
+        def _get_divine_intervention_success_banner():
+            return random.choice([
+                "I did not intervene. This victory is yours - earned in doubt, sealed in resolve.",
+                "You see triumph. I see alignment. You have stepped precisely where destiny required.",
+                "I offered you possibility. You forged it into inevitability.",
+                "This is not your peak. It is proof.",
+                "Stand tall. Not because you were favoured - but because you were worthy.",
+                "You did not simply succeed. You justified my faith in you.",
+                "You carried the weight I placed upon you... and you did not bend.",
+                "I have watched empires rise and crumble - yet few moments shine as brightly as this.",
+            ])
+
+        def _get_divine_intervention_failure_banner():
+            return random.choice([
+                "You were not defeated by your enemy. You were defeated by the version of yourself that believed the moment was final.",
+                "The future did not reject you. It tested whether you would still walk toward it when it turned its back.",
+                "Do not mistake delay for denial. Even I must wait for certain stars to align.",
+                "Pain is not punishment. It is perspective sharpened to a blade.",
+                "I have seen ten thousand endings for you. In none of them do you stop here.",
+                "You failed. Do not dress it in poetry. The world bent toward you - and you blinked.",
+                "You fear I will abandon you. I will not. I will simply watch you endure what your weakness has invited.",
+                "The thread I wove for you is fraying. Pull yourself together - or I will let it snap.",
+                "Understand this: I do not need you. I chose you. There are thousands who pray for the burden you just dropped.",
+                "Kneel - not in apology, but in recognition. The next failure will not be survivable.",
+                "I bent probability around you. I silenced storms. I stilled blades. And still you found a way to disappoint me.",
+                "Failure is common. What disgusts me is how easily you accepted it.",
+                "I did not miscalculate. You did. Never confuse my design with your incompetence.",
+                "I offered you destiny. You answered with hesitation. That insult will not be forgotten.",
+            ])
+
+        def _wrap_divine_banner_text(_font, _text, _max_w):
+            if _max_w <= 0:
+                return [_text]
+            _words = str(_text).split()
+            if not _words:
+                return [""]
+            _lines = []
+            _cur = _words[0]
+            for _word in _words[1:]:
+                _test = f"{_cur} {_word}"
+                if _font.size(_test)[0] <= _max_w:
+                    _cur = _test
+                else:
+                    _lines.append(_cur)
+                    _cur = _word
+            _lines.append(_cur)
+            return _lines
+
+        def _fit_divine_banner_text(_text, _max_w, _max_h):
+            for _font in (f_labels, f_preview_body, f_small, f_tiny):
+                _lines = _wrap_divine_banner_text(_font, _text, _max_w)
+                if len(_lines) * _font.get_linesize() <= _max_h and len(_lines) <= 7:
+                    return _font, _lines
+            _font = f_tiny
+            return _font, _wrap_divine_banner_text(_font, _text, _max_w)
 
         def _slot_path(slot_idx):
             return os.path.join(SAVE_DIR, f"slot_{slot_idx}.json")
@@ -2071,6 +2435,10 @@ def safe_main():
                 pass
             game.toast_timer = max(0.0, game.toast_timer - dt)
             game.shuffle_anim_timer = max(0.0, game.shuffle_anim_timer - dt)
+            divine_result_banner_timer = max(0.0, divine_result_banner_timer - dt)
+            if divine_result_banner_timer <= 0:
+                divine_result_banner_text = None
+                divine_result_banner_title = None
             if autosave_enabled and screen_mode not in (
                 "menu",
                 "settings",
@@ -2186,6 +2554,15 @@ def safe_main():
                     if divine_roll_result is not None:
                         _di_roll, _di_threshold, _di_result = divine_roll_result
                         game.add_history(f"Divine Intervention: rolled {_di_roll} vs <= {_di_threshold}. {_di_result}.")
+                        if _di_roll <= _di_threshold:
+                            divine_result_banner_text = _get_divine_intervention_success_banner()
+                            divine_result_banner_title = "Divine Intervention succeeds"
+                            divine_result_banner_success = True
+                        else:
+                            divine_result_banner_text = _get_divine_intervention_failure_banner()
+                            divine_result_banner_title = "Divine Intervention fails"
+                            divine_result_banner_success = False
+                        divine_result_banner_timer = divine_result_banner_duration
                         divine_roll_result = None
                     divine_roll_anim = None
 
@@ -2646,26 +3023,39 @@ def safe_main():
                         fortune_spell_search_active = False
 
                 elif screen_mode == "fortune_glossary_view":
-                    _glossary_panel = pygame.Rect(fortune_setup_box.x + 40, fortune_setup_box.y + 120, fortune_setup_box.w - 80, fortune_setup_box.h - 230)
-                    _glossary_cols = 4
+                    _glossary_panel, _glossary_list_panel, _glossary_detail_panel = _get_glossary_view_layout()
+                    _glossary_cols = 3 if _glossary_list_panel.w >= 560 else 2
                     _row_h = 44
+                    _col_gap = 14
                     _row_gap = 10
-                    _visible_h = _glossary_panel.h - 20
                     _glossary_rows = max(1, math.ceil(len(fortune_glossary_terms) / _glossary_cols))
                     _content_h = (_glossary_rows * _row_h) + max(0, (_glossary_rows - 1) * _row_gap)
-                    _glossary_clip, _glossary_track_rect, _glossary_handle_rect, _glossary_max_scroll = _fantasy_scrollbar_geometry(_glossary_panel, _content_h, fortune_glossary_scroll)
+                    _glossary_clip, _glossary_track_rect, _glossary_handle_rect, _glossary_max_scroll = _fantasy_scrollbar_geometry(_glossary_list_panel.inflate(-12, -12), _content_h, fortune_glossary_scroll)
+                    _item_w = (_glossary_clip.w - ((_glossary_cols - 1) * _col_gap)) // _glossary_cols
                     if e.type == pygame.MOUSEBUTTONUP and e.button == 1:
                         glossary_sb_dragging = False
                     if e.type == pygame.MOUSEMOTION and glossary_sb_dragging and _glossary_max_scroll > 0:
                         _rel = clamp(e.pos[1] - _glossary_track_rect.y - (_glossary_handle_rect.h // 2), 0, _glossary_track_rect.h - _glossary_handle_rect.h)
                         fortune_glossary_scroll = int(_rel / max(1, _glossary_track_rect.h - _glossary_handle_rect.h) * _glossary_max_scroll)
-                    if e.type == pygame.MOUSEWHEEL and _glossary_panel.collidepoint(m_pos):
+                    if e.type == pygame.MOUSEWHEEL and _glossary_list_panel.collidepoint(m_pos):
                         fortune_glossary_scroll = int(clamp(fortune_glossary_scroll - e.y * 48, 0, _glossary_max_scroll))
                     if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and _glossary_max_scroll > 0 and _glossary_track_rect.collidepoint(e.pos):
                         glossary_sb_dragging = True
                         _rel = clamp(e.pos[1] - _glossary_track_rect.y - (_glossary_handle_rect.h // 2), 0, _glossary_track_rect.h - _glossary_handle_rect.h)
                         fortune_glossary_scroll = int(_rel / max(1, _glossary_track_rect.h - _glossary_handle_rect.h) * _glossary_max_scroll)
                         continue
+                    if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and _glossary_clip.collidepoint(e.pos):
+                        for _i, _term in enumerate(fortune_glossary_terms):
+                            _col = _i % _glossary_cols
+                            _row = _i // _glossary_cols
+                            _rx = _glossary_clip.x + _col * (_item_w + _col_gap)
+                            _ry = _glossary_clip.y + 2 + (_row * (_row_h + _row_gap)) - fortune_glossary_scroll
+                            _rr = pygame.Rect(_rx, _ry, _item_w, _row_h)
+                            if _rr.bottom < _glossary_clip.y or _rr.top > _glossary_clip.bottom:
+                                continue
+                            if _rr.collidepoint(e.pos):
+                                selected_glossary_term = _term
+                                break
                     if fortune_view_back_btn.handle_event(e):
                         screen_mode = "library"
                 
@@ -3779,18 +4169,28 @@ def safe_main():
                 pygame.draw.rect(screen, _cyan_edge, fortune_setup_box, 2, 20)
                 _title = f_fortune_title.render("GLOSSARY", True, _cyan_soft)
                 screen.blit(_title, (fortune_setup_box.centerx - _title.get_width() // 2, fortune_setup_box.y + 20))
-                _hint = f_fortune_small.render("Card rule keywords collected from highlighted terms", True, (206, 238, 248))
+                _hint = f_fortune_small.render("Click a term to see a short D&D explanation on the right", True, (206, 238, 248))
                 screen.blit(_hint, (fortune_setup_box.centerx - _hint.get_width() // 2, fortune_setup_box.y + 82))
-                _panel = pygame.Rect(fortune_setup_box.x + 40, fortune_setup_box.y + 120, fortune_setup_box.w - 80, fortune_setup_box.h - 230)
+                _panel, _list_panel, _detail_panel = _get_glossary_view_layout()
                 _blit_alpha_round_rect(screen, _panel, (20, 18, 30, 96), 12)
                 pygame.draw.rect(screen, _cyan_edge, _panel, 2, 12)
-                _cols = 4
+                _blit_alpha_round_rect(screen, _list_panel, (16, 18, 28, 126), 12)
+                pygame.draw.rect(screen, (102, 220, 255, 90), _list_panel, 1, 12)
+                _blit_alpha_round_rect(screen, _detail_panel, (20, 22, 34, 156), 12)
+                pygame.draw.rect(screen, (102, 220, 255, 120), _detail_panel, 1, 12)
+                _list_title = f_fortune_subtitle.render("Terms", True, _cyan_soft)
+                screen.blit(_list_title, (_list_panel.x + 16, _list_panel.y + 12))
+                _detail_title = f_fortune_subtitle.render("Meaning", True, _cyan_soft)
+                screen.blit(_detail_title, (_detail_panel.x + 16, _detail_panel.y + 12))
+                if selected_glossary_term not in fortune_glossary_terms:
+                    selected_glossary_term = None
+                _cols = 3 if _list_panel.w >= 560 else 2
                 _row_h = 44
                 _col_gap = 14
                 _row_gap = 10
                 _glossary_rows = max(1, math.ceil(len(fortune_glossary_terms) / _cols))
                 _content_h = (_glossary_rows * _row_h) + max(0, (_glossary_rows - 1) * _row_gap)
-                _clip, _sb_track_rect, _sb_handle_rect, _glossary_max_scroll_draw = _fantasy_scrollbar_geometry(_panel, _content_h, fortune_glossary_scroll)
+                _clip, _sb_track_rect, _sb_handle_rect, _glossary_max_scroll_draw = _fantasy_scrollbar_geometry(_list_panel.inflate(-12, -42), _content_h, fortune_glossary_scroll)
                 _item_w = (_clip.w - ((_cols - 1) * _col_gap)) // _cols
                 _clip_prev = screen.get_clip()
                 screen.set_clip(_clip)
@@ -3803,8 +4203,13 @@ def safe_main():
                     if _rr.bottom < _clip.y or _rr.top > _clip.bottom:
                         continue
                     _hover = _rr.collidepoint(m_pos)
-                    draw_round_rect(screen, _rr, (28, 26, 40, 220) if _hover else (24, 20, 34, 210), 8)
-                    pygame.draw.rect(screen, (102, 220, 255, 130), _rr, 1, 8)
+                    _selected = (_term == selected_glossary_term)
+                    if _selected:
+                        draw_round_rect(screen, _rr, (38, 58, 74, 236), 8)
+                        pygame.draw.rect(screen, (176, 244, 255), _rr, 2, 8)
+                    else:
+                        draw_round_rect(screen, _rr, (28, 26, 40, 220) if _hover else (24, 20, 34, 210), 8)
+                        pygame.draw.rect(screen, (102, 220, 255, 130), _rr, 1, 8)
                     _txt = f_fortune_small.render(_term, True, (214, 246, 255))
                     if _txt.get_width() > _rr.w - 20:
                         _term_draw = _term
@@ -3815,6 +4220,34 @@ def safe_main():
                 screen.set_clip(_clip_prev)
                 if _glossary_max_scroll_draw > 0:
                     _draw_fantasy_scrollbar(screen, _sb_track_rect, _sb_handle_rect, _cyan_edge, _cyan_soft)
+                _detail_inner = _detail_panel.inflate(-24, -28)
+                if selected_glossary_term:
+                    _title_font = f_fortune_header if f_fortune_header.size(selected_glossary_term)[0] <= _detail_inner.w else f_fortune_small
+                    _title_lines = _wrap_glossary_detail_text(_title_font, selected_glossary_term, _detail_inner.w)
+                    _title_y = _detail_inner.y + 10
+                    for _line in _title_lines:
+                        _term_title = _title_font.render(_line, True, (224, 248, 255))
+                        screen.blit(_term_title, (_detail_inner.x, _title_y))
+                        _title_y += _title_font.get_linesize()
+                    _divider_y = _title_y + 6
+                    pygame.draw.line(screen, (102, 220, 255, 120), (_detail_inner.x, _divider_y), (_detail_inner.right, _divider_y), 2)
+                    _body_text = _get_glossary_explanation(selected_glossary_term)
+                    _body_font, _body_lines = _fit_glossary_detail_text(_body_text, _detail_inner.w, _detail_inner.bottom - (_divider_y + 18))
+                    _yy = _divider_y + 18
+                    for _line in _body_lines:
+                        _line_surf = _body_font.render(_line, True, (224, 236, 246))
+                        screen.blit(_line_surf, (_detail_inner.x, _yy))
+                        _yy += _body_font.get_linesize()
+                else:
+                    _empty_title = f_fortune_header.render("No Term Selected", True, (224, 248, 255))
+                    screen.blit(_empty_title, (_detail_inner.x, _detail_inner.y + 10))
+                    _empty_text = "Select a glossary term from the list to see what it means in D&D 5e."
+                    _empty_font, _empty_lines = _fit_glossary_detail_text(_empty_text, _detail_inner.w, _detail_inner.h - 92)
+                    _yy = _detail_inner.y + 82
+                    for _line in _empty_lines:
+                        _line_surf = _empty_font.render(_line, True, (214, 228, 238))
+                        screen.blit(_line_surf, (_detail_inner.x, _yy))
+                        _yy += _empty_font.get_linesize()
                 fortune_view_back_btn.text = "Back to Library"
                 fortune_view_back_btn.draw(screen, f_fortune_small, dt)
             
@@ -4463,6 +4896,50 @@ def safe_main():
                 t_surf = f_small.render(game.toast_msg, True, (255,255,255))
                 pygame.draw.rect(screen, (0,0,0,180), (W//2-200, 20, 400, 40), border_radius=10)
                 screen.blit(t_surf, t_surf.get_rect(center=(W//2, 40)))
+
+            if divine_result_banner_text and divine_result_banner_timer > 0:
+                _banner_elapsed = divine_result_banner_duration - divine_result_banner_timer
+                _banner_alpha = int(255 * min(1.0, _banner_elapsed / 0.25, divine_result_banner_timer / 0.55))
+                _banner_box = pygame.Rect(0, 0, min(W - 120, 1080), 290)
+                _banner_box.center = (W // 2, H // 2 - 24)
+                if divine_result_banner_success:
+                    _bg_col = (12, 8, 18, min(220, _banner_alpha))
+                    _edge_col = (235, 190, 60, min(220, _banner_alpha))
+                    _glow_col = (235, 190, 60, min(100, _banner_alpha // 3))
+                    _text_col = (255, 232, 170)
+                    _shadow_col = (50, 24, 8)
+                    _sub_col = (255, 220, 132)
+                else:
+                    _bg_col = (20, 8, 10, min(228, _banner_alpha))
+                    _edge_col = (188, 82, 70, min(220, _banner_alpha))
+                    _glow_col = (188, 82, 70, min(110, _banner_alpha // 3))
+                    _text_col = (255, 215, 205)
+                    _shadow_col = (42, 10, 10)
+                    _sub_col = (246, 176, 160)
+                _banner_surf = pygame.Surface((_banner_box.w, _banner_box.h), pygame.SRCALPHA)
+                draw_round_rect(_banner_surf, _banner_surf.get_rect(), _bg_col, 26)
+                pygame.draw.rect(_banner_surf, _edge_col, _banner_surf.get_rect(), 3, 26)
+                _glow = pygame.Surface((_banner_box.w + 44, _banner_box.h + 44), pygame.SRCALPHA)
+                pygame.draw.rect(_glow, _glow_col, _glow.get_rect(), border_radius=34)
+                screen.blit(_glow, (_banner_box.x - 22, _banner_box.y - 22))
+                screen.blit(_banner_surf, _banner_box.topleft)
+                _display_text = f"\"{divine_result_banner_text}\""
+                _msg_font, _lines = _fit_divine_banner_text(_display_text, _banner_box.w - 110, _banner_box.h - 150)
+                _line_h = _msg_font.get_linesize()
+                _body_h = len(_lines) * _line_h
+                _start_y = _banner_box.y + 86 + max(0, (_banner_box.h - 150 - _body_h) // 2)
+                for _idx, _line in enumerate(_lines):
+                    _shadow = _msg_font.render(_line, True, _shadow_col)
+                    _text = _msg_font.render(_line, True, _text_col)
+                    _shadow.set_alpha(_banner_alpha)
+                    _text.set_alpha(_banner_alpha)
+                    _cx = W // 2
+                    _yy = _start_y + _idx * _line_h
+                    screen.blit(_shadow, _shadow.get_rect(center=(_cx + 2, _yy + _line_h // 2 + 2)))
+                    screen.blit(_text, _text.get_rect(center=(_cx, _yy + _line_h // 2)))
+                _sub = f_preview_title.render(str(divine_result_banner_title or "Divine Intervention"), True, _sub_col)
+                _sub.set_alpha(_banner_alpha)
+                screen.blit(_sub, _sub.get_rect(center=(W // 2, _banner_box.y + 42)))
             
             pygame.display.flip()
 
