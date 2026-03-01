@@ -482,7 +482,7 @@ def safe_main():
             "Spell_Library.png",
         ]
         preloaded_ui_images = {}
-        hand_tex, view_tex, preview_tex_hd, preview_bgs, thumb_tex, total_steps, cur_step = {}, {}, {}, {}, {}, len(cards_raw) * 4 + 3 + len(_menu_element_files), 0
+        hand_tex, view_tex, preview_tex_hd, preview_bgs, thumb_tex, total_steps, cur_step = {}, {}, {}, {}, {}, len(cards_raw) * 4 + 4 + len(_menu_element_files), 0
         def _asset_pct(step): return (step / max(1, total_steps)) * 0.9
         _loading_pct_cur = 0.0
         def _animate_loading_step(target_pct, status, thumb=None, duration=1.0):
@@ -546,6 +546,40 @@ def safe_main():
             cur_step += 1
             _label = os.path.splitext(_fname)[0].replace("_", " ")
             if not _animate_loading_step(_asset_pct(cur_step), f"Main Menu Element: {_label}", _img if _img is not None else v_face_hand, duration=0.1): return
+
+        def _load_sfx(path):
+            try:
+                return pygame.mixer.Sound(path) if os.path.exists(path) else None
+            except Exception:
+                return None
+
+        _audio_assets = [
+            MAIN_MENU_MUSIC,
+            LIBRARY_MUSIC,
+            SPELL_LIBRARY_MUSIC,
+            GLOSSARY_MUSIC,
+            PPF_BG_MUSIC,
+            DECK_VIEW_MUSIC,
+            VANISHED_PILE_MUSIC,
+            VANISHED_PILE_ALT_MUSIC,
+            BUTTON_PRESS_SOUND,
+            TURNPAGE_SOUND,
+            MAJOR_PROMOTION_SOUND,
+            FORTUNE_PROMOTION_SOUND,
+            POT_OF_GREED_SOUND,
+            VANISH_FX_SOUND,
+        ]
+        for _ap in _audio_assets:
+            if _ap and not os.path.exists(_ap):
+                log_event(f"Missing audio asset: {_ap}", is_error=True)
+        _sfx_button_press = _load_sfx(BUTTON_PRESS_SOUND)
+        _sfx_turnpage = _load_sfx(TURNPAGE_SOUND)
+        _sfx_major_promo = _load_sfx(MAJOR_PROMOTION_SOUND)
+        _sfx_fortune_promo = _load_sfx(FORTUNE_PROMOTION_SOUND)
+        _sfx_pot_of_greed = _load_sfx(POT_OF_GREED_SOUND)
+        _sfx_vanish_fx = _load_sfx(VANISH_FX_SOUND)
+        cur_step += 1
+        if not _animate_loading_step(_asset_pct(cur_step), "Loading music...", preloaded_ui_images.get("Settings_Menu_Image.png") or v_face_hand, duration=0.12): return
 
         glow_gold, glow_purple, game = make_glow(HAND_CARD_W, HAND_CARD_H, GOLD), make_glow(HAND_CARD_W, HAND_CARD_H, PURPLE_TAP), Game(cards_raw)
 
@@ -750,17 +784,6 @@ def safe_main():
                 _sy = _card_rect.y + 6
             screen.blit(_stamp, (_sx, _sy))
 
-        def _load_sfx(path):
-            try:
-                return pygame.mixer.Sound(path) if os.path.exists(path) else None
-            except Exception:
-                return None
-        _sfx_button_press = _load_sfx(BUTTON_PRESS_SOUND)
-        _sfx_turnpage = _load_sfx(TURNPAGE_SOUND)
-        _sfx_major_promo = _load_sfx(MAJOR_PROMOTION_SOUND)
-        _sfx_fortune_promo = _load_sfx(FORTUNE_PROMOTION_SOUND)
-        _sfx_pot_of_greed = _load_sfx(os.path.join(VIDEOS_DIR, "I SUMMON POT OF GREED.wav"))
-
         # UI BUTTONS
         ui_x, ui_w = PADDING+PANEL_INNER_PAD, PANEL_W-PANEL_INNER_PAD*2
         lvl_change_dd = FantasyLevelStepper((ui_x + 15, PADDING + 45, ui_w - 30, 42), 1, 20, 1)
@@ -938,7 +961,12 @@ def safe_main():
         settings_music_dd.selected_index = 0 if menu_music_enabled else 1
         game.audio_enabled = audio_enabled
         game.sfx_enabled = sfx_enabled
-        current_menu_music_track = None
+        current_music_track = None
+        current_music_loop = None
+        vanished_music_cycle = []
+        vanished_music_index = 0
+        normal_view_music_cycle = []
+        normal_view_music_index = 0
         Button.click_sound = _sfx_button_press
         try: Button.click_channel = pygame.mixer.Channel(0)
         except: Button.click_channel = None
@@ -958,8 +986,72 @@ def safe_main():
                 except: pass
         def play_turnpage_sfx():
             play_sfx(_sfx_turnpage)
+
+        def _play_bg_music(track_path, loop):
+            nonlocal current_music_track, current_music_loop
+            if not track_path or not os.path.exists(track_path):
+                return
+            if current_music_track != track_path or current_music_loop != loop or not pygame.mixer.music.get_busy() or pygame.mixer.music.get_pos() == -1:
+                pygame.mixer.music.load(track_path)
+                pygame.mixer.music.play(-1 if loop else 0)
+                current_music_track = track_path
+                current_music_loop = loop
+
+        def _stop_bg_music():
+            nonlocal current_music_track, current_music_loop
+            if pygame.mixer.music.get_busy():
+                pygame.mixer.music.stop()
+            current_music_track = None
+            current_music_loop = None
+
+        def _reset_vanished_music_cycle():
+            nonlocal vanished_music_cycle, vanished_music_index
+            vanished_music_cycle = [p for p in (VANISHED_PILE_MUSIC, VANISHED_PILE_ALT_MUSIC) if os.path.exists(p)]
+            if len(vanished_music_cycle) > 1:
+                _start_idx = random.randrange(len(vanished_music_cycle))
+                vanished_music_cycle = vanished_music_cycle[_start_idx:] + vanished_music_cycle[:_start_idx]
+            vanished_music_index = 0
+
+        def _reset_normal_view_music_cycle():
+            nonlocal normal_view_music_cycle, normal_view_music_index
+            _tracks_by_num = {}
+            if os.path.isdir(AUDIO_DIR):
+                for _fname in os.listdir(AUDIO_DIR):
+                    _m = re.match(r"^normal_view_(\d+)\.mp3$", _fname, re.I)
+                    if not _m:
+                        continue
+                    _num = int(_m.group(1))
+                    if 1 <= _num <= 15:
+                        _tracks_by_num[_num] = os.path.join(AUDIO_DIR, _fname)
+            normal_view_music_cycle = [_tracks_by_num[_num] for _num in sorted(_tracks_by_num)]
+            random.shuffle(normal_view_music_cycle)
+            normal_view_music_index = 0
+
+        def _play_current_normal_view_track():
+            nonlocal normal_view_music_index
+            if not normal_view_music_cycle:
+                _reset_normal_view_music_cycle()
+            if not normal_view_music_cycle:
+                _stop_bg_music()
+                return
+            if normal_view_music_index >= len(normal_view_music_cycle):
+                _reset_normal_view_music_cycle()
+                if not normal_view_music_cycle:
+                    _stop_bg_music()
+                    return
+            _play_bg_music(normal_view_music_cycle[normal_view_music_index], loop=False)
+
+        def _advance_normal_view_music_cycle():
+            nonlocal normal_view_music_index
+            if not normal_view_music_cycle:
+                _reset_normal_view_music_cycle()
+                return
+            normal_view_music_index += 1
+            if normal_view_music_index >= len(normal_view_music_cycle):
+                _reset_normal_view_music_cycle()
         
         screen_mode, running, scroll_y, preview_cid, card_fire_particles = "menu", True, 0, None, []
+        previous_music_screen_mode = screen_mode
         preview_state = {'mode': 'normal', 'orientation': 'upright'}
         preview_locked_mode = False
         preview_scrolls = {"current": 0, "max": 0}
@@ -1050,6 +1142,7 @@ def safe_main():
                 game.add_history(f"{game.cards[h['id']]['name']} was Tapped.", [h['id']])
                 return
             h['is_vanishing'] = True
+            play_sfx(_sfx_vanish_fx, priority=True)
             if h['mode'] == 'major':
                 game.major_fortune_used_this_week = True
                 game.major_fortune_activation_pending = False
@@ -1978,7 +2071,17 @@ def safe_main():
                 pass
             game.toast_timer = max(0.0, game.toast_timer - dt)
             game.shuffle_anim_timer = max(0.0, game.shuffle_anim_timer - dt)
-            if autosave_enabled and screen_mode not in ("menu", "settings", "slot_menu", "fool_video", "greedy_pot_popup"):
+            if autosave_enabled and screen_mode not in (
+                "menu",
+                "settings",
+                "slot_menu",
+                "library",
+                "fortune_setup",
+                "fortune_spell_list_view",
+                "fortune_glossary_view",
+                "fool_video",
+                "greedy_pot_popup",
+            ):
                 _autosave_interval_s = autosave_interval_min * 60
                 if (time.time() - autosave_last_time) >= _autosave_interval_s:
                     if _write_autosave(autosave_next_slot):
@@ -2296,7 +2399,7 @@ def safe_main():
                                 pygame.mixer.music.stop()
                             except Exception:
                                 pass
-                            current_menu_music_track = None
+                            _stop_bg_music()
                         _persist_settings()
                     if settings_fx_btn.handle_event(e):
                         sfx_enabled = not sfx_enabled
@@ -3134,32 +3237,63 @@ def safe_main():
 
             # --- DRAWING ---
             screen.fill((10, 12, 18))
-            # Play screen-specific music for menu-style views.
-            _menu_music_track = {
+            # Play screen-specific music for supported views.
+            _screen_music_track = {
+                "menu": MAIN_MENU_MUSIC,
                 "library": LIBRARY_MUSIC,
+                "settings": MAIN_MENU_MUSIC,
+                "slot_menu": MAIN_MENU_MUSIC,
+                "fortune_setup": MAIN_MENU_MUSIC,
                 "fortune_spell_list_view": SPELL_LIBRARY_MUSIC,
                 "fortune_glossary_view": GLOSSARY_MUSIC,
                 "ppf_selection": PPF_BG_MUSIC,
                 "major_selection": PPF_BG_MUSIC,
-            }.get(screen_mode, MAIN_MENU_MUSIC)
-            if not os.path.exists(_menu_music_track):
-                _menu_music_track = MAIN_MENU_MUSIC
-            if screen_mode in ["menu", "library", "settings", "slot_menu", "fortune_setup", "fortune_spell_list_view", "fortune_glossary_view", "ppf_selection", "major_selection"] and menu_music_enabled and audio_enabled:
+                "deck": DECK_VIEW_MUSIC,
+            }.get(screen_mode)
+            if _screen_music_track and not os.path.exists(_screen_music_track):
+                _screen_music_track = MAIN_MENU_MUSIC if os.path.exists(MAIN_MENU_MUSIC) else None
+            if menu_music_enabled and audio_enabled:
                 try:
                     pygame.mixer.music.set_volume(menu_music_volume / 100.0)
                 except Exception:
                     pass
-                if current_menu_music_track != _menu_music_track or not pygame.mixer.music.get_busy() or pygame.mixer.music.get_pos() == -1:
-                    try:
-                        pygame.mixer.music.load(_menu_music_track)
-                        pygame.mixer.music.play(-1)
-                        current_menu_music_track = _menu_music_track
-                    except Exception as e:
-                        log_event(f"Music error: {e}", True)
+                try:
+                    if screen_mode == "vanish_view":
+                        if previous_music_screen_mode != "vanish_view" or not vanished_music_cycle:
+                            _reset_vanished_music_cycle()
+                            if vanished_music_cycle:
+                                _play_bg_music(vanished_music_cycle[vanished_music_index], loop=False)
+                                vanished_music_index = (vanished_music_index + 1) % len(vanished_music_cycle)
+                            else:
+                                _stop_bg_music()
+                        elif vanished_music_cycle and (not pygame.mixer.music.get_busy() or pygame.mixer.music.get_pos() == -1):
+                            _play_bg_music(vanished_music_cycle[vanished_music_index], loop=False)
+                            vanished_music_index = (vanished_music_index + 1) % len(vanished_music_cycle)
+                    elif screen_mode == "normal":
+                        if previous_music_screen_mode != "normal" or not normal_view_music_cycle:
+                            _play_current_normal_view_track()
+                        elif not pygame.mixer.music.get_busy() or pygame.mixer.music.get_pos() == -1:
+                            if (
+                                normal_view_music_cycle
+                                and normal_view_music_index < len(normal_view_music_cycle)
+                                and current_music_track == normal_view_music_cycle[normal_view_music_index]
+                            ):
+                                _advance_normal_view_music_cycle()
+                            elif (
+                                normal_view_music_cycle
+                                and normal_view_music_index >= len(normal_view_music_cycle)
+                            ):
+                                _reset_normal_view_music_cycle()
+                            _play_current_normal_view_track()
+                    elif _screen_music_track:
+                        _play_bg_music(_screen_music_track, loop=True)
+                    else:
+                        _stop_bg_music()
+                except Exception as e:
+                    log_event(f"Music error: {e}", True)
             else:
-                if pygame.mixer.music.get_busy():
-                    pygame.mixer.music.stop()
-                current_menu_music_track = None
+                _stop_bg_music()
+            previous_music_screen_mode = screen_mode
             
             if screen_mode == "menu":
                 screen.blit(menu_bg, (0, 0))

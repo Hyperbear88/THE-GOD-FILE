@@ -444,3 +444,5 @@ TypeError: Button.__init__() got an unexpected keyword argument 'blue'
 03:01:57 [INFO]  Scanning JSON... Found 80 bolded fields.
 03:08:07 [INFO]  Loading video backend: cv2
 03:08:07 [INFO]  Scanning JSON... Found 80 bolded fields.
+03:36:48 [INFO]  Loading video backend: cv2
+03:36:48 [INFO]  Scanning JSON... Found 80 bolded fields.
