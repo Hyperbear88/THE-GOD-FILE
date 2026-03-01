@@ -1033,6 +1033,21 @@ def safe_main():
         _img_library_bg = _load_btn_img("Library_BG.png")
         _img_spell_library_bg = _load_btn_img("Spell_Library_BG.png")
         _img_glossary_bg = _load_btn_img("Glossary_BG.png")
+        _img_library_bg_scaled = pygame.transform.smoothscale(_img_library_bg, (W, H)) if _img_library_bg is not None else None
+        _img_spell_library_bg_scaled = pygame.transform.smoothscale(_img_spell_library_bg, (W, H)) if _img_spell_library_bg is not None else None
+        _img_glossary_bg_scaled = pygame.transform.smoothscale(_img_glossary_bg, (W, H)) if _img_glossary_bg is not None else None
+        _cached_side_panel_bg = None
+        if _img_side_panel is not None:
+            _cached_side_panel_bg = pygame.transform.smoothscale(_img_side_panel, (PANEL_W, H - PADDING * 2))
+            _grey_ov = pygame.Surface((PANEL_W, H - PADDING * 2), pygame.SRCALPHA)
+            _grey_ov.fill((25, 25, 35, 120))
+            _cached_side_panel_bg.blit(_grey_ov, (0, 0))
+            _sp_mask = pygame.Surface((PANEL_W, H - PADDING * 2), pygame.SRCALPHA)
+            draw_round_rect(_sp_mask, (0, 0, PANEL_W, H - PADDING * 2), (255, 255, 255, 255), 15)
+            _cached_side_panel_bg.blit(_sp_mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+        _dof_token_scaled_cache = {}
+        _promo_stamp_cache = {}
+        _card_face_cache = {}
 
         def _draw_promotion_stamp(_card_rect, _is_major=False, _inverted=False):
             _src = _img_major_stamp if _is_major else _img_fortune_stamp
@@ -1041,9 +1056,14 @@ def safe_main():
             _stamp_h = max(26, int(_card_rect.h * 0.22))
             _scale = _stamp_h / max(1, _src.get_height())
             _stamp_w = max(26, int(_src.get_width() * _scale))
-            _stamp = pygame.transform.smoothscale(_src, (_stamp_w, _stamp_h))
+            _stamp_key = (bool(_is_major), bool(_inverted), _stamp_w, _stamp_h)
+            _stamp = _promo_stamp_cache.get(_stamp_key)
+            if _stamp is None:
+                _stamp = pygame.transform.smoothscale(_src, (_stamp_w, _stamp_h))
+                if _inverted:
+                    _stamp = pygame.transform.rotate(_stamp, 180)
+                _promo_stamp_cache[_stamp_key] = _stamp
             if _inverted:
-                _stamp = pygame.transform.rotate(_stamp, 180)
                 _sx = _card_rect.x + 6
                 _sy = _card_rect.bottom - _stamp_h - 6
             else:
@@ -1065,9 +1085,11 @@ def safe_main():
         draw_of_fate_slider = IntSlider((ui_x + 35, H - 200, ui_w - 70, 34), 0, 6, game.draw_of_fate_uses)
         turn_undead_btn = Button((ui_x, H - 160, (ui_w - 10) // 2, 42), "Turn Undead", green=True, image=_img_turn_undead)
         destroy_undead_btn = Button((ui_x + (ui_w - 10) // 2 + 10, H - 160, (ui_w - 10) // 2, 42), "Destroy Undead", danger=True, image=_img_destroy_undead)
-        palm_reading_btn = Button((0, 0, 120, 120), "Palm Reading", gold=True, image=_img_palm_reading)
-        palm_reading_type_dropdown = Dropdown((0, 0, 158, 42), [("attack_roll", "Attack Roll"), ("ability_check", "Ability Check"), ("saving_throw", "Saving Throw")], fantasy=True)
-        palm_reading_type_dropdown.open_up = True
+        palm_reading_btn = Button((0, 0, 120, 120), "Palm Reading", image=_img_palm_reading, pink=True, pulse_frame=True)
+        palm_reading_mode_options = [("attack_roll", "Attack Roll"), ("ability_check", "Ability Check"), ("saving_throw", "Saving Throw")]
+        palm_reading_mode_index = 0
+        palm_reading_mode_left_btn = Button((0, 0, 42, 42), "<", primary=True, fantasy=True)
+        palm_reading_mode_right_btn = Button((0, 0, 42, 42), ">", primary=True, fantasy=True)
         palm_reading_text = ""
         palm_reading_text_active = False
         palm_reading_text_open = True
@@ -1091,6 +1113,15 @@ def safe_main():
         top_menu_open = False
         palm_reading_menu_open = False
         palm_reading_selection = None
+        sidebar_open = True
+        _sidebar_visible_edge = 18
+        _sidebar_closed_x = -PANEL_W + _sidebar_visible_edge
+        _sidebar_anim_x = float(PADDING)
+        _sidebar_toggle_rect = pygame.Rect(PADDING + PANEL_W - 14, (H // 2) - 48, 28, 96)
+        _sidebar_panel_x = PADDING
+        _sidebar_ui_x = ui_x
+        _card_zone_x = PANEL_W + 60
+        _major_zone_x = _card_zone_x + HAND_GRID_SPACING_X
 
         def _get_glossary_view_layout():
             _panel = pygame.Rect(fortune_setup_box.x + 40, fortune_setup_box.y + 120, fortune_setup_box.w - 80, fortune_setup_box.h - 230)
@@ -1326,6 +1357,9 @@ def safe_main():
         game.sfx_enabled = sfx_enabled
         current_music_track = None
         current_music_loop = None
+        current_music_context = None
+        music_context_states = {}
+        music_length_cache = {}
         vanished_music_cycle = []
         vanished_music_index = 0
         normal_view_music_cycle = []
@@ -1350,22 +1384,78 @@ def safe_main():
         def play_turnpage_sfx():
             play_sfx(_sfx_turnpage)
 
-        def _play_bg_music(track_path, loop):
+        def _play_bg_music(track_path, loop, start_sec=0.0, force_restart=False):
             nonlocal current_music_track, current_music_loop
             if not track_path or not os.path.exists(track_path):
                 return
-            if current_music_track != track_path or current_music_loop != loop or not pygame.mixer.music.get_busy() or pygame.mixer.music.get_pos() == -1:
+            if force_restart or current_music_track != track_path or current_music_loop != loop or not pygame.mixer.music.get_busy() or pygame.mixer.music.get_pos() == -1:
                 pygame.mixer.music.load(track_path)
-                pygame.mixer.music.play(-1 if loop else 0)
+                try:
+                    pygame.mixer.music.play(-1 if loop else 0, start=max(0.0, float(start_sec)))
+                except Exception:
+                    pygame.mixer.music.play(-1 if loop else 0)
                 current_music_track = track_path
                 current_music_loop = loop
 
         def _stop_bg_music():
-            nonlocal current_music_track, current_music_loop
+            nonlocal current_music_track, current_music_loop, current_music_context
             if pygame.mixer.music.get_busy():
                 pygame.mixer.music.stop()
             current_music_track = None
             current_music_loop = None
+            current_music_context = None
+
+        def _get_track_length_sec(path):
+            if not path:
+                return 180.0
+            if path in music_length_cache:
+                return music_length_cache[path]
+            _length = 0.0
+            try:
+                _snd = pygame.mixer.Sound(path)
+                _length = float(_snd.get_length() or 0.0)
+            except Exception:
+                _length = 0.0
+            if _length <= 0.25:
+                _length = 180.0
+            music_length_cache[path] = _length
+            return _length
+
+        def _get_music_context_key(mode):
+            if mode == "menu":
+                return "menu"
+            if mode == "normal":
+                return "normal"
+            if mode == "library":
+                return "library"
+            if mode == "fortune_spell_list_view":
+                return "spell"
+            if mode == "fortune_glossary_view":
+                return "glossary"
+            if mode == "deck":
+                return "deck"
+            if mode == "vanish_view":
+                return "vanish"
+            if mode in ("ppf_selection", "major_selection", "prophet_selection", "stack_selection", "world_restore_view", "preview_view", "fool_video", "greedy_pot_popup"):
+                return "ppf"
+            return "normal"
+
+        def _get_context_tracks(context_key):
+            _menu_track = MAIN_MENU_MUSIC if os.path.exists(MAIN_MENU_MUSIC) else None
+            _single = {
+                "menu": _menu_track,
+                "library": LIBRARY_MUSIC if os.path.exists(LIBRARY_MUSIC) else None,
+                "spell": SPELL_LIBRARY_MUSIC if os.path.exists(SPELL_LIBRARY_MUSIC) else None,
+                "glossary": GLOSSARY_MUSIC if os.path.exists(GLOSSARY_MUSIC) else None,
+                "ppf": PPF_BG_MUSIC if os.path.exists(PPF_BG_MUSIC) else None,
+                "deck": DECK_VIEW_MUSIC if os.path.exists(DECK_VIEW_MUSIC) else None,
+            }
+            if context_key == "normal":
+                return [p for p in normal_view_music_cycle if p and os.path.exists(p)]
+            if context_key == "vanish":
+                return [p for p in vanished_music_cycle if p and os.path.exists(p)]
+            _track = _single.get(context_key)
+            return [_track] if _track else []
 
         def _reset_vanished_music_cycle():
             nonlocal vanished_music_cycle, vanished_music_index
@@ -1412,6 +1502,9 @@ def safe_main():
             normal_view_music_index += 1
             if normal_view_music_index >= len(normal_view_music_cycle):
                 _reset_normal_view_music_cycle()
+
+        _reset_normal_view_music_cycle()
+        _reset_vanished_music_cycle()
         
         screen_mode, running, scroll_y, preview_cid, card_fire_particles = "menu", True, 0, None, []
         previous_music_screen_mode = screen_mode
@@ -1447,8 +1540,13 @@ def safe_main():
         preview_sb_dragging = False
         spell_list_sb_dragging = False
         glossary_sb_dragging = False
+        toast_typing_chars = 0.0
+        toast_typing_speed = 56.0
+        toast_last_msg = ""
+        toast_prev_timer = 0.0
         autosave_last_time = time.time()
         autosave_next_slot = 1
+        autosave_was_in_normal = False
         fool_video_state = {
             "cap": None,
             "fps": 30.0,
@@ -1642,19 +1740,21 @@ def safe_main():
             _a_selected = palm_reading_selection == "A"
             _d_selected = palm_reading_selection == "D"
             palm_reading_a_btn.primary = False
-            palm_reading_a_btn.gold = _a_selected
+            palm_reading_a_btn.gold = False
             palm_reading_a_btn.warning = False
             palm_reading_a_btn.danger = False
             palm_reading_a_btn.fire = False
-            palm_reading_a_btn.green = not _a_selected
+            palm_reading_a_btn.green = True
+            palm_reading_a_btn.pulse_frame = False
             palm_reading_a_btn.cyan = False
             palm_reading_a_btn.pink = False
             palm_reading_d_btn.primary = False
-            palm_reading_d_btn.gold = _d_selected
+            palm_reading_d_btn.gold = False
             palm_reading_d_btn.warning = False
-            palm_reading_d_btn.danger = not _d_selected
+            palm_reading_d_btn.danger = True
             palm_reading_d_btn.fire = False
             palm_reading_d_btn.green = False
+            palm_reading_d_btn.pulse_frame = False
             palm_reading_d_btn.cyan = False
             palm_reading_d_btn.pink = False
 
@@ -1931,7 +2031,7 @@ def safe_main():
                     pass
 
         def _apply_loaded_payload(payload, loaded_label="save file"):
-            nonlocal screen_mode, scroll_y, history_overlay_open, history_scroll, top_menu_open, rest_menu_open, autosave_last_time, palm_reading_menu_open, palm_reading_selection
+            nonlocal screen_mode, scroll_y, history_overlay_open, history_scroll, top_menu_open, rest_menu_open, autosave_last_time, palm_reading_menu_open, palm_reading_selection, previous_music_screen_mode
             if not payload or "game" not in payload:
                 game.toast_msg = "Selected file is not a valid save."
                 game.toast_timer = TOAST_DURATION
@@ -1953,6 +2053,11 @@ def safe_main():
             top_menu_open = False
             rest_menu_open = False
             autosave_last_time = time.time()
+            _reset_normal_view_music_cycle()
+            _reset_vanished_music_cycle()
+            music_context_states.clear()
+            _stop_bg_music()
+            previous_music_screen_mode = "menu"
             game.toast_msg = f"Loaded {loaded_label}"
             game.toast_timer = TOAST_DURATION
             return True
@@ -1982,7 +2087,7 @@ def safe_main():
             return _apply_loaded_payload(payload, f"slot {slot_idx}")
 
         def _start_new_game():
-            nonlocal game, screen_mode, scroll_y, prophet_remaining_draws, autosave_last_time, fortune_selected_loadout_idx, fortune_edit_loadout, fortune_name_edit_idx, fortune_name_input, fortune_scroll_y, history_overlay_open, history_scroll, top_menu_open, rest_menu_open, palm_reading_menu_open, palm_reading_selection, palm_reading_text, palm_reading_text_active, palm_reading_text_open
+            nonlocal game, screen_mode, scroll_y, prophet_remaining_draws, autosave_last_time, fortune_selected_loadout_idx, fortune_edit_loadout, fortune_name_edit_idx, fortune_name_input, fortune_scroll_y, history_overlay_open, history_scroll, top_menu_open, rest_menu_open, palm_reading_menu_open, palm_reading_selection, palm_reading_text, palm_reading_text_active, palm_reading_text_open, previous_music_screen_mode
             _clear_persisted_fortune_loadouts()
             game = Game(cards_raw)
             game.level = menu_lvl_dd.get_selected()
@@ -2002,6 +2107,11 @@ def safe_main():
             game.sfx_enabled = sfx_enabled
             game.sfx_channel = Button.click_channel
             autosave_last_time = time.time()
+            _reset_normal_view_music_cycle()
+            _reset_vanished_music_cycle()
+            music_context_states.clear()
+            _stop_bg_music()
+            previous_music_screen_mode = "menu"
             history_overlay_open = False
             history_scroll = 0
             top_menu_open = False
@@ -2020,6 +2130,7 @@ def safe_main():
                 screen_mode = "normal"
 
         def _load_most_recent_save():
+            nonlocal screen_mode, scroll_y, history_overlay_open, history_scroll, top_menu_open, rest_menu_open, palm_reading_menu_open
             _candidates = []
             for _slot_idx in range(1, MAX_SAVE_SLOTS + 1):
                 _payload = _load_slot_payload(_slot_idx)
@@ -2035,7 +2146,17 @@ def safe_main():
                 return False
             _candidates.sort(key=lambda _entry: _entry[0], reverse=True)
             _, _label, _payload = _candidates[0]
-            return _apply_loaded_payload(_payload, _label)
+            _loaded = _apply_loaded_payload(_payload, _label)
+            if not _loaded:
+                return False
+            screen_mode = "normal"
+            scroll_y = 0
+            history_overlay_open = False
+            history_scroll = 0
+            top_menu_open = False
+            rest_menu_open = False
+            palm_reading_menu_open = False
+            return True
 
         game.normalize_fortune_loadouts()
         fortune_setup_return_mode = "library"
@@ -2545,55 +2666,88 @@ def safe_main():
                 surf = pygame.transform.rotate(surf, 180)
             return surf
 
-        def get_seer_dice_rect():
-            dt_box_w, dt_box_h = PANEL_W - 120, 90
-            dt_box_x = PADDING + (PANEL_W - dt_box_w) // 2
-            dt_box_y = H - dt_box_h - 45
-            return pygame.Rect(dt_box_x, dt_box_y, dt_box_w, dt_box_h)
-
         def _get_sidebar_action_layout():
             _draw_btn_h = 90
             _sidebar_gap = 18
-            _palm_btn_size = 120
+            _palm_btn_size = 132
             _fate_section_gap = 22
             _palm_above_seer_gap = 12
             _draw_btn_y = lvl_change_dd.rect.bottom + _sidebar_gap
             dt_box_w = PANEL_W - 120
-            dt_box_x = PADDING + (PANEL_W - dt_box_w) // 2
-            _seer_rect = get_seer_dice_rect()
-            _seer_label_top = _seer_rect.y - 34
-            _palm_btn_y = _seer_label_top - _palm_above_seer_gap - _palm_btn_size
+            dt_box_h = 90
+            dt_box_x = _sidebar_panel_x + (PANEL_W - dt_box_w) // 2
+            _seer_bottom_y = H - dt_box_h - 45
+            _seer_swap_y = _seer_bottom_y - 34 - _palm_above_seer_gap - 120 + 18 - 98
+            _palm_btn_y = _seer_bottom_y - 18 - 82
             _fate_section_top = _draw_btn_y + _draw_btn_h + _fate_section_gap
             _fate_y = _fate_section_top + 139
             return {
                 "draw_btn_y": _draw_btn_y,
                 "palm_btn_y": _palm_btn_y,
+                "seer_rect": pygame.Rect(dt_box_x, _seer_swap_y, dt_box_w, dt_box_h),
                 "fate_rect": pygame.Rect(dt_box_x, _fate_y, dt_box_w, 34),
             }
+
+        def get_seer_dice_rect():
+            return _get_sidebar_action_layout()["seer_rect"]
 
         def get_draw_of_fate_rect():
             return _get_sidebar_action_layout()["fate_rect"]
 
+        try:
+            pygame.event.set_grab(True)
+        except Exception:
+            pass
+
         while running:
             dt = clock.tick(FPS)/1000.0; m_pos = pygame.mouse.get_pos(); 
-            try:
-                pygame.event.set_grab(True)
-            except:
-                pass
+            _sidebar_target_x = PADDING if sidebar_open else _sidebar_closed_x
+            _sidebar_anim_x += (_sidebar_target_x - _sidebar_anim_x) * min(1.0, dt * 14.0)
+            if abs(_sidebar_target_x - _sidebar_anim_x) < 0.5:
+                _sidebar_anim_x = float(_sidebar_target_x)
+            _sidebar_panel_x = int(round(_sidebar_anim_x))
+            _sidebar_ui_x = _sidebar_panel_x + PANEL_INNER_PAD
+
+            lvl_change_dd.rect = pygame.Rect(_sidebar_ui_x + 15, PADDING + 45, ui_w - 30, 42)
+
             game.toast_timer = max(0.0, game.toast_timer - dt)
+            if game.toast_timer > (toast_prev_timer + 1e-6) and game.toast_msg:
+                _toast_entry = str(game.toast_msg).strip()
+                if _toast_entry:
+                    _last_hist_text = ""
+                    if game.history_log:
+                        _last_hist = game.history_log[-1]
+                        if isinstance(_last_hist, dict):
+                            _last_hist_text = str(_last_hist.get("text", ""))
+                        else:
+                            _last_hist_text = str(_last_hist)
+                    if not _last_hist_text.endswith(_toast_entry):
+                        game.history_log.append({"text": f"[{datetime.now().strftime('%H:%M')}] {_toast_entry}", "card_ids": []})
+                        if len(game.history_log) > 100:
+                            game.history_log.pop(0)
+            toast_prev_timer = game.toast_timer
             game.shuffle_anim_timer = max(0.0, game.shuffle_anim_timer - dt)
             divine_result_banner_timer = max(0.0, divine_result_banner_timer - dt)
             if divine_result_banner_timer <= 0:
                 divine_result_banner_text = None
                 divine_result_banner_title = None
-            if autosave_enabled and screen_mode == "normal":
-                _autosave_interval_s = autosave_interval_min * 60
-                if (time.time() - autosave_last_time) >= _autosave_interval_s:
-                    if _write_autosave(autosave_next_slot):
-                        log_event(f"Autosaved to slot {autosave_next_slot}.")
-                        autosave_next_slot = (autosave_next_slot % MAX_AUTOSAVE_SLOTS) + 1
-                    autosave_last_time = time.time()
+            if autosave_enabled:
+                if screen_mode == "normal":
+                    if not autosave_was_in_normal:
+                        autosave_last_time = time.time()
+                    _autosave_interval_s = autosave_interval_min * 60
+                    if (time.time() - autosave_last_time) >= _autosave_interval_s:
+                        if _write_autosave(autosave_next_slot):
+                            log_event(f"Autosaved to slot {autosave_next_slot}.")
+                            autosave_next_slot = (autosave_next_slot % MAX_AUTOSAVE_SLOTS) + 1
+                        autosave_last_time = time.time()
+                    autosave_was_in_normal = True
+                else:
+                    autosave_was_in_normal = False
+            else:
+                autosave_was_in_normal = False
             _sidebar_action_layout = _get_sidebar_action_layout()
+            _toast_terminal_rect = None
             fate_r = _sidebar_action_layout["fate_rect"]
             draw_of_fate_slider.rect = fate_r
             half_w = (fate_r.w - 10) // 2
@@ -2601,21 +2755,26 @@ def safe_main():
             destroy_undead_btn.rect = pygame.Rect(fate_r.x + half_w + 10, fate_r.bottom + 8, half_w, half_w)
             _palm_btn_size = 132
             _palm_btn_y = _sidebar_action_layout["palm_btn_y"] - 18
-            _palm_dropdown_w = _palm_btn_size
+            _palm_dropdown_w = max(_palm_btn_size, 240)
             _palm_dropdown_h = 42
             _palm_dropdown_gap = 8
             _palm_col_w = 54
             _palm_col_h = 42
             _palm_col_gap = 8
             _palm_stack_h = _palm_btn_size + _palm_dropdown_gap + _palm_col_h + _palm_dropdown_gap + _palm_dropdown_h
-            _palm_group_x = ui_x + ui_w - _palm_btn_size - 24
-            palm_reading_btn.rect = pygame.Rect(_palm_group_x, _palm_btn_y, _palm_btn_size, _palm_btn_size)
-            palm_reading_type_dropdown.rect = pygame.Rect(_palm_group_x, palm_reading_btn.rect.bottom + _palm_dropdown_gap + _palm_col_h + _palm_dropdown_gap, _palm_dropdown_w, _palm_dropdown_h)
+            _palm_group_w = max(_palm_btn_size, _palm_dropdown_w)
+            _palm_group_x = _sidebar_ui_x + (ui_w - _palm_group_w) // 2
+            palm_reading_btn.rect = pygame.Rect(_palm_group_x + (_palm_group_w - _palm_btn_size) // 2, _palm_btn_y, _palm_btn_size, _palm_btn_size)
             _palm_ad_total_w = (_palm_col_w * 2) + _palm_col_gap
             _palm_ad_x = palm_reading_btn.rect.centerx - (_palm_ad_total_w // 2)
             _palm_ad_y = palm_reading_btn.rect.bottom + _palm_dropdown_gap
             palm_reading_a_btn.rect = pygame.Rect(_palm_ad_x, _palm_ad_y, _palm_col_w, _palm_col_h)
             palm_reading_d_btn.rect = pygame.Rect(palm_reading_a_btn.rect.right + _palm_col_gap, _palm_ad_y, _palm_col_w, _palm_col_h)
+            _mode_btn_w = 38
+            _mode_gap = 8
+            _mode_y = palm_reading_d_btn.rect.bottom + _palm_dropdown_gap
+            palm_reading_mode_left_btn.rect = pygame.Rect(_palm_group_x, _mode_y, _mode_btn_w, _palm_dropdown_h)
+            palm_reading_mode_right_btn.rect = pygame.Rect(_palm_group_x + _palm_group_w - _mode_btn_w, _mode_y, _mode_btn_w, _palm_dropdown_h)
             palm_reading_text_toggle_btn.rect = pygame.Rect(palm_reading_btn.rect.right + 6, palm_reading_btn.rect.centery - 17, 34, 34)
             palm_reading_text_toggle_btn.text = ">" if palm_reading_text_open else "<"
             _sync_palm_reading_toggle_buttons()
@@ -2625,7 +2784,6 @@ def safe_main():
             divine_intervention_btn.rect = pygame.Rect((W - _divine_size) // 2, _divine_y, _divine_size, _divine_size)
             undo_btn.rect = pygame.Rect(divine_intervention_btn.rect.x - _divine_size - _divine_gap, _divine_y, _divine_size, _divine_size)
             redo_btn.rect = pygame.Rect(divine_intervention_btn.rect.right + _divine_gap, _divine_y, _divine_size, _divine_size)
-            _major_zone_x = PANEL_W + 60 + HAND_GRID_SPACING_X
             _major_zone_y = 80 + normal_card_zone_y_offset + HAND_GRID_SPACING_Y + fortune_major_card_zone_y_offset
             _zone_btn_x = _major_zone_x + HAND_CARD_W + 50
             _zone_btn_w = max(180, min(260, W - _zone_btn_x - 80))
@@ -2637,8 +2795,9 @@ def safe_main():
             fated_card_btn.rect = pygame.Rect(_zone_btn_x, _ppf_y + _zone_btn_h + _zone_btn_gap, _zone_btn_w, _zone_btn_h)
             _d1_half = (ui_w - 10) // 2
             _draw_btn_y = _sidebar_action_layout["draw_btn_y"]
-            btn_d1.rect = pygame.Rect(ui_x, _draw_btn_y, _d1_half, 90)
-            stack_btn.rect = pygame.Rect(ui_x + _d1_half + 10, _draw_btn_y, _d1_half, 90)
+            btn_d1.rect = pygame.Rect(_sidebar_ui_x, _draw_btn_y, _d1_half, 90)
+            stack_btn.rect = pygame.Rect(_sidebar_ui_x + _d1_half + 10, _draw_btn_y, _d1_half, 90)
+            _sidebar_toggle_rect = pygame.Rect(_sidebar_panel_x + PANEL_W - 14, (H // 2) - 48, 28, 96)
 
             if card_videos_enabled and screen_mode == "fool_video" and fool_video_state["cap"] is not None:
                 fool_video_state["accum"] += dt
@@ -3333,9 +3492,9 @@ def safe_main():
                     if e.type == pygame.MOUSEMOTION:
                         _new_hover = None
                         for _zone_name, _zone, _sy, _sx in (
-                            [( "hand", h, 80, PANEL_W+60) for h in game.hand] +
-                            [( "fortune", f, 80+HAND_GRID_SPACING_Y, PANEL_W+60) for f in game.fortune_zone] +
-                            [( "major", m, 80+HAND_GRID_SPACING_Y, PANEL_W+60+HAND_GRID_SPACING_X) for m in game.major_zone]
+                            [( "hand", h, 80, _card_zone_x) for h in game.hand] +
+                            [( "fortune", f, 80+HAND_GRID_SPACING_Y, _card_zone_x) for f in game.fortune_zone] +
+                            [( "major", m, 80+HAND_GRID_SPACING_Y, _major_zone_x) for m in game.major_zone]
                         ):
                             if _zone.get('is_vanishing') or _zone.get('tapped'):
                                 continue
@@ -3509,7 +3668,10 @@ def safe_main():
                         _palm_controls_hit = (
                             palm_reading_btn.rect.collidepoint(e.pos) or
                             (palm_reading_menu_open and palm_reading_text_toggle_btn.rect.collidepoint(e.pos)) or
-                            (palm_reading_menu_open and palm_reading_type_dropdown.rect.collidepoint(e.pos)) or
+                            (palm_reading_menu_open and (
+                                palm_reading_mode_left_btn.rect.collidepoint(e.pos) or
+                                palm_reading_mode_right_btn.rect.collidepoint(e.pos)
+                            )) or
                             (palm_reading_menu_open and palm_reading_text_open and _palm_text_rect.collidepoint(e.pos)) or
                             (palm_reading_menu_open and (
                                 palm_reading_a_btn.rect.collidepoint(e.pos) or
@@ -3523,21 +3685,29 @@ def safe_main():
                     if game.level >= 2 and draw_of_fate_slider.handle_event(e):
                         game.draw_of_fate_uses = draw_of_fate_slider.value
                         game.draw_of_fate_current = min(game.draw_of_fate_current, game.draw_of_fate_uses)
+                    if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and _sidebar_toggle_rect.collidepoint(e.pos):
+                        sidebar_open = not sidebar_open
+                        palm_reading_text_active = False
+                        if not sidebar_open:
+                            palm_reading_menu_open = False
                     if btn_d1.handle_event(e): game.save_state(); game.draw_of_fate_current = max(0, game.draw_of_fate_current - 1); game.initiate_bulk_draw(1)
                     if stack_btn.handle_event(e): game.save_state(); game.draw_of_fate_current = max(0, game.draw_of_fate_current - 1); screen_mode, scroll_y = "stack_selection", 0
                     if library_btn.handle_event(e):
                         _open_library("normal")
-                    if palm_reading_menu_open and palm_reading_type_dropdown.handle_event(e):
-                        continue
                     if palm_reading_btn.handle_event(e):
                         palm_reading_menu_open = not palm_reading_menu_open
+                        palm_reading_btn.pink = palm_reading_menu_open
+                        palm_reading_btn.pulse_frame = palm_reading_menu_open
                         if not palm_reading_menu_open:
                             palm_reading_text_active = False
-                            palm_reading_type_dropdown.is_open = False
                     if palm_reading_menu_open and palm_reading_text_toggle_btn.handle_event(e):
                         palm_reading_text_open = not palm_reading_text_open
                         palm_reading_text_active = False
                         continue
+                    if palm_reading_menu_open and palm_reading_mode_left_btn.handle_event(e):
+                        palm_reading_mode_index = (palm_reading_mode_index - 1) % len(palm_reading_mode_options)
+                    if palm_reading_menu_open and palm_reading_mode_right_btn.handle_event(e):
+                        palm_reading_mode_index = (palm_reading_mode_index + 1) % len(palm_reading_mode_options)
                     if palm_reading_menu_open and palm_reading_a_btn.handle_event(e):
                         palm_reading_selection = None if palm_reading_selection == "A" else "A"
                     if palm_reading_menu_open and palm_reading_d_btn.handle_event(e):
@@ -3571,11 +3741,12 @@ def safe_main():
                     draw_of_fate_slider.set_value(game.draw_of_fate_uses)
                     _top_icon_sz = 70
                     _top_btn_w = 140
-                    _top_gap = 10
-                    hamburger_btn.rect = pygame.Rect(W - _top_icon_sz - 20, PADDING, _top_icon_sz, _top_icon_sz)
-                    load_btn.rect = pygame.Rect(hamburger_btn.rect.x - _top_gap - _top_btn_w, PADDING, _top_btn_w, _top_icon_sz)
-                    save_as_btn.rect = pygame.Rect(load_btn.rect.x - _top_gap - _top_btn_w, PADDING, _top_btn_w, _top_icon_sz)
-                    save_btn.rect = pygame.Rect(save_as_btn.rect.x - _top_gap - _top_btn_w, PADDING, _top_btn_w, _top_icon_sz)
+                    _top_gap = 4
+                    _top_y = PADDING - 6
+                    hamburger_btn.rect = pygame.Rect(W - _top_icon_sz - 20, _top_y, _top_icon_sz, _top_icon_sz)
+                    load_btn.rect = pygame.Rect(hamburger_btn.rect.x - _top_gap - _top_btn_w, _top_y, _top_btn_w, _top_icon_sz)
+                    save_as_btn.rect = pygame.Rect(load_btn.rect.x - _top_gap - _top_btn_w, _top_y, _top_btn_w, _top_icon_sz)
+                    save_btn.rect = pygame.Rect(save_as_btn.rect.x - _top_gap - _top_btn_w, _top_y, _top_btn_w, _top_icon_sz)
                     if history_btn.handle_event(e): history_overlay_open = not history_overlay_open; history_scroll = 0
                     if save_btn.handle_event(e):
                         slot_menu_mode = "save"
@@ -3644,7 +3815,7 @@ def safe_main():
                                         break
                     
                     if e.type == pygame.MOUSEWHEEL:
-                        for zone, sy, sx in [(game.hand, 80 + normal_card_zone_y_offset, PANEL_W+60), (game.fortune_zone, 80 + normal_card_zone_y_offset + HAND_GRID_SPACING_Y + fortune_major_card_zone_y_offset, PANEL_W+60), (game.major_zone, 80 + normal_card_zone_y_offset + HAND_GRID_SPACING_Y + fortune_major_card_zone_y_offset, PANEL_W+60+HAND_GRID_SPACING_X)]:
+                        for zone, sy, sx in [(game.hand, 80 + normal_card_zone_y_offset, _card_zone_x), (game.fortune_zone, 80 + normal_card_zone_y_offset + HAND_GRID_SPACING_Y + fortune_major_card_zone_y_offset, _card_zone_x), (game.major_zone, 80 + normal_card_zone_y_offset + HAND_GRID_SPACING_Y + fortune_major_card_zone_y_offset, _major_zone_x)]:
                             for i, h in enumerate(zone):
                                 x, y = sx+(i%4)*HAND_GRID_SPACING_X, sy+(i//4)*HAND_GRID_SPACING_Y
                                 if pygame.Rect(x, y, HAND_CARD_W, HAND_CARD_H).collidepoint(m_pos) and h['flip'] >= 0.5:
@@ -3653,9 +3824,9 @@ def safe_main():
                     
                     if e.type == pygame.MOUSEBUTTONDOWN:
                         for h, zone, sy, sx in (
-                            [(h, game.hand, 80 + normal_card_zone_y_offset, PANEL_W+60) for h in game.hand] +
-                            [(f, game.fortune_zone, 80 + normal_card_zone_y_offset + HAND_GRID_SPACING_Y + fortune_major_card_zone_y_offset, PANEL_W+60) for f in game.fortune_zone] +
-                            [(m, game.major_zone, 80 + normal_card_zone_y_offset + HAND_GRID_SPACING_Y + fortune_major_card_zone_y_offset, PANEL_W+60+HAND_GRID_SPACING_X) for m in game.major_zone]
+                            [(h, game.hand, 80 + normal_card_zone_y_offset, _card_zone_x) for h in game.hand] +
+                            [(f, game.fortune_zone, 80 + normal_card_zone_y_offset + HAND_GRID_SPACING_Y + fortune_major_card_zone_y_offset, _card_zone_x) for f in game.fortune_zone] +
+                            [(m, game.major_zone, 80 + normal_card_zone_y_offset + HAND_GRID_SPACING_Y + fortune_major_card_zone_y_offset, _major_zone_x) for m in game.major_zone]
                         ):
                             if h['is_vanishing']: continue
                             idx = zone.index(h)
@@ -3854,58 +4025,68 @@ def safe_main():
 
             # --- DRAWING ---
             screen.fill((10, 12, 18))
-            # Play screen-specific music for supported views.
-            _screen_music_track = {
-                "menu": MAIN_MENU_MUSIC,
-                "library": LIBRARY_MUSIC,
-                "settings": MAIN_MENU_MUSIC,
-                "slot_menu": MAIN_MENU_MUSIC,
-                "fortune_setup": MAIN_MENU_MUSIC,
-                "fortune_spell_list_view": SPELL_LIBRARY_MUSIC,
-                "fortune_glossary_view": GLOSSARY_MUSIC,
-                "ppf_selection": PPF_BG_MUSIC,
-                "major_selection": PPF_BG_MUSIC,
-                "deck": DECK_VIEW_MUSIC,
-            }.get(screen_mode)
-            if _screen_music_track and not os.path.exists(_screen_music_track):
-                _screen_music_track = MAIN_MENU_MUSIC if os.path.exists(MAIN_MENU_MUSIC) else None
+            # Context music: every view timeline keeps advancing; active view resumes from its current position.
             if menu_music_enabled and audio_enabled:
                 try:
                     pygame.mixer.music.set_volume(menu_music_volume / 100.0)
                 except Exception:
                     pass
                 try:
-                    if screen_mode == "vanish_view":
-                        if previous_music_screen_mode != "vanish_view" or not vanished_music_cycle:
-                            _reset_vanished_music_cycle()
-                            if vanished_music_cycle:
-                                _play_bg_music(vanished_music_cycle[vanished_music_index], loop=False)
-                                vanished_music_index = (vanished_music_index + 1) % len(vanished_music_cycle)
-                            else:
-                                _stop_bg_music()
-                        elif vanished_music_cycle and (not pygame.mixer.music.get_busy() or pygame.mixer.music.get_pos() == -1):
-                            _play_bg_music(vanished_music_cycle[vanished_music_index], loop=False)
-                            vanished_music_index = (vanished_music_index + 1) % len(vanished_music_cycle)
-                    elif screen_mode == "normal":
-                        if previous_music_screen_mode != "normal" or not normal_view_music_cycle:
-                            _play_current_normal_view_track()
-                        elif not pygame.mixer.music.get_busy() or pygame.mixer.music.get_pos() == -1:
-                            if (
-                                normal_view_music_cycle
-                                and normal_view_music_index < len(normal_view_music_cycle)
-                                and current_music_track == normal_view_music_cycle[normal_view_music_index]
-                            ):
-                                _advance_normal_view_music_cycle()
-                            elif (
-                                normal_view_music_cycle
-                                and normal_view_music_index >= len(normal_view_music_cycle)
-                            ):
-                                _reset_normal_view_music_cycle()
-                            _play_current_normal_view_track()
-                    elif _screen_music_track:
-                        _play_bg_music(_screen_music_track, loop=True)
-                    else:
+                    if not normal_view_music_cycle:
+                        _reset_normal_view_music_cycle()
+                    if not vanished_music_cycle:
+                        _reset_vanished_music_cycle()
+
+                    _all_context_keys = ["menu", "normal", "library", "spell", "glossary", "ppf", "deck", "vanish"]
+                    for _ck in _all_context_keys:
+                        _tracks = _get_context_tracks(_ck)
+                        _state = music_context_states.get(_ck)
+                        if _state is None:
+                            _state = {"tracks": _tracks, "index": 0, "offset": 0.0}
+                            if _tracks:
+                                _state["index"] = random.randrange(len(_tracks))
+                            music_context_states[_ck] = _state
+                        else:
+                            _prev_tracks = _state.get("tracks", [])
+                            _state["tracks"] = _tracks
+                            if _tracks != _prev_tracks:
+                                _state["index"] = 0
+                                _state["offset"] = 0.0
+
+                    for _ck, _state in music_context_states.items():
+                        _tracks = _state.get("tracks", [])
+                        if not _tracks:
+                            continue
+                        _state["index"] = int(clamp(_state.get("index", 0), 0, len(_tracks) - 1))
+                        _state["offset"] = float(max(0.0, _state.get("offset", 0.0) + dt))
+                        _safety = 0
+                        while _safety < 12 and _tracks:
+                            _dur = _get_track_length_sec(_tracks[_state["index"]])
+                            if _state["offset"] < _dur:
+                                break
+                            _state["offset"] -= _dur
+                            _state["index"] = (_state["index"] + 1) % len(_tracks)
+                            _safety += 1
+
+                    _active_ctx = _get_music_context_key(screen_mode)
+                    _active_state = music_context_states.get(_active_ctx)
+                    _active_tracks = _active_state.get("tracks", []) if _active_state else []
+                    if not _active_tracks:
                         _stop_bg_music()
+                    else:
+                        _idx = int(clamp(_active_state.get("index", 0), 0, len(_active_tracks) - 1))
+                        _track = _active_tracks[_idx]
+                        _dur = _get_track_length_sec(_track)
+                        _offset = max(0.0, min(float(_active_state.get("offset", 0.0)), max(0.0, _dur - 0.06)))
+                        _must_restart = (
+                            current_music_context != _active_ctx
+                            or current_music_track != _track
+                            or not pygame.mixer.music.get_busy()
+                            or pygame.mixer.music.get_pos() == -1
+                        )
+                        if _must_restart:
+                            _play_bg_music(_track, loop=False, start_sec=_offset, force_restart=True)
+                            current_music_context = _active_ctx
                 except Exception as e:
                     log_event(f"Music error: {e}", True)
             else:
@@ -3956,7 +4137,7 @@ def safe_main():
 
             elif screen_mode == "library":
                 if _img_library_bg is not None:
-                    screen.blit(pygame.transform.smoothscale(_img_library_bg, (W, H)), (0, 0))
+                    screen.blit(_img_library_bg_scaled, (0, 0))
                 else:
                     screen.blit(menu_bg, (0, 0))
                 _vignette = pygame.Surface((W, H), pygame.SRCALPHA)
@@ -4093,7 +4274,7 @@ def safe_main():
 
             elif screen_mode == "fortune_setup":
                 if _img_library_bg is not None:
-                    screen.blit(pygame.transform.smoothscale(_img_library_bg, (W, H)), (0, 0))
+                    screen.blit(_img_library_bg_scaled, (0, 0))
                 else:
                     screen.blit(menu_bg, (0, 0))
                 _vignette = pygame.Surface((W, H), pygame.SRCALPHA)
@@ -4280,7 +4461,7 @@ def safe_main():
                 _pink_soft = (245, 188, 224)
                 _pink_bg = (44, 20, 44)
                 if _img_spell_library_bg is not None:
-                    screen.blit(pygame.transform.smoothscale(_img_spell_library_bg, (W, H)), (0, 0))
+                    screen.blit(_img_spell_library_bg_scaled, (0, 0))
                 else:
                     screen.blit(menu_bg, (0, 0))
                 _vignette = pygame.Surface((W, H), pygame.SRCALPHA)
@@ -4383,7 +4564,7 @@ def safe_main():
                 _cyan_edge = (102, 220, 255)
                 _cyan_soft = (186, 242, 255)
                 if _img_glossary_bg is not None:
-                    screen.blit(pygame.transform.smoothscale(_img_glossary_bg, (W, H)), (0, 0))
+                    screen.blit(_img_glossary_bg_scaled, (0, 0))
                 else:
                     screen.blit(menu_bg, (0, 0))
                 _vignette = pygame.Surface((W, H), pygame.SRCALPHA)
@@ -4503,23 +4684,20 @@ def safe_main():
                 screen.blit(normal_bg, (0, 0))
                 
                 # 1. SIDEBAR
-                _side_r = pygame.Rect(PADDING, PADDING, PANEL_W, H - PADDING * 2)
-                if _img_side_panel:
-                    _sp_img = pygame.transform.smoothscale(_img_side_panel, (_side_r.w, _side_r.h))
-                    # Grey-out tint
-                    _grey_ov = pygame.Surface((_side_r.w, _side_r.h), pygame.SRCALPHA)
-                    _grey_ov.fill((25, 25, 35, 120))
-                    _sp_img.blit(_grey_ov, (0, 0))
-                    # Clip to rounded rect
-                    _sp_mask = pygame.Surface((_side_r.w, _side_r.h), pygame.SRCALPHA)
-                    draw_round_rect(_sp_mask, (0, 0, _side_r.w, _side_r.h), (255, 255, 255, 255), 15)
-                    _sp_img.blit(_sp_mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-                    screen.blit(_sp_img, (_side_r.x, _side_r.y))
+                _side_r = pygame.Rect(_sidebar_panel_x, PADDING, PANEL_W, H - PADDING * 2)
+                if _cached_side_panel_bg is not None:
+                    screen.blit(_cached_side_panel_bg, (_side_r.x, _side_r.y))
                 else:
                     draw_round_rect(screen, _side_r, (18, 24, 38, 240), 15)
                 pygame.draw.rect(screen, (255, 255, 255, 40), _side_r, 2, 15)
+
+                _toggle_arrow = "<" if sidebar_open else ">"
+                draw_round_rect(screen, _sidebar_toggle_rect, (18, 24, 38, 230), 10)
+                pygame.draw.rect(screen, (235, 220, 180), _sidebar_toggle_rect, 1, 10)
+                _toggle_txt = f_small.render(_toggle_arrow, True, (245, 230, 190))
+                screen.blit(_toggle_txt, (_sidebar_toggle_rect.centerx - _toggle_txt.get_width() // 2, _sidebar_toggle_rect.centery - _toggle_txt.get_height() // 2))
                 
-                screen.blit(f_small.render("Select player level", True, (200, 255, 220)), (ui_x + 15, PADDING + 15))
+                screen.blit(f_small.render("Select player level", True, (200, 255, 220)), (_sidebar_ui_x + 15, PADDING + 15))
                 lvl_change_dd.draw_base(screen, f_small)
                 undo_btn.draw(screen, f_tiny, dt)
                 divine_intervention_btn.draw(screen, f_tiny, dt)
@@ -4537,16 +4715,20 @@ def safe_main():
                     _tok_h = divider_box.h - _tok_pad * 2
                     _tok_w = (divider_box.w - _tok_pad * 2 - 5 * _tok_gap) // 6
                     _tok_y = divider_box.y + _tok_pad
+                    _tok_cache_key = (_tok_w, _tok_h)
+                    if _img_dof_token and _tok_cache_key not in _dof_token_scaled_cache:
+                        _dof_token_scaled_cache[_tok_cache_key] = pygame.transform.smoothscale(_img_dof_token, _tok_cache_key)
+                    _tok_img_cached = _dof_token_scaled_cache.get(_tok_cache_key)
                     # Detect charge decrease and spawn fizzle
-                    if game.draw_of_fate_current < _prev_dof_uses and _img_dof_token:
-                        _tok_img_fz = pygame.transform.smoothscale(_img_dof_token, (_tok_w, _tok_h))
+                    if game.draw_of_fate_current < _prev_dof_uses and _tok_img_cached is not None:
+                        _tok_img_fz = _tok_img_cached
                         for _fi in range(_prev_dof_uses - 1, game.draw_of_fate_current - 1, -1):
                             _fx = divider_box.x + _tok_pad + _fi * (_tok_w + _tok_gap)
                             dof_token_fizzles.append(TokenFizzle(_tok_img_fz, (_fx, _tok_y), _tok_w, _tok_h))
                     _prev_dof_uses = game.draw_of_fate_current
                     # Draw remaining tokens
-                    if _img_dof_token and game.draw_of_fate_current > 0:
-                        _tok_img = pygame.transform.smoothscale(_img_dof_token, (_tok_w, _tok_h))
+                    if _tok_img_cached is not None and game.draw_of_fate_current > 0:
+                        _tok_img = _tok_img_cached
                         for _ti in range(game.draw_of_fate_current):
                             screen.blit(_tok_img, (divider_box.x + _tok_pad + _ti * (_tok_w + _tok_gap), _tok_y))
                     # Update and draw token fizzles
@@ -4585,6 +4767,9 @@ def safe_main():
                     btn_d1.draw(screen, f_tiny, dt)
                     stack_btn.draw(screen, f_tiny, dt)
                 if palm_reading_menu_open:
+                    palm_reading_btn.gold = False
+                    palm_reading_btn.pink = True
+                    palm_reading_btn.pulse_frame = True
                     _palm_title = f_small.render("Palm Reading", True, GOLD)
                     _palm_title_x = palm_reading_btn.rect.centerx - (_palm_title.get_width() // 2)
                     _palm_title_y = palm_reading_btn.rect.y - _palm_title.get_height() - 8
@@ -4596,7 +4781,7 @@ def safe_main():
                         _palm_text_rect = _get_palm_reading_text_rect()
                         draw_round_rect(screen, _palm_text_rect, (20, 18, 30, 230), 10)
                         pygame.draw.rect(screen, GOLD if palm_reading_text_active else (212, 168, 96), _palm_text_rect, 2, 10)
-                        _palm_text_hint = "Type here..."
+                        _palm_text_hint = "Name here:"
                         _palm_text_value = palm_reading_text if palm_reading_text else _palm_text_hint
                         _palm_text_color = (236, 218, 182) if palm_reading_text else (138, 126, 110)
                         _palm_text_surf = f_small.render(_palm_text_value, True, _palm_text_color)
@@ -4604,11 +4789,35 @@ def safe_main():
                         if palm_reading_text_active and (pygame.time.get_ticks() // 500) % 2 == 0:
                             _cx = min(_palm_text_rect.right - 10, _palm_text_rect.x + 12 + _palm_text_surf.get_width() + 2)
                             pygame.draw.line(screen, GOLD, (_cx, _palm_text_rect.y + 9), (_cx, _palm_text_rect.bottom - 9), 2)
-                    palm_reading_type_dropdown.draw_base(screen, f_small)
+                    if palm_reading_selection == "A":
+                        _a_glow = pygame.Surface((palm_reading_a_btn.rect.w + 18, palm_reading_a_btn.rect.h + 18), pygame.SRCALPHA)
+                        draw_round_rect(_a_glow, _a_glow.get_rect(), (120, 240, 150, 70), 14)
+                        pygame.draw.rect(_a_glow, (120, 240, 150, 185), _a_glow.get_rect().inflate(-8, -8), 3, 12)
+                        screen.blit(_a_glow, (palm_reading_a_btn.rect.x - 9, palm_reading_a_btn.rect.y - 9))
+                    elif palm_reading_selection == "D":
+                        _d_glow = pygame.Surface((palm_reading_d_btn.rect.w + 18, palm_reading_d_btn.rect.h + 18), pygame.SRCALPHA)
+                        draw_round_rect(_d_glow, _d_glow.get_rect(), (255, 126, 126, 70), 14)
+                        pygame.draw.rect(_d_glow, (255, 126, 126, 185), _d_glow.get_rect().inflate(-8, -8), 3, 12)
+                        screen.blit(_d_glow, (palm_reading_d_btn.rect.x - 9, palm_reading_d_btn.rect.y - 9))
                     palm_reading_a_btn.draw(screen, f_small, dt)
                     palm_reading_d_btn.draw(screen, f_small, dt)
-                    palm_reading_type_dropdown.draw_menu(screen, f_small)
+                    palm_reading_mode_left_btn.draw(screen, f_small, dt)
+                    palm_reading_mode_right_btn.draw(screen, f_small, dt)
+                    _mode_rect = pygame.Rect(palm_reading_mode_left_btn.rect.right + 6, palm_reading_mode_left_btn.rect.y, max(40, palm_reading_mode_right_btn.rect.x - palm_reading_mode_left_btn.rect.right - 12), palm_reading_mode_left_btn.rect.h)
+                    draw_round_rect(screen, _mode_rect, (20, 18, 30, 230), 10)
+                    pygame.draw.rect(screen, (212, 168, 96), _mode_rect, 2, 10)
+                    _mode_label = palm_reading_mode_options[palm_reading_mode_index][1]
+                    _mode_surf = f_small.render(_mode_label, True, (236, 218, 182))
+                    screen.blit(_mode_surf, (_mode_rect.centerx - _mode_surf.get_width() // 2, _mode_rect.centery - _mode_surf.get_height() // 2))
+                else:
+                    palm_reading_btn.gold = False
+                    palm_reading_btn.pink = False
+                    palm_reading_btn.pulse_frame = False
                 palm_reading_btn.draw(screen, f_tiny, dt)
+                if not palm_reading_menu_open:
+                    _palm_dim = pygame.Surface((palm_reading_btn.rect.w, palm_reading_btn.rect.h), pygame.SRCALPHA)
+                    _palm_dim.fill((60, 60, 70, 90))
+                    screen.blit(_palm_dim, palm_reading_btn.rect.topleft)
                 if game.level >= 6:
                     dt_box = get_seer_dice_rect()
                     title_surf = f_small.render("SEER DICE TABLE", True, PINK_D20)
@@ -4628,10 +4837,10 @@ def safe_main():
                             draw_d20_static(screen, (dc_x, dc_y), 22, cid, f_seer_bold)
                 # 4. HORIZONTAL DIVIDER LINE
                 line_y = 80 + normal_zone_y_offset + HAND_CARD_H + 95
-                pygame.draw.line(screen, (255, 255, 255, 180), (PANEL_W + 60, line_y), (W - 60, line_y), 3)
+                pygame.draw.line(screen, (255, 255, 255, 180), (_card_zone_x, line_y), (W - 60, line_y), 3)
 
                 # 5. ZONE LABELS
-                zone_x = PANEL_W + 60
+                zone_x = _card_zone_x
                 _hand_zone_box = pygame.Rect(zone_x, 33 + normal_zone_y_offset + 50, 170, 36)
                 draw_round_rect(screen, _hand_zone_box, (10, 10, 10, 220), 8)
                 pygame.draw.rect(screen, (230, 240, 255), _hand_zone_box, 1, 8)
@@ -4654,7 +4863,7 @@ def safe_main():
 
                 # 6. DRAW CARDS
                 for p in card_fire_particles[:]: p.update(); (p.life <= 0 and card_fire_particles.remove(p))
-                for zone, sy, sx in [(game.hand, 80 + normal_card_zone_y_offset, PANEL_W+60), (game.fortune_zone, 80 + normal_card_zone_y_offset + HAND_GRID_SPACING_Y + fortune_major_card_zone_y_offset, PANEL_W+60), (game.major_zone, 80 + normal_card_zone_y_offset + HAND_GRID_SPACING_Y + fortune_major_card_zone_y_offset, PANEL_W+60+HAND_GRID_SPACING_X)]:
+                for zone, sy, sx in [(game.hand, 80 + normal_card_zone_y_offset, _card_zone_x), (game.fortune_zone, 80 + normal_card_zone_y_offset + HAND_GRID_SPACING_Y + fortune_major_card_zone_y_offset, _card_zone_x), (game.major_zone, 80 + normal_card_zone_y_offset + HAND_GRID_SPACING_Y + fortune_major_card_zone_y_offset, _major_zone_x)]:
                     if (zone == game.fortune_zone and game.level < 6) or (zone == game.major_zone and game.level < 17): continue
                     for i, h in enumerate(zone):
                         if h['is_vanishing']: continue
@@ -4669,31 +4878,41 @@ def safe_main():
 
                         sw = max(1, int(HAND_CARD_W * abs(math.cos(h['flip'] * math.pi))))
                         if h['flip'] >= 0.5:
-                            cs = pygame.Surface((HAND_CARD_W, HAND_CARD_H), pygame.SRCALPHA)
-                            draw_round_rect(cs, (0,0,HAND_CARD_W,HAND_CARD_H), (20, 25, 40, 255), CARD_RADIUS)
-                            pygame.draw.rect(cs, (180, 160, 100), (0,0,HAND_CARD_W,HAND_CARD_H), 4, CARD_RADIUS)
                             cd, mt = game.cards[h['id']], (h['mode'] if h['mode'] not in ['normal','major'] else 'effect')
-                            if h['orientation'] == 'upright':
-                                top_box = pygame.Surface((HAND_CARD_W-40, HAND_CARD_H//2-70), pygame.SRCALPHA)
-                                rich_renderer.draw_rich_box(top_box, top_box.get_rect(), cd.get(f'{mt}_inverted', "..."), h['scroll_inv'])
-                                top_box = pygame.transform.rotate(top_box, 180)
-                                cs.blit(top_box, (20, 30))
-                                h['max_sc_up'] = rich_renderer.draw_rich_box(cs, pygame.Rect(20, HAND_CARD_H//2+40, HAND_CARD_W-40, HAND_CARD_H//2-70), cd.get(f'{mt}_upright', "..."), h['scroll_up'])
-                                h['max_sc_inv'] = top_box.get_height()
+                            _face_key = (h['id'], mt, h.get('orientation', 'upright'), int(h.get('scroll_up', 0)), int(h.get('scroll_inv', 0)))
+                            _cached_face = _card_face_cache.get(_face_key)
+                            if _cached_face is None:
+                                cs = pygame.Surface((HAND_CARD_W, HAND_CARD_H), pygame.SRCALPHA)
+                                draw_round_rect(cs, (0,0,HAND_CARD_W,HAND_CARD_H), (20, 25, 40, 255), CARD_RADIUS)
+                                pygame.draw.rect(cs, (180, 160, 100), (0,0,HAND_CARD_W,HAND_CARD_H), 4, CARD_RADIUS)
+                                if h['orientation'] == 'upright':
+                                    top_box = pygame.Surface((HAND_CARD_W-40, HAND_CARD_H//2-70), pygame.SRCALPHA)
+                                    rich_renderer.draw_rich_box(top_box, top_box.get_rect(), cd.get(f'{mt}_inverted', "..."), h['scroll_inv'])
+                                    top_box = pygame.transform.rotate(top_box, 180)
+                                    cs.blit(top_box, (20, 30))
+                                    _max_up = rich_renderer.draw_rich_box(cs, pygame.Rect(20, HAND_CARD_H//2+40, HAND_CARD_W-40, HAND_CARD_H//2-70), cd.get(f'{mt}_upright', "..."), h['scroll_up'])
+                                    _max_inv = top_box.get_height()
+                                else:
+                                    top_box = pygame.Surface((HAND_CARD_W-40, HAND_CARD_H//2-70), pygame.SRCALPHA)
+                                    rich_renderer.draw_rich_box(top_box, top_box.get_rect(), cd.get(f'{mt}_upright', "..."), h['scroll_up'])
+                                    top_box = pygame.transform.rotate(top_box, 180)
+                                    cs.blit(top_box, (20, 30))
+                                    _max_inv = rich_renderer.draw_rich_box(cs, pygame.Rect(20, HAND_CARD_H//2+40, HAND_CARD_W-40, HAND_CARD_H//2-70), cd.get(f'{mt}_inverted', "..."), h['scroll_inv'])
+                                    _max_up = top_box.get_height()
+                                _card_face_cache[_face_key] = (cs, _max_up, _max_inv)
+                                content = cs
+                                h['max_sc_up'] = _max_up
+                                h['max_sc_inv'] = _max_inv
                             else:
-                                top_box = pygame.Surface((HAND_CARD_W-40, HAND_CARD_H//2-70), pygame.SRCALPHA)
-                                rich_renderer.draw_rich_box(top_box, top_box.get_rect(), cd.get(f'{mt}_upright', "..."), h['scroll_up'])
-                                top_box = pygame.transform.rotate(top_box, 180)
-                                cs.blit(top_box, (20, 30))
-                                h['max_sc_inv'] = rich_renderer.draw_rich_box(cs, pygame.Rect(20, HAND_CARD_H//2+40, HAND_CARD_W-40, HAND_CARD_H//2-70), cd.get(f'{mt}_inverted', "..."), h['scroll_inv'])
-                                h['max_sc_up'] = top_box.get_height()
-                            content = cs
+                                content, _max_up, _max_inv = _cached_face
+                                h['max_sc_up'] = _max_up
+                                h['max_sc_inv'] = _max_inv
                         else:
                             content = pygame.transform.rotate(hand_tex[h['id']], 180) if h['orientation']=="inverted" else hand_tex[h['id']]
                         
                         card_x = x + (HAND_CARD_W - sw) // 2
                         _draw_rect = pygame.Rect(card_x, y, sw, HAND_CARD_H)
-                        screen.blit(pygame.transform.smoothscale(content, (sw, HAND_CARD_H)), _draw_rect.topleft)
+                        screen.blit(pygame.transform.scale(content, (sw, HAND_CARD_H)), _draw_rect.topleft)
                         _stamp_mode = _get_selected_stamp_mode(h['id'])
                         if _stamp_mode and h['flip'] <= 0.01 and h['id'] not in game.vanished:
                             _draw_promotion_stamp(_draw_rect, _is_major=(_stamp_mode == "major"), _inverted=(h.get('orientation') == "inverted"))
@@ -4709,29 +4928,36 @@ def safe_main():
                             if _mull_disabled:
                                 draw_round_rect(screen, mbr, (20, 20, 20, 160), 15)
                                 pygame.draw.rect(screen, (60, 60, 60, 100), mbr, 1, 15)
-                                screen.blit(f_tiny.render("MULL", True, (100, 100, 100)), f_tiny.render("MULL", True, (0,0,0)).get_rect(center=mbr.center))
+                                _mull_txt = f_tiny.render("MULL", True, (100, 100, 100))
+                                screen.blit(_mull_txt, _mull_txt.get_rect(center=mbr.center))
                             else:
                                 draw_round_rect(screen, mbr, (50, 70, 40, 100) if mbr.collidepoint(m_pos) else (30, 40, 25, 160), 15)
                                 pygame.draw.rect(screen, (100, 200, 100, 100), mbr, 1, 15)
-                                screen.blit(f_tiny.render("MULL", True, (200, 255, 200)), f_tiny.render("MULL", True, (0,0,0)).get_rect(center=mbr.center))
+                                _mull_txt = f_tiny.render("MULL", True, (200, 255, 200))
+                                screen.blit(_mull_txt, _mull_txt.get_rect(center=mbr.center))
                             
                             draw_round_rect(screen, vbr, (100, 40, 40, 100) if vbr.collidepoint(m_pos) else (45, 25, 25, 160), 15)
                             pygame.draw.rect(screen, (200, 100, 100, 100), vbr, 1, 15)
                             btn_label = "VANISH" if h.get('tapped') else "USE"
-                            screen.blit(f_tiny.render(btn_label, True, (240, 240, 240)), f_tiny.render(btn_label, True, (0,0,0)).get_rect(center=vbr.center))
+                            _btn_txt = f_tiny.render(btn_label, True, (240, 240, 240))
+                            screen.blit(_btn_txt, _btn_txt.get_rect(center=vbr.center))
                         else:
                             vbr = pygame.Rect(x+50, y+HAND_CARD_H+8, 160, 30)
                             draw_round_rect(screen, vbr, (60, 60, 70, 100) if vbr.collidepoint(m_pos) else (40, 40, 50, 160), 15)
                             pygame.draw.rect(screen, (200, 200, 255, 60), vbr, 1, 15)
                             btn_label = "VANISH" if h.get('tapped') else "USE"
                             btn_color = (220, 230, 255) if h.get('tapped') else (240, 240, 240)
-                            screen.blit(f_tiny.render(btn_label, True, btn_color), f_tiny.render(btn_label, True, (0,0,0)).get_rect(center=vbr.center))
+                            _btn_txt = f_tiny.render(btn_label, True, btn_color)
+                            screen.blit(_btn_txt, _btn_txt.get_rect(center=vbr.center))
 
                 # 6. DECK & VANISHED PILE
                 _pile_w, _pile_h = 210, 310
                 _pile_y = H - 340
                 vz_rect = pygame.Rect(W - 460, _pile_y, _pile_w, _pile_h)
                 mz_rect = pygame.Rect(W - 240, _pile_y, _pile_w, _pile_h)
+                _term_w = 340
+                _term_h = 96
+                _toast_terminal_rect = pygame.Rect(vz_rect.centerx - (_term_w // 2) - 46, vz_rect.y - _term_h - 34, _term_w, _term_h)
                 _hist_sz = 150
                 _rest_sz = 100
                 _menu_sz = 100
@@ -4744,11 +4970,12 @@ def safe_main():
                 _controls_x = vz_rect.x - ((_rest_sz * 2) + _btn_gap)
                 _top_icon_sz = 70
                 _top_btn_w = 140
-                _top_gap = 10
-                hamburger_btn.rect = pygame.Rect(W - _top_icon_sz - 20, PADDING, _top_icon_sz, _top_icon_sz)
-                load_btn.rect = pygame.Rect(hamburger_btn.rect.x - _top_gap - _top_btn_w, PADDING, _top_btn_w, _top_icon_sz)
-                save_as_btn.rect = pygame.Rect(load_btn.rect.x - _top_gap - _top_btn_w, PADDING, _top_btn_w, _top_icon_sz)
-                save_btn.rect = pygame.Rect(save_as_btn.rect.x - _top_gap - _top_btn_w, PADDING, _top_btn_w, _top_icon_sz)
+                _top_gap = 4
+                _top_y = PADDING - 6
+                hamburger_btn.rect = pygame.Rect(W - _top_icon_sz - 20, _top_y, _top_icon_sz, _top_icon_sz)
+                load_btn.rect = pygame.Rect(hamburger_btn.rect.x - _top_gap - _top_btn_w, _top_y, _top_btn_w, _top_icon_sz)
+                save_as_btn.rect = pygame.Rect(load_btn.rect.x - _top_gap - _top_btn_w, _top_y, _top_btn_w, _top_icon_sz)
+                save_btn.rect = pygame.Rect(save_as_btn.rect.x - _top_gap - _top_btn_w, _top_y, _top_btn_w, _top_icon_sz)
                 save_btn.draw(screen, f_tiny, dt)
                 save_as_btn.draw(screen, f_tiny, dt)
                 load_btn.draw(screen, f_tiny, dt)
@@ -4757,7 +4984,7 @@ def safe_main():
                     _menu_item_h = 70
                     _menu_gap = 4
                     _menu_pad = 8
-                    _menu_count = 4
+                    _menu_count = 3
                     _menu_h = (_menu_pad * 2) + (_menu_count * _menu_item_h) + ((_menu_count - 1) * _menu_gap)
                     _menu_bg = pygame.Rect(hamburger_btn.rect.right - 160, hamburger_btn.rect.bottom + 13, 160, _menu_h)
                     draw_round_rect(screen, _menu_bg, (18, 24, 38, 230), 10)
@@ -5165,10 +5392,81 @@ def safe_main():
                 confirm_yes_btn.draw(screen, f_small, dt)
                 confirm_no_btn.draw(screen, f_small, dt)
 
-            if game.toast_timer > 0:
-                t_surf = f_small.render(game.toast_msg, True, (255,255,255))
-                pygame.draw.rect(screen, (0,0,0,180), (W//2-200, 20, 400, 40), border_radius=10)
-                screen.blit(t_surf, t_surf.get_rect(center=(W//2, 40)))
+            _toast_visible_modes = {
+                "normal",
+                "stack_selection",
+                "ppf_selection",
+                "major_selection",
+                "prophet_selection",
+                "world_restore_view",
+            }
+            if game.toast_timer > 0 and screen_mode in _toast_visible_modes:
+                if game.toast_msg != toast_last_msg:
+                    toast_last_msg = game.toast_msg
+                    toast_typing_chars = 0.0
+                toast_typing_chars = min(float(len(game.toast_msg)), toast_typing_chars + (toast_typing_speed * dt))
+                _typed_msg = game.toast_msg[:int(toast_typing_chars)]
+
+                _tr = _toast_terminal_rect if _toast_terminal_rect is not None else pygame.Rect(W // 2 - 170, 18, 340, 96)
+                draw_round_rect(screen, _tr, (8, 14, 20, 225), 10)
+                pygame.draw.rect(screen, (84, 166, 140, 185), _tr, 1, 10)
+                _hdr = f_tiny.render("NOTIFICATIONS", True, (120, 210, 175))
+                screen.blit(_hdr, (_tr.x + 10, _tr.y + 6))
+                pygame.draw.line(screen, (60, 120, 104, 160), (_tr.x + 10, _tr.y + 28), (_tr.right - 10, _tr.y + 28), 1)
+
+                _body_x = _tr.x + 12
+                _body_y = _tr.y + 36
+                _body_w = _tr.w - 24
+                _body_h = max(18, _tr.bottom - _body_y - 8)
+                _prompt = "> "
+                _available_w = max(30, _body_w - f_small.size(_prompt)[0])
+                _lines = []
+                _cur = ""
+                for _ch in _typed_msg:
+                    if _ch == "\n":
+                        _lines.append(_cur)
+                        _cur = ""
+                        continue
+                    _test = _cur + _ch
+                    if f_small.size(_test)[0] <= _available_w:
+                        _cur = _test
+                    else:
+                        if _cur:
+                            _lines.append(_cur)
+                        _cur = _ch
+                _lines.append(_cur)
+                if not _lines:
+                    _lines = [""]
+
+                _line_h = f_small.get_linesize() + 2
+                _draw_rows = []
+                for _i, _line in enumerate(_lines):
+                    _prefix = _prompt if _i == 0 else "  "
+                    _draw_rows.append(f"{_prefix}{_line}")
+
+                _content_h = max(_line_h, len(_draw_rows) * _line_h)
+                _scroll_px = max(0, _content_h - _body_h)
+                _content_surf = pygame.Surface((_body_w, _content_h), pygame.SRCALPHA)
+                for _i, _row in enumerate(_draw_rows):
+                    _surf = f_small.render(_row, True, (218, 236, 226))
+                    _content_surf.blit(_surf, (0, _i * _line_h))
+
+                _clip_prev = screen.get_clip()
+                _body_rect = pygame.Rect(_body_x, _body_y, _body_w, _body_h)
+                screen.set_clip(_body_rect)
+                screen.blit(_content_surf, (_body_x, _body_y - _scroll_px))
+                screen.set_clip(_clip_prev)
+
+                if int(pygame.time.get_ticks() / 260) % 2 == 0 and int(toast_typing_chars) < len(game.toast_msg):
+                    _caret = f_small.render("_", True, (150, 230, 200))
+                    _last_row = _draw_rows[-1] if _draw_rows else _prompt
+                    _caret_x = _body_x + f_small.size(_last_row)[0] + 1
+                    _caret_y = _body_y + ((len(_draw_rows) - 1) * _line_h) - _scroll_px
+                    if _body_y <= _caret_y <= (_body_y + _body_h - _caret.get_height()):
+                        screen.blit(_caret, (_caret_x, _caret_y))
+            else:
+                toast_last_msg = game.toast_msg if game.toast_msg else ""
+                toast_typing_chars = 0.0
 
             if divine_result_banner_text and divine_result_banner_timer > 0:
                 _banner_elapsed = divine_result_banner_duration - divine_result_banner_timer

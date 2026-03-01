@@ -652,19 +652,52 @@ class Button:
 
     def __init__(self, rect, text, primary=False, danger=False, warning=False, gold=False, disabled=False, fire=False, green=False, cyan=False, pink=False, image=None, image_height_mult=1.0, fantasy=False, pulse_frame=False):
         self.rect, self.text, self.primary, self.danger, self.warning, self.gold, self.disabled, self.fire, self.green, self.cyan, self.pink = pygame.Rect(rect), text, primary, danger, warning, gold, disabled, fire, green, cyan, pink; self.hover, self.particles = False, [FireParticle((self.rect.left, self.rect.right), self.rect.top) for _ in range(15)] if fire else []; self.image = image; self.image_height_mult = image_height_mult; self.fantasy = fantasy; self.pulse_frame = pulse_frame
+        self._img_cache_key = None
+        self._img_cache_base = None
+        self._img_cache_hover = None
+        self._img_cache_disabled = None
+        self._txt_cache_key = None
+        self._txt_cache_surface = None
+        self._txt_shadow_cache_key = None
+        self._txt_shadow_surface = None
+
+    def _get_image_variant(self):
+        if not self.image:
+            return None
+        _img_h = int(self.rect.h * self.image_height_mult)
+        _key = (self.rect.w, _img_h, id(self.image))
+        if _key != self._img_cache_key:
+            _base = pygame.transform.smoothscale(self.image, (_key[0], _key[1]))
+            _hover = _base.copy(); _hover.fill((30, 30, 30), special_flags=pygame.BLEND_RGB_ADD)
+            _disabled = _base.copy(); _disabled.fill((150, 150, 150), special_flags=pygame.BLEND_RGB_SUB)
+            self._img_cache_key = _key
+            self._img_cache_base = _base
+            self._img_cache_hover = _hover
+            self._img_cache_disabled = _disabled
+        if self.disabled:
+            return self._img_cache_disabled
+        if self.hover:
+            return self._img_cache_hover
+        return self._img_cache_base
+
+    def _get_text_surface(self, font, text_col):
+        _key = (id(font), self.text, text_col)
+        if _key != self._txt_cache_key:
+            self._txt_cache_key = _key
+            self._txt_cache_surface = font.render(self.text, True, text_col)
+        return self._txt_cache_surface
+
+    def _get_shadow_surface(self, font):
+        _key = (id(font), self.text)
+        if _key != self._txt_shadow_cache_key:
+            self._txt_shadow_cache_key = _key
+            self._txt_shadow_surface = font.render(self.text, True, (0,0,0))
+        return self._txt_shadow_surface
+
     def draw(self, surf, font, dt):
         if self.image:
-            img_h = int(self.rect.h * self.image_height_mult)
-            img = pygame.transform.smoothscale(self.image, (self.rect.w, img_h))
-            if self.disabled:
-                dark = img.copy()
-                dark.fill((150, 150, 150), special_flags=pygame.BLEND_RGB_SUB)
-                surf.blit(dark, self.rect.topleft)
-            elif self.hover:
-                bright = img.copy()
-                bright.fill((30, 30, 30), special_flags=pygame.BLEND_RGB_ADD)
-                surf.blit(bright, self.rect.topleft)
-            else:
+            img = self._get_image_variant()
+            if img is not None:
                 surf.blit(img, self.rect.topleft)
             if self.pulse_frame:
                 pulse = (math.sin(pygame.time.get_ticks() * 0.006) + 1) / 2
@@ -731,7 +764,10 @@ class Button:
         )
         pygame.draw.rect(surf, bc, self.rect, 2, 12)
         txt_col = (100,100,100) if self.disabled else ((248, 231, 199) if self.fantasy else (245,245,255))
-        surf.blit(font.render(self.text, True, txt_col), font.render(self.text, True, (0,0,0)).get_rect(center=self.rect.center))
+        _shadow = self._get_shadow_surface(font)
+        _txt = self._get_text_surface(font, txt_col)
+        surf.blit(_shadow, _shadow.get_rect(center=(self.rect.centerx + 1, self.rect.centery + 1)))
+        surf.blit(_txt, _txt.get_rect(center=self.rect.center))
     def handle_event(self, e):
         if self.disabled: return False
         if e.type == pygame.MOUSEMOTION: self.hover = self.rect.collidepoint(e.pos)

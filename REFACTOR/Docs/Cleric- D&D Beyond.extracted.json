@@ -1,0 +1,822 @@
+{
+  "source": "REFACTOR\\Docs\\Cleric- D&D Beyond.docx",
+  "paragraph_count": 148,
+  "table_count": 21,
+  "paragraphs": [
+    "Cleric",
+    "Legacy",
+    "Class Details",
+    "Arms and eyes upraised toward the sun and a prayer on his lips, an elf begins to glow with an inner light that spills out to heal his battle-worn companions.",
+    "Chanting a song of glory, a dwarf swings his axe in wide swaths to cut through the ranks of orcs arrayed against him, shouting praise to the gods with every foe’s fall.",
+    "Calling down a curse upon the forces of undeath, a human lifts her holy symbol as light pours from it to drive back the zombies crowding in on her companions.",
+    "Clerics are intermediaries between the mortal world and the distant planes of the gods. As varied as the gods they serve, clerics strive to embody the handiwork of their deities. No ordinary priest, a cleric is imbued with divine magic.",
+    "Healers and Warriors",
+    "Divine magic, as the name suggests, is the power of the gods, flowing from them into the world. Clerics are conduits for that power, manifesting it as miraculous effects. The gods don’t grant this power to everyone who seeks it, but only to those chosen to fulfill a high calling.",
+    "Harnessing divine magic doesn’t rely on study or training. A cleric might learn formulaic prayers and ancient rites, but the ability to cast cleric spells relies on devotion and an intuitive sense of a deity’s wishes.",
+    "Clerics combine the helpful magic of healing and inspiring their allies with spells that harm and hinder foes. They can provoke awe and dread, lay curses of plague or poison, and even call down flames from heaven to consume their enemies. For those evildoers who will benefit most from a mace to the head, clerics depend on their combat training to let them wade into melee with the power of the gods on their side.",
+    "Divine Agents",
+    "Not every acolyte or officiant at a temple or shrine is a cleric. Some priests are called to a simple life of temple service, carrying out their gods’ will",
+    "through prayer and sacrifice, not by magic and strength of arms. In some cities, priesthood amounts to a political office, viewed as a stepping stone to higher positions of authority and involving no communion with a god at all. True clerics are rare in most hierarchies.",
+    "When a cleric takes up an adventuring life, it is usually because his or her god demands it. Pursuing the goals of the gods often involves braving dangers in unsettled lands, smiting evil, or seeking holy relics in ancient tombs. Many clerics are also expected to protect their deities’ worshipers, which can mean fighting enemy raiders, negotiating peace between warring nations, or sealing a portal that would allow a demon prince to enter the world.",
+    "Most adventuring clerics maintain some connection to established temples and orders of their faiths. A temple might ask for a cleric’s aid, or a high priest might be in a position to demand it.",
+    "Creating a Cleric",
+    "As you create a cleric, the most important question to consider is which deity to serve and what principles you want your character to embody. The Gods of the Multiverse section includes lists of many of the gods of the multiverse. Check with your DM to learn which deities are in your campaign.",
+    "Once you’ve chosen a deity, consider your cleric’s relationship to that god. Did you enter this service willingly? Or did the god choose you, impelling you into service with no regard for your wishes? How do the temple priests of your faith regard you: as a champion or a troublemaker? What are your",
+    "ultimate goals? Does your deity have a special task in mind for you? Or are you striving to prove yourself worthy of a great quest?",
+    "The Cleric Table",
+    "Class Features",
+    "As a cleric, you gain the following class features.",
+    "Hit Points",
+    "Hit Dice: 1d8 per cleric level",
+    "Hit Points at 1st Level: 8 + your Constitution modifier",
+    "Hit Points at Higher Levels: 1d8 (or 5) + your Constitution modifier per cleric level after 1st",
+    "Proficiencies",
+    "Armor: Light armor, medium armor, shields",
+    "Weapons/Tools: None",
+    "Saving Throws: Wisdom, Charisma",
+    "Skills: Choose two from History, Insight, Medicine, Persuasion, and Religion",
+    "Equipment",
+    "You start with the following equipment, in addition to the equipment granted by your background:",
+    "(a) a mace or (b) a warhammer (if proficient)",
+    "(a) scale mail, (b) leather armor, or (c) chain mail (if proficient)",
+    "(a) a light crossbow and 20 bolts or (b) any simple weapon",
+    "(a) a priest’s pack or (b) an explorer’s pack",
+    "A shield and a holy symbol",
+    "Spellcasting",
+    "As a conduit for divine power, you can cast cleric spells. See Spells Rules for the general rules of spellcasting and the Spells Listing for the cleric spell list.",
+    "Cantrips",
+    "At 1st level, you know three cantrips of your choice from the cleric spell list. You learn additional cleric cantrips of your choice at higher levels, as shown in the Cantrips Known column of the Cleric table.",
+    "Preparing and Casting Spells",
+    "The Cleric table shows how many spell slots you have to cast your cleric spells of 1st level and higher. To cast one of these spells, you must expend a slot of the spell’s level or higher. You regain all expended spell slots when you finish a long rest.",
+    "You prepare the list of cleric spells that are available for you to cast, choosing from the cleric spell list. When you do so, choose a number of cleric spells equal to your Wisdom modifier + your cleric level (minimum of one spell). The spells must be of a level for which you have spell slots.",
+    "For example, if you are a 3rd-level cleric, you have four 1st-level and two 2nd-level spell slots. With a Wisdom of 16, your list of prepared spells can",
+    "include six spells of 1st or 2nd level, in any combination. If you prepare the 1st-level spell cure wounds, you can cast it using a 1st-level or 2nd-level slot. Casting the spell doesn’t remove it from your list of prepared spells.",
+    "You can change your list of prepared spells when you finish a long rest. Preparing a new list of cleric spells requires time spent in prayer and meditation: at least 1 minute per spell level for each spell on your list.",
+    "Spellcasting Ability",
+    "Wisdom is your spellcasting ability for your cleric spells. The power of your spells comes from your devotion to your deity. You use your Wisdom",
+    "whenever a cleric spell refers to your spellcasting ability. In addition, you use your Wisdom modifier when setting the saving throw DC for a cleric spell you cast and when making an attack roll with one.",
+    "Spell save DC = 8 + your proficiency bonus + your Wisdom modifier",
+    "Spell attack modifier = your proficiency bonus + your Wisdom modifier",
+    "Ritual Casting",
+    "You can cast a cleric spell as a ritual if that spell has the ritual tag and you have the spell prepared.",
+    "Spellcasting Focus",
+    "You can use a holy symbol (see the Adventuring Gear section) as a spellcasting focus for your cleric spells.",
+    "Choose one domain related to your deity. Your choice grants you domain spells and other features when you choose it at 1st level. It also grants you additional ways to use Channel Divinity when you gain that feature at 2nd level, and additional benefits at 6th, 8th, and 17th levels.",
+    "Divine Seer Domain:",
+    "Every time you roll a dice, play a card or flip heads or tails on a coin she watches. Destiny is nothing to her, for she can see all destinies before they occur and change them for the better or worse. There only exists the rule of randomness, many possibilities and outcomes. Fortune is a divine law as powerful of life and death itself. Clerics of the Divine Seer know this as fact and embrace it. By believing in fortune, a Cleric can forge the fates of the people around them Good, Evil or otherwise. It doesn't matter. No fate is truly determined, every destiny can be altered and foreseen.",
+    "Reader of Fate:",
+    "Starting at 1st level, you are proficient in Arcana and Insight skills and have expertise with all Card Games, Coin Games and Dice Games.",
+    "Also you learn the Guidance Cantrip. and you can cast the Augury spell as a 10 minute ritual casting using your Tarot cards. This feature has a number of uses equal to your Proficiency Bonus, and you regain any expended uses at the end of a long rest.",
+    "Hand Size Limit",
+    "You can only hold one tarot card in your hand at a time. At 6th level, you can hold two tarot cards at a time. At 8th level you can hold three tarot cards at a time. At 12th level you can hold four tarot cards at a time.",
+    "Tarot Reading",
+    "After each long rest, Draw one card at random from your Tarot Deck by rolling 1D20, taking the card number listed below from the Tarot Table (If the same number is rolled more than once, you can re roll the dice). This tarot card can be used at any time when it is drawn until your next long rest.",
+    "At 6th level, you can draw Two tarot cards after each long rest. At 12th level, you can draw Three Tarot cards after each long rest.",
+    "Tarot Table",
+    "Each card in your Tarot Deck represents a card from the Major Arcana, and the minor powers they grant you are listed in the Major Arcana table below. You have one of each of these cards in your deck. Also each card has two abilities that correspond with it's Upright and Reverse meanings, you can choose one ability each time that card is drawn. If a card has a lingering effect it remains in the hand (This effect is called a Tapped card) until you choose to End its effect, shuffle it into the deck, or it's effect expires or is used: Then it becomes a Vanished card . Any Tarot cards that Vanish are put back into the deck, but are considered to lose all of their magical effects and neither their Tarot Table or Fortune Card abilities can be used again until you finish your next long rest.",
+    "Tarot Table",
+    "Vanished Cards & Quick Info",
+    "When a card Vanishes it cannot be used again until you finish a long rest. When a card is Vanished it is put back into the deck when its effect expires (A card that gives you additional spells stays in your hand until it expires). Also you shuffle all cards in your hand and back into your Tarot Deck at the start of your next long rest. Also all abilities and spells granted by those cards end when they are shuffled into the deck.",
+    "Channel Divinity",
+    "At 2nd level, you gain the ability to channel divine energy directly from your deity, using that energy to fuel magical effects. You start with two such effects: Turn Undead and an effect determined by your domain. Some domains grant you additional effects as you advance in levels, as noted in the domain description.",
+    "When you use your Channel Divinity, you choose which effect to create. You must then finish a short or long rest to use your Channel Divinity again. Some Channel Divinity effects require saving throws. When you use such an effect from this class, the DC equals your cleric spell save DC.",
+    "Beginning at 6th level, you can use your Channel Divinity twice between rests, and beginning at 18th level, you can use it three times between rests. When you finish a short or long rest, you regain your expended uses.",
+    "Draw of Fate.",
+    "Starting at 2nd level, you can use your Channel Divinity to manipulate the Fates or Draw an additional card from your deck.",
+    "As a bonus action (Or once per round at the start of your turn in combat), you can choose to do one of the following options:",
+    "Draw one random Tarot card from your deck by rolling a 1D20, taking the card number listed below from the Tarot Table.",
+    "Shuffle one Tapped Tarot card from your hand to the deck, and apply the first effect. Any card that has been used Vanishes when returned this way. If the card is unused, draw 2 instead (If drawing 2 cards would exceed hand size, draw 1 instead).",
+    "Choose one Tarot card in your deck (Except 'the World' card), stack in on top of your deck. The next draw from this feature is that card instead of being random. This effect is removed when the deck is shuffled.",
+    "This tarot card can be used at any time when it is drawn until it is shuffled into the deck. If that card on the Tarot Table is already in your hand you can reroll the dice. If that card has Vanished, place it back into the deck.",
+    "Channel Divinity: Turn Undead",
+    "As an action, you present your holy symbol and speak a prayer censuring the undead. Each undead that can see or hear you within 30 feet of you must make a Wisdom saving throw. If the creature fails its saving throw, it is turned for 1 minute or until it takes any damage.",
+    "A turned creature must spend its turns trying to move as far away from you as it can, and it can’t willingly move to a space within 30 feet of you. It also can’t take reactions. For its action, it can use only the Dash action or try to escape from an effect that prevents it from moving. If there’s nowhere to move, the creature can use the Dodge action.",
+    "Ability Score Improvement",
+    "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can’t increase an ability score above 20 using this feature.",
+    "Using the optional feats rule, you can forgo taking this feature to take a feat of your choice instead.",
+    "Destroy Undead",
+    "Starting at 5th level, when an undead fails its saving throw against your Turn Undead feature, the creature is instantly destroyed if its challenge rating is at or below a certain threshold, as shown in the Destroy Undead table.",
+    "Destroy Undead",
+    "Seer",
+    "Starting at 6th level when you choose this Domain, glimpses of the future begin to press in on your awareness.",
+    "When you finish a long rest, and roll dice on the Tarot Table for your Deck of Fortune Tarot Reading ability (Record the numbers rolled as your Seer Dice). You can",
+    "replace any attack roll, saving throw, or ability check made by you or a creature that you can see with one of those numbers, and you can replace a roll in this way only once per turn. Each number can only be used once. When you finish a long rest, you lose any unused rolls.",
+    "1 – The Fool",
+    "Prerequisite: 9th level",
+    "2- The Magician",
+    "Prerequisite: 6th level",
+    "3-The High Priestess",
+    "Prerequisite: 6th level",
+    "4- The Empress",
+    "Prerequisite: 9th level",
+    "5 – The Emperor",
+    "Prerequisite: 6th level",
+    "6 – The Hierophant",
+    "Prerequisite: 6th level",
+    "7- The Lovers",
+    "Prerequisite: 6th level",
+    "8 - The Chariot",
+    "Prerequisite: 9th level",
+    "9- Strength",
+    "Prerequisite: 9th level",
+    "10- The Hermit",
+    "Prerequisite: 6th level",
+    "11-Justice",
+    "Prerequisite: 6th level",
+    "12-The Hanged Man",
+    "Prerequisite: 9th level",
+    "14- The Devil",
+    "Prerequisite: 9th level",
+    "15- The Tower",
+    "Prerequisite: 9th level",
+    "17- The Moon",
+    "Prerequisite: 9th level",
+    "18- The Sun",
+    "Prerequisite: 13th level",
+    "19-Judgement",
+    "Prerequisite: 13th level",
+    "Palm Reading",
+    "Starting at 8th level, you have learned to use your powers of divination to predict the futures of other creatures. If you spend at least 1 minute interacting with a",
+    "creature outside of combat, you can glean a vision of that creature's future. You describe the vision that you see to the DM, concluding with one attack roll, ability",
+    "check, or saving throw that you predict the creature making. If the circumstances of that d20 roll happen in the next 24 hours, you impose your choice of advantage or",
+    "disadvantage on the roll",
+    "Divine Intervention",
+    "Beginning at 10th level, you can call on your deity to intervene on your behalf when your need is great.",
+    "Imploring your deity’s aid requires you to use your action. Describe the assistance you seek, and roll percentile dice. If you roll a number equal to or lower than your cleric level, your deity intervenes. The DM chooses the nature of the intervention; the effect of any cleric spell or cleric domain spell would be",
+    "appropriate.",
+    "If your deity intervenes, you can’t use this feature again for 7 days. Otherwise, you can use it again after you finish a long rest. At 20th level, your call for intervention succeeds automatically, no roll required.",
+    "Prophet of Fortune",
+    "Starting at 17th level, the visions in your dreams become near absolute certainty, you are a prophet of Fate itself.",
+    "Each time you draw cards after a long rest for your Tarot Reading feature. You can choose one of the cards drawn (except 'The World' card) instead of rolling for it at",
+    "random. The number on the card can also be used for your Seer Dice",
+    "Major Fortune Cards",
+    "At 17th Level, you add one of three Major fortune cards to your deck. Each of these Major Fortune Cards has different ability than displayed on the Tarot Table, but still has a different effect depending on whether it is Upright or Reverse. When you draw a Major Fortune card you can choose to apply its Major Fortune card ability, or its Tarot Table ability. You can choose to pull this Major Fortune Card from your deck and use its effect without having to roll on the Tarot Table. This card is called a Fated Card. Once used the Major Fortune Card cannot be used again until a week has passed."
+  ],
+  "tables": [
+    {
+      "table_index": 1,
+      "row_count": 22,
+      "column_count_estimate": 13,
+      "rows": [
+        [
+          "Level",
+          "Proficiency Bonus",
+          "Features",
+          "Cantrips known",
+          "—Spell Slots per Spell Level—",
+          "—Spell Slots per Spell Level—",
+          "—Spell Slots per Spell Level—",
+          "—Spell Slots per Spell Level—",
+          "—Spell Slots per Spell Level—",
+          "—Spell Slots per Spell Level—",
+          "—Spell Slots per Spell Level—",
+          "—Spell Slots per Spell Level—",
+          "—Spell Slots per Spell Level—"
+        ],
+        [
+          "Level",
+          "Proficiency Bonus",
+          "Features",
+          "Cantrips known",
+          "1st",
+          "2nd",
+          "3rd",
+          "4th",
+          "5th",
+          "6th",
+          "7th",
+          "8th",
+          "9th"
+        ],
+        [
+          "1st",
+          "+2",
+          "Spellcasting, Divine Domain",
+          "3",
+          "2",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—"
+        ],
+        [
+          "2nd",
+          "+2",
+          "Channel Divinity (1/rest), Divine Domain Feature",
+          "3",
+          "3",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—"
+        ],
+        [
+          "3rd",
+          "+2",
+          "—",
+          "3",
+          "4",
+          "2",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—"
+        ],
+        [
+          "4th",
+          "+2",
+          "Ability Score Improvement",
+          "4",
+          "4",
+          "3",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—"
+        ],
+        [
+          "5th",
+          "+3",
+          "Destroy Undead (CR 1/2)",
+          "4",
+          "4",
+          "3",
+          "2",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—"
+        ],
+        [
+          "6th",
+          "+3",
+          "Channel Divinity (2/rest), Divine Domain Feature",
+          "4",
+          "4",
+          "3",
+          "3",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—"
+        ],
+        [
+          "7th",
+          "+3",
+          "—",
+          "4",
+          "4",
+          "3",
+          "3",
+          "1",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—"
+        ],
+        [
+          "8th",
+          "+3",
+          "Ability Score Improvement, Destroy Undead (CR 1), Divine Domain Feature",
+          "4",
+          "4",
+          "3",
+          "3",
+          "2",
+          "—",
+          "—",
+          "—",
+          "—",
+          "—"
+        ],
+        [
+          "9th",
+          "+4",
+          "—",
+          "4",
+          "4",
+          "3",
+          "3",
+          "3",
+          "1",
+          "—",
+          "—",
+          "—",
+          "—"
+        ],
+        [
+          "10th",
+          "+4",
+          "Divine Intervention",
+          "5",
+          "4",
+          "3",
+          "3",
+          "3",
+          "2",
+          "—",
+          "—",
+          "—",
+          "—"
+        ],
+        [
+          "11th",
+          "+4",
+          "Destroy Undead (CR 2)",
+          "5",
+          "4",
+          "3",
+          "3",
+          "3",
+          "2",
+          "1",
+          "—",
+          "—",
+          "—"
+        ],
+        [
+          "12th",
+          "+4",
+          "Ability Score Improvement",
+          "5",
+          "4",
+          "3",
+          "3",
+          "3",
+          "2",
+          "1",
+          "—",
+          "—",
+          "—"
+        ],
+        [
+          "13th",
+          "+5",
+          "—",
+          "5",
+          "4",
+          "3",
+          "3",
+          "3",
+          "2",
+          "1",
+          "1",
+          "—",
+          "—"
+        ],
+        [
+          "14th",
+          "+5",
+          "Destroy Undead (CR 3)",
+          "5",
+          "4",
+          "3",
+          "3",
+          "3",
+          "2",
+          "1",
+          "1",
+          "—",
+          "—"
+        ],
+        [
+          "15th",
+          "+5",
+          "—",
+          "5",
+          "4",
+          "3",
+          "3",
+          "3",
+          "2",
+          "1",
+          "1",
+          "1",
+          "—"
+        ],
+        [
+          "16th",
+          "+5",
+          "Ability Score Improvement",
+          "5",
+          "4",
+          "3",
+          "3",
+          "3",
+          "2",
+          "1",
+          "1",
+          "1",
+          "—"
+        ],
+        [
+          "17th",
+          "+6",
+          "Destroy Undead (CR 4), Divine Domain Feature",
+          "5",
+          "4",
+          "3",
+          "3",
+          "3",
+          "2",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        [
+          "18th",
+          "+6",
+          "Channel Divinity (3/rest)",
+          "5",
+          "4",
+          "3",
+          "3",
+          "3",
+          "3",
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        [
+          "19th",
+          "+6",
+          "Ability Score Improvement",
+          "5",
+          "4",
+          "3",
+          "3",
+          "3",
+          "3",
+          "2",
+          "1",
+          "1",
+          "1"
+        ],
+        [
+          "20th",
+          "+6",
+          "Divine Intervention Improvement",
+          "5",
+          "4",
+          "3",
+          "3",
+          "3",
+          "3",
+          "2",
+          "2",
+          "1",
+          "1"
+        ]
+      ]
+    },
+    {
+      "table_index": 2,
+      "row_count": 21,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "1d20- MAJOR ARCANA CARD",
+          "EFFECT"
+        ],
+        [
+          "1 - The Fool",
+          "Upright: As a bonus action, you can grant yourself or an ally advantage on the next Deception or Performance check. You can use this ability once. Two times at 8th level. 'The Fool' then becomes a Tapped Card until Vanished.\nReverse: You have advantage on initiative rolls. After everyone has rolled for initiative, you may swap initiatives with one willing ally. Then 'The Fool' card Vanishes."
+        ],
+        [
+          "2 - The Magician",
+          "Upright: Choose a number of spells equal to half your Wisdom modifier rounded up from the\nWizard spell list (add 'The Magician' Feat to your class sheet) . The Wizard spells you choose must all be of a level you can cast no higher than 2nd level. You know those spells, they are Cleric spells for you, and you can cast them using your spell slots. 'The Magician' then becomes a Tapped Card until Vanished.\nReverse: You gain expertise in Deception checks for the next hour. But you have disadvantage on Intelligence and Wisdom checks. 'The Magician' then becomes a Tapped Card until Vanished."
+        ],
+        [
+          "3 - The High Priestess",
+          "Upright: When you cast one of your prepared Divination spells, you can do so without expending a spell slot and as an action. Then 'The High Priestess' card Vanishes.\nReverse: As a reaction you can force a creature within 60 feet of you to re roll a Wisdom ability Check or Wisdom Saving throw, the new result must be taken.(If the creature has a higher Wisdom score than you the card is used and nothing happens). Then 'The High Priestess' card\nVanishes."
+        ],
+        [
+          "4 - The Empress",
+          "Upright: You learn the spell 'Speak with Animals' and 'Cure Wounds' Also, when you cast a spell that heals yourself or an ally, they gain additional hit points equal to your Wisdom modifier. 'The Empress' then becomes a Tapped Card until Vanished.\nReverse: As a bonus action, you may choose one of your allies within 60 feet that can see and hear you. That ally can use their reaction to move up to half their speed without provoking attacks of\nopportunity, however you cannot take the movement action until your next turn. You can use this ability once. Two times at 8th level. 'The Empress' then becomes a Tapped Card until Vanished."
+        ],
+        [
+          "5 - The Emperor",
+          "Upright: This card allows you to cast the Spell 'Command' once without expending a spell slot. Also you gain advantage on Intimidation checks. 'The Emperor' then becomes a Tapped Card\nuntil Vanished.\nReverse: For the next 10 minutes allies within 10ft of you have advantage on saving throws against being Frightened or Charmed. 'The Emperor' then becomes a Tapped Card until Vanished."
+        ],
+        [
+          "6 - The Hierophant",
+          "Upright: As a bonus action, you can grant an ally advantage on the next Intelligence check. You can use this ability once. Two times at 8th level. Then 'The Hierophant' becomes a Tapped Card\nuntil Vanished.\nReverse: You gain expertise in Investigation and History checks for the next hour. Then 'The Hierophant' then becomes a Tapped Card until Vanished."
+        ],
+        [
+          "7 - The Lovers",
+          "Upright: You learn the 'Warding Bond' Spell and can cast it once without expending a spell slot.Then 'The Lovers' becomes a Tapped Card until Vanished.\nReverse: You learn the 'Friends' Cantrip and gain Expertise in Persuasion checks for 10 minutes.\nThen 'The Lovers' becomes a Tapped Card until Vanished."
+        ],
+        [
+          "8 - The Chariot",
+          "Upright: As bonus action, you may increase the walking speed of yourself or an allied creature within 60 feet by 5 feet times your Wisdom Modifier for 10 minutes and it has three times it's carrying capacity. Then 'The Chariot' becomes a Tapped Card until Vanished However, once the effect expires that creature is stunned and gains one point of exhaustion.\nReverse: As bonus action, you may grant an allied creature within 60ft advantage on all attacks on their next turn, however they must move as fast as possible towards the nearest enemy (or their choice if tied) and they must attack if able. Also all enemy creatures gain advantage on attacks against that ally until your next turn. Then 'The Chariot' card Vanishes"
+        ],
+        [
+          "9 – Strength",
+          "Upright: As a bonus action, you can grant yourself or an ally advantage on Strength checks (and if you targeted yourself your Strength score becomes equal to your Wisdom score) for the next 10 minutes. Then 'Strength' becomes a Tapped Card until Vanished.\nReverse: As a reaction, When an creature within 30 feet of you makes an attack or a Charisma check against a creature other than you, you can use a reaction to force the creature to make a Wisdom saving throw. On a failure, they automatically fail that roll. Then 'The Strength' card Vanishes."
+        ],
+        [
+          "10 - The Hermit",
+          "Upright: As an action, you gain advantage on Dexterity and Wisdom saving throws for the next 10 minutes. You cannot benefit from the Help action. Then 'The Hermit' becomes a Tapped Card until Vanished.\nReverse: As an bonus action, you can grant all allies within 60ft of you advantage on the next Dexterity or Wisdom saving throw. However, you gain Disadvantage on Dexterity and Wisdom saving throws for the next 10 minutes. 'The Hermir' then becomes a Tapped Card until Vanished."
+        ],
+        [
+          "11 – Justice",
+          "Upright: You learn the spells Zone of Truth and Detect Evil and Good, if you don't already have them prepared and can cast both spells at will without expending a spell slot. Also you have advantage on Insight checks against creatures with an Evil Alignment. Then the 'Justice' a Tapped Card until Vanished.\nReverse: As a reaction, when a creature you can see within 60 feet of you makes an attack roll, ability check, or saving throw, you can force the creature to re roll. You make this decision after you see the results of the roll is made clear and the target must use the result of the second roll. Then the 'Justice' card Vanishes."
+        ],
+        [
+          "12 - The Hanged Man",
+          "Upright: As a bonus action, you may give yourself or an ally you can see within 30 feet of you a flying speed equal to their walking speed for 10 minutes ( Or whenever you choose to end it). Then 'The Hanged Man' card Vanishes.\nReverse: As a bonus action, you can touch a creature. You can ask the God of Fate one question about that creature's past, present or Future that must be answered truthfully. However, the answer may be spoken in riddles. \nThis ability can be used once. Once used 'The Hanged man’ card Vanishes."
+        ],
+        [
+          "13 – Death",
+          "Upright: After using this card, the next time a creature within 60 feet of you dies, you regain one spell slot. The level of the spell slot is equal to the creature's CR or level, up to 4th level (minimum 1). Then 'Death' becomes a Tapped Card until Vanished.\nReverse: You can cast the 'Alter Self' spell once without expending a spell slot, it is treated as a Cleric spell for you. Then the 'Death' card Vanishes."
+        ],
+        [
+          "14 - The Devil",
+          "Upright: You gain Gold equal to 1D100 x your Cleric level. However, you gain a crippling addiction to one random item or substance for 1 week (This item or substance is chosen at random by the DM). Then 'The Devil' card Vanishes.\n(If you use this effect multiple times in a week it may anger one random Evil entity within the world of the DM's Choice.)\nReverse: You learn the 'Misty Step' spell, it is treated as a Cleric spell for you and you can cast it once without expending a spell slot. 'The Devil then becomes a Tapped Card until Vanished."
+        ],
+        [
+          "15 - The Tower",
+          "Upright: You learn the spell Shatter and can cast it once without expending a spell slot. You can cast it twice without expending a spell slot at 8th level. Then 'The Tower' becomes a Tapped Card until Vanished.\nReverse: As an action, you can reduce your hit point maximum by an amount equal to your Cleric level, then touch a creature and increase their hit point maximum and current hit points by twice that amount + your Wisdom Modifier. If the reduction to your hit point maximum is removed, the increased hit point maximum of the other creature is also removed. Then 'Tower' card Vanishes."
+        ],
+        [
+          "16 - The Star",
+          "Upright: You gain the Lucky Feat, or if you already have the Feat you gain 3 additional Luck Points. 'The Star' then becomes a Tapped Card until Vanished\nReverse: As an action, you can cast the revivify spell once without expending a spell slot and you have advantage on the check to succeed. Then 'The Star' card Vanishes"
+        ],
+        [
+          "17- The Moon",
+          "Upright: You learn the spell 'Invisibility' and can cast it at will.\nThen 'The Moon' card becomes a Tapped Card until Vanished.\nReverse: You learn the spell 'See Invisibility' and can cast it at will.\nThen 'The Moon' becomes a Tapped Card until Vanished."
+        ],
+        [
+          "18 - The Sun",
+          "Upright: You learn the 'Healing Word' spell. It is treated as a Cleric spell for you and you can cast it using your Cleric spell slots. At 3rd level you also learn the 'Lesser Restoration' spell'. And at 5th level\nyou learn the 'Mass Healing Word' spell. Then 'The Sun' becomes a Tapped Card until Vanished.\nReverse: You learn the spell 'Burning Hands'. It is treated as a Cleric spell for you and you can cast it using your Cleric spell slots. At 3rd level you also learn the 'Scorching Ray spell'. And at 5th level you learn the 'Fireball' spell. Then 'The Sun' becomes a Tapped Card until Vanished."
+        ],
+        [
+          "19 – Judgement",
+          "Upright: As a bonus action, choose one creature you can see within 60 feet of you. \nYou immediately learn whether the creature has any damage immunities, resistances, or vulnerabilities and what they are. If the creature is hidden from divination magic, you sense that it has no damage immunities, resistances, or vulnerabilities. at 14th level, you give that creature vulnerability or immunity to one\ndamage type of your choice until the next time it takes damage from that type. Then 'The Judgement' card Vanishes.\nReverse: As a bonus action, choose one creature you can see within 60 feet of you. You can give that creature disadvantage on one type of saving throw until your next turn. Then 'The Judgement' card Vanishes."
+        ],
+        [
+          "20 - The World",
+          "Upright: When used. Draw two more cards from your Tarot Deck: you can use both cards simultaneously. (These additional draws can exceed your hand size limit, but you cannot draw additional cards until your Hand Size is able). Then 'The World' card Vanishes.\nReverse: When used: Add one of your Vanished Tarot Cards (Except 'The World') to your hand. That Tarot card can be reused again. Then 'The World' card Vanishes."
+        ]
+      ]
+    },
+    {
+      "table_index": 3,
+      "row_count": 6,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "Cleric Level",
+          "Destroys Undead of CR …"
+        ],
+        [
+          "5th",
+          "1/2 or lower"
+        ],
+        [
+          "8th",
+          "1 or lower"
+        ],
+        [
+          "11th",
+          "2 or lower"
+        ],
+        [
+          "14th",
+          "3 or lower"
+        ],
+        [
+          "17th",
+          "4 or lower"
+        ]
+      ]
+    },
+    {
+      "table_index": 4,
+      "row_count": 1,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "1 - The Fool",
+          "Fortune Card: \nUpright: You learn the Seeming spell. That spell can cast be without expending a spell slot on yourself or a number of allied creatures equal to your proficiency bonus, also creatures have disadvantage on Investigation checks when trying to discover yours or your ally's disguises. 'The Fool' then becomes a Tapped Card until Vanished. \n\nReverse: When initiative is rolled you can make yourself or one ally instantly roll a 20 on initiative. Then 'The Fool' card Vanishes."
+        ]
+      ]
+    },
+    {
+      "table_index": 5,
+      "row_count": 1,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "2 - The Magician",
+          "Fortune Card: \nUpright: You can spend 10 minutes to infuse 'The Magician' card with one of your Cleric spells. \nThis spell can be no higher than 5th level. You don't expend a spell slot when infusing a spell. 'The Magician' then becomes a Tapped. \nYou can cast the spell contained within the card once without verbal or material components at any time until the next Long rest. \nWhen used, 'The Magician' card Vanishes. Reverse: You gain Expertise in 3 Skills of your choice for the next hour. ' 'The Magican' then becomes a Tapped Card until Vanished"
+        ]
+      ]
+    },
+    {
+      "table_index": 6,
+      "row_count": 1,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "3 - The High Priestess",
+          "Fortune Card: \nUpright: You can cast the 'Scrying' and 'Divination' spells using your Reader of Fate Feature until the next long rest. 'The High Priestess' then becomes a Tapped Card until Vanished\nReverse: You can cast the 'Banishment' Spell once without expending a spell slot up to your current spell level. Then 'The High Priestess' card Vanishes. At 13th, Level you can cast the 'Plane Shift' spell instead of 'Banishment'."
+        ]
+      ]
+    },
+    {
+      "table_index": 7,
+      "row_count": 1,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "4 - The Empress",
+          "Fortune Card:\n\nUpright: You learn the spells 'Speak With Animals' and 'Speak with Plants' at Will. You to can also cast the Spells, 'Mass Cure Wounds' without expending a spell slot. At 13th level you can cast 'Mass Cure Wound' twice.  'The Empress' then becomes a Tapped Card until Vanished.\n\nReverse: You learn the spell Speak With Animals and Speak with Plants' At will. Also you can cast the spell 'Wrath of Nature' once without spending a spell slot. At 13th level you can also cast the spell 'Wall of Thorns' once without expending a spell slot.  'The Empress' then becomes a Tapped Card until Vanished."
+        ]
+      ]
+    },
+    {
+      "table_index": 8,
+      "row_count": 1,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "5 – The Emperor",
+          "Fortune Card:\nUpright: This card allows you to cast the Spell, Hold Person without expending a spell slot up to a spell of 5th level. \nAt 9th Level, you can also use the spell Hold Monster instead. \nThen 'The Emperor' card vanishes \nReverse: You can use an action to activate the following effect: For the next hour you and allies within 30ft are immune to being Frightened or Charmed. 'The Emperor' then becomes a Tapped Card until Vanished."
+        ]
+      ]
+    },
+    {
+      "table_index": 9,
+      "row_count": 1,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "6 – The Hierophant",
+          "Fortune Card:\nUpright: \nAs an action, you and all Allied Creatures within 10ft of you have advantage on Intelligence checks for the next hour. 'The Hierophant' then becomes a Tapped Card until Vanished. \nAlso, at 9th level you learn the Spell Skill Empowerment, this is treated as a Cleric spell. \nReverse: \nYou lean the spells ‘Intellect Fortress’ and ‘Counterspell’, these spells are treated as a Cleric spells. \n'The Hierophant' then becomes a Tapped Card until Vanished."
+        ]
+      ]
+    },
+    {
+      "table_index": 10,
+      "row_count": 1,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "7- The Lovers",
+          "Fortune Card\n\nUpright: Once, as an action, you may choose an ally within 60 feet of you. Whenever either you or that ally regain hit points while within 60 feet of each other, you both regain the same number of hit points.  'The Lovers' then becomes a Tapped Card until Vanished\n\nReverse: You can cast the spell Charm Monster once without expending a spell slot. Also, you gain expertise and advantage on Persuasion checks for 10 minutes.  \n'The Lovers' then becomes a Tapped Card until Vanished."
+        ]
+      ]
+    },
+    {
+      "table_index": 11,
+      "row_count": 1,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "8 - The Chariot",
+          "Fortune Card\n\nUpright: This card allows you to use the Dominate person Spell without expending a spell slot. At 15th Level, you can also use the spell Dominate Monster instead but it consumes a spell slot. Then 'The Chariot ' card vanishes\n\nReverse: As bonus action, you may grant an allied creature within 60ft resistance to all damage until their next turn, however they must move as fast as possible towards the nearest enemy (or their choice if tied) and they must attack if able. Also all enemy creatures gain advantage on attacks against that ally until your next turn. Then 'The Chariot' card Vanishes"
+        ]
+      ]
+    },
+    {
+      "table_index": 12,
+      "row_count": 1,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "9- Strength",
+          "Fortune Card\n\nUpright: As an action, you can target a number of creatures up to your proficiency bonus within 60ft. Their Strength becomes equal to your Wisdom score. Also they have advantage on strength checks and become resistant to bludgeoning, piercing and slashing damage for 1 round. Then the 'Strength' card vanishes.\n\nReverse: As an action, you target a number of creatures equal to your proficiency bonus within a 60ft radius of you. They are forced to make a Wisdom saving throw. On a failure then become Frightened of you for 1 minute and have disadvantage on Charisma checks and saving throws. Then the 'Strength' card vanishes."
+        ]
+      ]
+    },
+    {
+      "table_index": 13,
+      "row_count": 1,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "10- The Hermit",
+          "Fortune Card\n\nUpright: As an action, you gain advantage on Dexterity and Wisdom ability checks and saving throws for the next 10 minutes. Also you gain expertise on Insight and Perception checks. You cannot benefit from the Help action.  'The Hermit' then becomes a Tapped Card until Vanished. \n\nReverse: As an action, you can grant all allies within 60ft of you advantage on Dexterity check and and saving throws or Wisdom ability checks and saving throws for the next 10 minutes. However, you gain Disadvantage on Dexterity and Wisdom saving throws for the next 10 minutes. Then 'The Hermit' card Vanishes. 'The Hermit' then becomes a Tapped Card until Vanished."
+        ]
+      ]
+    },
+    {
+      "table_index": 14,
+      "row_count": 1,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "11-Justice",
+          "Fortune Card\n\nUpright: You can cast the Slow spell once without material components or expending a spell slot. Then the 'Justice' card vanishes. At 13th Level, you can also use the spell Force Cage instead, but it consumes a spell slot.\n\nReverse: When an attacker within 60 feet of you deals damage with an attack against a creature other than you, you can use a reaction to force the attacker to make a Wisdom saving throw. On a failed saving throw, the attacker takes force damage equal to the damage it just dealt. You can use this reaction a number of times equal to half your proficiency bonus rounded down.  'Justice' then becomes a Tapped Card until Vanished."
+        ]
+      ]
+    },
+    {
+      "table_index": 15,
+      "row_count": 1,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "12-The Hanged Man",
+          "Fortune Card\n\nUpright: As a bonus action, target one creature within 60ft, they are suspended in a magical state, becoming invulnerable for one round and they do not have to take death saving throws, but they are unable to move or take actions. If unwilling, they must make a Wisdom saving throw against your spell DC. On a Success nothing happens. On a failure the effect is applied as normal. Then 'The Hanged Man' card vanishes.\n\nReverse: As a reaction, swap the places of an ally within 60ft who is hit by an attack, with another within 60ft, redirecting the damage to them instead. Also any damage they take heals the other for the double the amount. You can use this reaction once. You can use this reaction twice at 13th level.  'The Hanged Man' then becomes a Tapped Card until Vanished."
+        ]
+      ]
+    },
+    {
+      "table_index": 16,
+      "row_count": 1,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "14- The Devil",
+          "Fortune Card\n\nUpright: This card allows you to cast the Spell, Suggestion once without expending a spell slot. At 13th Level, you can use the spell Mass Suggestion instead but it uses a spell slot. Also for the next hour, your perceived alignment becomes the opposite of what it is (Good becomes Evil/ Evil becomes good) and you have Advantage on Persuasion and Deception checks and use double your proficiency bonus for Persuasion and Deception checks when speaking with creatures of that alignment. (If your alignment is Neutral you can pick between Evil or Good). 'The Devil' then becomes a Tapped Card until Vanished. \n\nReverse: This card allows you to cast the Spell, Dimension Door once without expending a spell slot. At 13th Level, you can use the spell 'Teleport' instead but it uses a spell slot. Also, you cannot be Grappled, Paralyzed, Restrained and your movement speed is not slowed by terrain for the next hour. Then 'The Devil' card vanishes."
+        ]
+      ]
+    },
+    {
+      "table_index": 17,
+      "row_count": 1,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "15- The Tower",
+          "Fortune Card\n\nUpright: As a reaction you can select one enemy creature within 60ft of you, that creature must make a Wisdom saving throw equal to your spell save DC. If it fails, that creature has disadvantage on Constitution, Intelligence or Wisdom saving throws (your choice) and its AC is reduced by your Wisdom modifier until the start of your next turn. At 13th level, you can use this reaction twice. Then ‘The Tower’ card Vanishes.\n\nReverse: As a reaction, you can select one Allied Creature within 60ft of you and give it advantage on Constitution, Intelligence and Wisdom saving throws also it gains AC equal to your Wisdom Modifier until the start of its next turn.  At 13th level, you can use this reaction twice. Then ‘The Tower’ card Vanishes."
+        ]
+      ]
+    },
+    {
+      "table_index": 18,
+      "row_count": 1,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "17- The Moon",
+          "Fortune Card\n\nUpright: You learn the 'Greater Invisibility' spell. Also you can cast the spell ‘Major Image’ once without expending a spell slot. Also at 13th Level you can cast the spell 'Mirage Arcane' once, but it uses a spell slot. 'The Moon' then becomes a Tapped Card until Vanished.\n\nReverse: You learn the 'See Invisibility' spell and can cast it at Will. Also you can cast the spell ‘Arcane Eye’ once without expending a spell slot. Also at  11 Level you can cast the spell ‘True Seeing’ once, but it uses a spell slot.  'The Moon' then becomes a Tapped Card until Vanished."
+        ]
+      ]
+    },
+    {
+      "table_index": 19,
+      "row_count": 1,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "18- The Sun",
+          "Fortune Card\n\nUpright: You learn the spell 'Greater Restoration' Also, you can cast the ‘Heal’ spell once without expending a spell slot. At 17 level You can cast the ‘Heal’ Spell twice without expending a spell slot.  'The Sun' then becomes a Tapped Card until Vanished.\n\nReverse: You learn the Spell 'Flame Strike'. Also you can cast the 'Sunbeam' spell once without expending a spell slot. Or you can cast the ‘Firestorm’ spell once, instead.  'The Sun' then becomes a Tapped Card until Vanished."
+        ]
+      ]
+    },
+    {
+      "table_index": 20,
+      "row_count": 1,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "19-Judgement",
+          "Fortune Card\n\nUpright: You can cast the Spell, Disintegrate without expending a spell slot. At 17 level you cast the spell Power word stun once instead, but it uses a spell slot. Then the ‘Judgement’ card vanishes.\n\nReverse: You can cast the Spell ‘Resurrection’ once without material components, and the Resurrection roll has advantage. However, the chance of failure increase for that creature on future resurrections is doubled.  Then the ‘Judgement’ card vanishes."
+        ]
+      ]
+    },
+    {
+      "table_index": 21,
+      "row_count": 3,
+      "column_count_estimate": 2,
+      "rows": [
+        [
+          "13 – Death",
+          "Major Fortune Card \nUpright: \nYou learn the spell 'Finger of Death'. \nAlso you can cast the 'Power Word Kill' spell once without expending a spell slot. 'Death' then becomes a Tapped Card until Vanished. \nYou cannot use the 'Major' Tarot feature again until a week has passed. \nReverse: \nYou can cast the 'True Polymorph' spell once without expending a spell slot. \nThen the 'Death' card vanishes. \nYou cannot use the 'Major' Tarot feature again until a week has passed."
+        ],
+        [
+          "16 – The Star",
+          "Major Fortune Card\nUpright: \nYou gain one use of the 'Wish' Spell, that can be used anytime until the next long rest. Then 'The Star' card\nvanishes. You cannot use the Major Fortune Cards Feature again until a week has passed. (Also this character can only\nuse this ability 1D3 times total).\nReverse: \nYou can cast the Spell 'True Resurrection' as an action, on an ally within 60ft without using material components or expending a spell slot and the resurrection roll is made with advantage. \nYou can also cast this on yourself as a reaction if you die. \nHowever, the chance of failure increase for that creature on future resurrections is\ndoubled. \nThen 'The Star' card vanishes. \nYou cannot use the Major Fortune Cards Feature again until a week has passed."
+        ],
+        [
+          "20 – The World",
+          "Major Fortune Card\nUpright: \nYou can cast the 'Mass Heal' spell once without expending a spell slot. \nThen 'The World' card vanishes. \nYou cannot use the Major Fortune Card feature again until a week has passed.\nReverse: \nYou can cast the 'Meteor Swarm' spell once without expending a spell slot. \nThen 'The World' card vanishes.\nYou cannot use the Major Fortune card feature again until a week has passed"
+        ]
+      ]
+    }
+  ]
+}

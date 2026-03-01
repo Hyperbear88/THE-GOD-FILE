@@ -1,0 +1,148 @@
+Cleric
+Legacy
+Class Details
+Arms and eyes upraised toward the sun and a prayer on his lips, an elf begins to glow with an inner light that spills out to heal his battle-worn companions.
+Chanting a song of glory, a dwarf swings his axe in wide swaths to cut through the ranks of orcs arrayed against him, shouting praise to the gods with every foe’s fall.
+Calling down a curse upon the forces of undeath, a human lifts her holy symbol as light pours from it to drive back the zombies crowding in on her companions.
+Clerics are intermediaries between the mortal world and the distant planes of the gods. As varied as the gods they serve, clerics strive to embody the handiwork of their deities. No ordinary priest, a cleric is imbued with divine magic.
+Healers and Warriors
+Divine magic, as the name suggests, is the power of the gods, flowing from them into the world. Clerics are conduits for that power, manifesting it as miraculous effects. The gods don’t grant this power to everyone who seeks it, but only to those chosen to fulfill a high calling.
+Harnessing divine magic doesn’t rely on study or training. A cleric might learn formulaic prayers and ancient rites, but the ability to cast cleric spells relies on devotion and an intuitive sense of a deity’s wishes.
+Clerics combine the helpful magic of healing and inspiring their allies with spells that harm and hinder foes. They can provoke awe and dread, lay curses of plague or poison, and even call down flames from heaven to consume their enemies. For those evildoers who will benefit most from a mace to the head, clerics depend on their combat training to let them wade into melee with the power of the gods on their side.
+Divine Agents
+Not every acolyte or officiant at a temple or shrine is a cleric. Some priests are called to a simple life of temple service, carrying out their gods’ will
+through prayer and sacrifice, not by magic and strength of arms. In some cities, priesthood amounts to a political office, viewed as a stepping stone to higher positions of authority and involving no communion with a god at all. True clerics are rare in most hierarchies.
+When a cleric takes up an adventuring life, it is usually because his or her god demands it. Pursuing the goals of the gods often involves braving dangers in unsettled lands, smiting evil, or seeking holy relics in ancient tombs. Many clerics are also expected to protect their deities’ worshipers, which can mean fighting enemy raiders, negotiating peace between warring nations, or sealing a portal that would allow a demon prince to enter the world.
+Most adventuring clerics maintain some connection to established temples and orders of their faiths. A temple might ask for a cleric’s aid, or a high priest might be in a position to demand it.
+Creating a Cleric
+As you create a cleric, the most important question to consider is which deity to serve and what principles you want your character to embody. The Gods of the Multiverse section includes lists of many of the gods of the multiverse. Check with your DM to learn which deities are in your campaign.
+Once you’ve chosen a deity, consider your cleric’s relationship to that god. Did you enter this service willingly? Or did the god choose you, impelling you into service with no regard for your wishes? How do the temple priests of your faith regard you: as a champion or a troublemaker? What are your
+ultimate goals? Does your deity have a special task in mind for you? Or are you striving to prove yourself worthy of a great quest?
+The Cleric Table
+Class Features
+As a cleric, you gain the following class features.
+Hit Points
+Hit Dice: 1d8 per cleric level
+Hit Points at 1st Level: 8 + your Constitution modifier
+Hit Points at Higher Levels: 1d8 (or 5) + your Constitution modifier per cleric level after 1st
+Proficiencies
+Armor: Light armor, medium armor, shields
+Weapons/Tools: None
+Saving Throws: Wisdom, Charisma
+Skills: Choose two from History, Insight, Medicine, Persuasion, and Religion
+Equipment
+You start with the following equipment, in addition to the equipment granted by your background:
+(a) a mace or (b) a warhammer (if proficient)
+(a) scale mail, (b) leather armor, or (c) chain mail (if proficient)
+(a) a light crossbow and 20 bolts or (b) any simple weapon
+(a) a priest’s pack or (b) an explorer’s pack
+A shield and a holy symbol
+Spellcasting
+As a conduit for divine power, you can cast cleric spells. See Spells Rules for the general rules of spellcasting and the Spells Listing for the cleric spell list.
+Cantrips
+At 1st level, you know three cantrips of your choice from the cleric spell list. You learn additional cleric cantrips of your choice at higher levels, as shown in the Cantrips Known column of the Cleric table.
+Preparing and Casting Spells
+The Cleric table shows how many spell slots you have to cast your cleric spells of 1st level and higher. To cast one of these spells, you must expend a slot of the spell’s level or higher. You regain all expended spell slots when you finish a long rest.
+You prepare the list of cleric spells that are available for you to cast, choosing from the cleric spell list. When you do so, choose a number of cleric spells equal to your Wisdom modifier + your cleric level (minimum of one spell). The spells must be of a level for which you have spell slots.
+For example, if you are a 3rd-level cleric, you have four 1st-level and two 2nd-level spell slots. With a Wisdom of 16, your list of prepared spells can
+include six spells of 1st or 2nd level, in any combination. If you prepare the 1st-level spell cure wounds, you can cast it using a 1st-level or 2nd-level slot. Casting the spell doesn’t remove it from your list of prepared spells.
+You can change your list of prepared spells when you finish a long rest. Preparing a new list of cleric spells requires time spent in prayer and meditation: at least 1 minute per spell level for each spell on your list.
+Spellcasting Ability
+Wisdom is your spellcasting ability for your cleric spells. The power of your spells comes from your devotion to your deity. You use your Wisdom
+whenever a cleric spell refers to your spellcasting ability. In addition, you use your Wisdom modifier when setting the saving throw DC for a cleric spell you cast and when making an attack roll with one.
+Spell save DC = 8 + your proficiency bonus + your Wisdom modifier
+Spell attack modifier = your proficiency bonus + your Wisdom modifier
+Ritual Casting
+You can cast a cleric spell as a ritual if that spell has the ritual tag and you have the spell prepared.
+Spellcasting Focus
+You can use a holy symbol (see the Adventuring Gear section) as a spellcasting focus for your cleric spells.
+Choose one domain related to your deity. Your choice grants you domain spells and other features when you choose it at 1st level. It also grants you additional ways to use Channel Divinity when you gain that feature at 2nd level, and additional benefits at 6th, 8th, and 17th levels.
+Divine Seer Domain:
+Every time you roll a dice, play a card or flip heads or tails on a coin she watches. Destiny is nothing to her, for she can see all destinies before they occur and change them for the better or worse. There only exists the rule of randomness, many possibilities and outcomes. Fortune is a divine law as powerful of life and death itself. Clerics of the Divine Seer know this as fact and embrace it. By believing in fortune, a Cleric can forge the fates of the people around them Good, Evil or otherwise. It doesn't matter. No fate is truly determined, every destiny can be altered and foreseen.
+Reader of Fate:
+Starting at 1st level, you are proficient in Arcana and Insight skills and have expertise with all Card Games, Coin Games and Dice Games.
+Also you learn the Guidance Cantrip. and you can cast the Augury spell as a 10 minute ritual casting using your Tarot cards. This feature has a number of uses equal to your Proficiency Bonus, and you regain any expended uses at the end of a long rest.
+Hand Size Limit
+You can only hold one tarot card in your hand at a time. At 6th level, you can hold two tarot cards at a time. At 8th level you can hold three tarot cards at a time. At 12th level you can hold four tarot cards at a time.
+Tarot Reading
+After each long rest, Draw one card at random from your Tarot Deck by rolling 1D20, taking the card number listed below from the Tarot Table (If the same number is rolled more than once, you can re roll the dice). This tarot card can be used at any time when it is drawn until your next long rest.
+At 6th level, you can draw Two tarot cards after each long rest. At 12th level, you can draw Three Tarot cards after each long rest.
+Tarot Table
+Each card in your Tarot Deck represents a card from the Major Arcana, and the minor powers they grant you are listed in the Major Arcana table below. You have one of each of these cards in your deck. Also each card has two abilities that correspond with it's Upright and Reverse meanings, you can choose one ability each time that card is drawn. If a card has a lingering effect it remains in the hand (This effect is called a Tapped card) until you choose to End its effect, shuffle it into the deck, or it's effect expires or is used: Then it becomes a Vanished card . Any Tarot cards that Vanish are put back into the deck, but are considered to lose all of their magical effects and neither their Tarot Table or Fortune Card abilities can be used again until you finish your next long rest.
+Tarot Table
+Vanished Cards & Quick Info
+When a card Vanishes it cannot be used again until you finish a long rest. When a card is Vanished it is put back into the deck when its effect expires (A card that gives you additional spells stays in your hand until it expires). Also you shuffle all cards in your hand and back into your Tarot Deck at the start of your next long rest. Also all abilities and spells granted by those cards end when they are shuffled into the deck.
+Channel Divinity
+At 2nd level, you gain the ability to channel divine energy directly from your deity, using that energy to fuel magical effects. You start with two such effects: Turn Undead and an effect determined by your domain. Some domains grant you additional effects as you advance in levels, as noted in the domain description.
+When you use your Channel Divinity, you choose which effect to create. You must then finish a short or long rest to use your Channel Divinity again. Some Channel Divinity effects require saving throws. When you use such an effect from this class, the DC equals your cleric spell save DC.
+Beginning at 6th level, you can use your Channel Divinity twice between rests, and beginning at 18th level, you can use it three times between rests. When you finish a short or long rest, you regain your expended uses.
+Draw of Fate.
+Starting at 2nd level, you can use your Channel Divinity to manipulate the Fates or Draw an additional card from your deck.
+As a bonus action (Or once per round at the start of your turn in combat), you can choose to do one of the following options:
+Draw one random Tarot card from your deck by rolling a 1D20, taking the card number listed below from the Tarot Table.
+Shuffle one Tapped Tarot card from your hand to the deck, and apply the first effect. Any card that has been used Vanishes when returned this way. If the card is unused, draw 2 instead (If drawing 2 cards would exceed hand size, draw 1 instead).
+Choose one Tarot card in your deck (Except 'the World' card), stack in on top of your deck. The next draw from this feature is that card instead of being random. This effect is removed when the deck is shuffled.
+This tarot card can be used at any time when it is drawn until it is shuffled into the deck. If that card on the Tarot Table is already in your hand you can reroll the dice. If that card has Vanished, place it back into the deck.
+Channel Divinity: Turn Undead
+As an action, you present your holy symbol and speak a prayer censuring the undead. Each undead that can see or hear you within 30 feet of you must make a Wisdom saving throw. If the creature fails its saving throw, it is turned for 1 minute or until it takes any damage.
+A turned creature must spend its turns trying to move as far away from you as it can, and it can’t willingly move to a space within 30 feet of you. It also can’t take reactions. For its action, it can use only the Dash action or try to escape from an effect that prevents it from moving. If there’s nowhere to move, the creature can use the Dodge action.
+Ability Score Improvement
+When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can’t increase an ability score above 20 using this feature.
+Using the optional feats rule, you can forgo taking this feature to take a feat of your choice instead.
+Destroy Undead
+Starting at 5th level, when an undead fails its saving throw against your Turn Undead feature, the creature is instantly destroyed if its challenge rating is at or below a certain threshold, as shown in the Destroy Undead table.
+Destroy Undead
+Seer
+Starting at 6th level when you choose this Domain, glimpses of the future begin to press in on your awareness.
+When you finish a long rest, and roll dice on the Tarot Table for your Deck of Fortune Tarot Reading ability (Record the numbers rolled as your Seer Dice). You can
+replace any attack roll, saving throw, or ability check made by you or a creature that you can see with one of those numbers, and you can replace a roll in this way only once per turn. Each number can only be used once. When you finish a long rest, you lose any unused rolls.
+1 – The Fool
+Prerequisite: 9th level
+2- The Magician
+Prerequisite: 6th level
+3-The High Priestess
+Prerequisite: 6th level
+4- The Empress
+Prerequisite: 9th level
+5 – The Emperor
+Prerequisite: 6th level
+6 – The Hierophant
+Prerequisite: 6th level
+7- The Lovers
+Prerequisite: 6th level
+8 - The Chariot
+Prerequisite: 9th level
+9- Strength
+Prerequisite: 9th level
+10- The Hermit
+Prerequisite: 6th level
+11-Justice
+Prerequisite: 6th level
+12-The Hanged Man
+Prerequisite: 9th level
+14- The Devil
+Prerequisite: 9th level
+15- The Tower
+Prerequisite: 9th level
+17- The Moon
+Prerequisite: 9th level
+18- The Sun
+Prerequisite: 13th level
+19-Judgement
+Prerequisite: 13th level
+Palm Reading
+Starting at 8th level, you have learned to use your powers of divination to predict the futures of other creatures. If you spend at least 1 minute interacting with a
+creature outside of combat, you can glean a vision of that creature's future. You describe the vision that you see to the DM, concluding with one attack roll, ability
+check, or saving throw that you predict the creature making. If the circumstances of that d20 roll happen in the next 24 hours, you impose your choice of advantage or
+disadvantage on the roll
+Divine Intervention
+Beginning at 10th level, you can call on your deity to intervene on your behalf when your need is great.
+Imploring your deity’s aid requires you to use your action. Describe the assistance you seek, and roll percentile dice. If you roll a number equal to or lower than your cleric level, your deity intervenes. The DM chooses the nature of the intervention; the effect of any cleric spell or cleric domain spell would be
+appropriate.
+If your deity intervenes, you can’t use this feature again for 7 days. Otherwise, you can use it again after you finish a long rest. At 20th level, your call for intervention succeeds automatically, no roll required.
+Prophet of Fortune
+Starting at 17th level, the visions in your dreams become near absolute certainty, you are a prophet of Fate itself.
+Each time you draw cards after a long rest for your Tarot Reading feature. You can choose one of the cards drawn (except 'The World' card) instead of rolling for it at
+random. The number on the card can also be used for your Seer Dice
+Major Fortune Cards
+At 17th Level, you add one of three Major fortune cards to your deck. Each of these Major Fortune Cards has different ability than displayed on the Tarot Table, but still has a different effect depending on whether it is Upright or Reverse. When you draw a Major Fortune card you can choose to apply its Major Fortune card ability, or its Tarot Table ability. You can choose to pull this Major Fortune Card from your deck and use its effect without having to roll on the Tarot Table. This card is called a Fated Card. Once used the Major Fortune Card cannot be used again until a week has passed.

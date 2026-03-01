@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "saved_at": "2026-03-01 19:08:29",
-  "screen_mode": "normal",
+  "saved_at": "2026-03-01 19:30:19",
+  "screen_mode": "slot_menu",
   "scroll_y": 0,
   "history_overlay_open": false,
   "history_scroll": 0,
@@ -129,6 +129,10 @@
           20,
           16
         ]
+      },
+      {
+        "text": "[19:30] Undo: Reverted to previous state.",
+        "card_ids": []
       }
     ],
     "history": [
@@ -525,15 +529,230 @@
         "active_fortune_loadout": 0
       }
     ],
-    "redo_history": [],
-    "toast_msg": "Drew 3 card(s): The Empress, The World, The Star",
+    "redo_history": [
+      {
+        "deck": [
+          11,
+          6,
+          7,
+          19,
+          9,
+          5,
+          8,
+          13,
+          1,
+          10,
+          17,
+          18,
+          14,
+          3,
+          15,
+          2,
+          12
+        ],
+        "hand": [
+          {
+            "id": 4,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 16,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 77,
+            "max_sc_inv": 115,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 5,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          },
+          {
+            "id": 3,
+            "mode": "normal",
+            "orientation": "upright",
+            "flip": 0,
+            "scroll_up": 0,
+            "scroll_inv": 0,
+            "max_sc_up": 0,
+            "max_sc_inv": 0,
+            "is_vanishing": false,
+            "tapped": false
+          }
+        ],
+        "fortune_zone": [],
+        "major_zone": [],
+        "vanished": [
+          20
+        ],
+        "stacked": null,
+        "f3": [
+          4,
+          20,
+          16
+        ],
+        "cd": 0,
+        "days": 1,
+        "limit": 3,
+        "table": [
+          4,
+          20,
+          16
+        ],
+        "history": [
+          {
+            "text": "[18:23] Long Rest (Day 1): Hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[18:23] Drew 1 card(s): The World",
+            "card_ids": [
+              20
+            ]
+          },
+          {
+            "text": "[18:23] Level changed to 19: hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[18:23] Prophet of Fortune: The Magician selected.",
+            "card_ids": [
+              2
+            ]
+          },
+          {
+            "text": "[18:23] Drew 3 card(s): The Magician, The Moon, Death",
+            "card_ids": [
+              2,
+              17,
+              13
+            ]
+          },
+          {
+            "text": "[19:03] Level changed to 20: hand returned to deck. Deck shuffled.",
+            "card_ids": []
+          },
+          {
+            "text": "[19:03] Prophet of Fortune: The Empress selected.",
+            "card_ids": [
+              4
+            ]
+          },
+          {
+            "text": "[19:03] Drew 3 card(s): The Empress, The World, The Star",
+            "card_ids": [
+              4,
+              20,
+              16
+            ]
+          },
+          {
+            "text": "[19:30] The World was Used and Vanished.",
+            "card_ids": [
+              20
+            ]
+          },
+          {
+            "text": "[19:30] Drew 2 card(s): The Emperor, The High Priestess",
+            "card_ids": [
+              5,
+              3
+            ]
+          }
+        ],
+        "level": 20,
+        "ppf": 3,
+        "used_major": [],
+        "major_cooldown": false,
+        "major_pending": false,
+        "divine_weekly": false,
+        "divine_rest": false,
+        "seer_filled": 3,
+        "draw_of_fate": 3,
+        "draw_of_fate_cur": 3,
+        "fortune_loadouts": [
+          {
+            "name": "Loadout 1",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 2",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 3",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 4",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 5",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 6",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 7",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 8",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 9",
+            "fortune_ids": [],
+            "major_id": null
+          },
+          {
+            "name": "Loadout 10",
+            "fortune_ids": [],
+            "major_id": null
+          }
+        ],
+        "active_fortune_loadout": 0
+      }
+    ],
+    "toast_msg": "Undo: Reverted to previous state.",
     "toast_timer": 0.0,
     "level": 20,
     "used_major_ids": [],
     "hand_limit": 3,
     "ppf_charges": 3,
     "draw_queue": [],
-    "draw_timer": -0.06100000000000001,
+    "draw_timer": -0.017,
     "is_drawing": false,
     "major_fortune_used_this_week": false,
     "major_fortune_activation_pending": false,
@@ -596,6 +815,5 @@
       }
     ],
     "active_fortune_loadout": 0
-  },
-  "save_kind": "autosave"
+  }
 }

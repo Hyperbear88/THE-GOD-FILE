@@ -543,3 +543,65 @@ TypeError: Button.__init__() got an unexpected keyword argument 'blue'
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ValueError: too many values to unpack (expected 2)
 
+18:04:44 [INFO]  Loading video backend: cv2
+18:04:44 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:08:18 [INFO]  Loading video backend: cv2
+18:08:18 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:12:58 [INFO]  Loading video backend: cv2
+18:12:58 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:18:33 [INFO]  Loading video backend: cv2
+18:18:33 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:21:39 [INFO]  Loading video backend: cv2
+18:21:39 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:28:11 [INFO]  Autosaved to slot 1.
+18:30:15 [INFO]  Loading video backend: cv2
+18:30:15 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:36:12 [INFO]  Loading video backend: cv2
+18:36:12 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:37:21 [ERROR] Traceback (most recent call last):
+  File "C:\Users\danie\Desktop\BACKUPs\REFACTOR\runtime.py", line 4616, in safe_main
+    _palm_text_value = palm_reading_text if palm_reading_text else _palm_text_hint
+    ^^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'palm_reading_type_dropdown' is not defined
+
+18:38:05 [INFO]  Loading video backend: cv2
+18:38:05 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:40:51 [INFO]  Loading video backend: cv2
+18:40:51 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:43:16 [INFO]  Loading video backend: cv2
+18:43:16 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:47:38 [INFO]  Loading video backend: cv2
+18:47:38 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:51:39 [INFO]  Loading video backend: cv2
+18:51:39 [INFO]  Scanning JSON... Found 80 bolded fields.
+18:57:27 [INFO]  Autosaved to slot 1.
+19:02:27 [INFO]  Autosaved to slot 2.
+19:02:41 [INFO]  Loading video backend: cv2
+19:02:41 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:08:29 [INFO]  Autosaved to slot 1.
+19:09:30 [INFO]  Loading video backend: cv2
+19:09:30 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:13:47 [INFO]  Loading video backend: cv2
+19:13:47 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:18:19 [INFO]  Loading video backend: cv2
+19:18:19 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:24:17 [INFO]  Loading video backend: cv2
+19:24:17 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:25:59 [INFO]  Loading video backend: cv2
+19:25:59 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:28:57 [INFO]  Loading video backend: cv2
+19:28:57 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:37:06 [INFO]  Loading video backend: cv2
+19:37:06 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:41:33 [INFO]  Loading video backend: cv2
+19:41:33 [INFO]  Scanning JSON... Found 80 bolded fields.
+19:51:52 [INFO]  Loading video backend: cv2
+19:51:52 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:12:22 [INFO]  Loading video backend: cv2
+20:12:22 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:12:40 [INFO]  Loading video backend: cv2
+20:12:40 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:13:53 [INFO]  Loading video backend: cv2
+20:13:53 [INFO]  Scanning JSON... Found 80 bolded fields.
+20:18:20 [INFO]  Loading video backend: cv2
+20:18:20 [INFO]  Scanning JSON... Found 80 bolded fields.
