@@ -196,7 +196,7 @@ VANISHED_PILE_MUSIC = resource_path(os.path.join("audio", "Vanished_Pile.mp3"))
 VANISHED_PILE_ALT_MUSIC = resource_path(os.path.join("audio", "Vanished_2.mp3"))
 MENU_BG_IMAGE = "Teller_Room.png"
 NORMAL_BG_IMAGE = "BG_3.png"
-MAX_SAVE_SLOTS = 3
+MAX_SAVE_SLOTS = 6
 MAX_AUTOSAVE_SLOTS = 10
 
 GOLD, RED_FIRE, ORANGE_FIRE, YELLOW_FIRE, PURPLE_TAP = (235, 190, 60), (220, 30, 30), (255, 120, 0), (255, 200, 0), (180, 50, 255)
