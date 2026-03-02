@@ -641,3 +641,68 @@ NameError: name 'palm_reading_type_dropdown' is not defined
 22:50:40 [INFO]  Scanning JSON... Found 80 bolded fields.
 22:54:04 [INFO]  Loading video backend: cv2
 22:54:04 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:24:15 [INFO]  Loading video backend: cv2
+23:24:15 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:25:47 [INFO]  Loading video backend: cv2
+23:25:47 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:33:52 [INFO]  Loading video backend: cv2
+23:33:52 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:34:55 [INFO]  Loading video backend: cv2
+23:34:55 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:40:28 [INFO]  Loading video backend: cv2
+23:40:28 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:46:51 [INFO]  Loading video backend: cv2
+23:46:51 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:52:26 [INFO]  Loading video backend: cv2
+23:52:26 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:56:49 [INFO]  Loading video backend: cv2
+23:56:49 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:01:03 [INFO]  Loading video backend: cv2
+00:01:03 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:06:36 [INFO]  Loading video backend: cv2
+00:06:36 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:07:33 [ERROR] Traceback (most recent call last):
+  File "C:\Users\danie\Desktop\BACKUPs\REFACTOR\runtime.py", line 5441, in safe_main
+    for _kw_rect, _kw_term in class_info_keyword_hits:
+        ^^^^^^^^^^^^^^^^^^
+ValueError: too many values to unpack (expected 2)
+
+00:09:09 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+00:09:10 [INFO]  Loading video backend: imageio
+00:09:10 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:09:35 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+00:09:35 [INFO]  Loading video backend: imageio
+00:09:35 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:10:05 [INFO]  Loading video backend: cv2
+00:10:05 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:17:02 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+00:17:03 [INFO]  Loading video backend: imageio
+00:17:03 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:23:00 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+00:23:01 [INFO]  Loading video backend: imageio
+00:23:01 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:29:16 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+00:29:17 [INFO]  Loading video backend: imageio
+00:29:17 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:31:30 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+00:31:31 [INFO]  Loading video backend: imageio
+00:31:31 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:02:33 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+01:02:33 [INFO]  Loading video backend: imageio
+01:02:33 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:05:50 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+01:05:50 [INFO]  Loading video backend: imageio
+01:05:50 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:11:19 [INFO]  Loading video backend: cv2
+01:11:19 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:14:09 [ERROR] cv2 unavailable for loading video: No module named 'cv2'
+01:14:09 [INFO]  Loading video backend: imageio
+01:14:09 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:18:08 [INFO]  Loading video backend: cv2
+01:18:08 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:28:41 [INFO]  Autosaved to slot 1.
+01:29:31 [INFO]  Loading video backend: cv2
+01:29:31 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:39:18 [INFO]  Autosaved to slot 1.
+01:45:53 [INFO]  Loading video backend: cv2
+01:45:53 [INFO]  Scanning JSON... Found 80 bolded fields.

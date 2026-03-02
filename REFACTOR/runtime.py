@@ -579,6 +579,148 @@ def safe_main():
                     if _t and _k and _k not in _acc:
                         _acc[_k] = _curated_glossary_entries.get(_k, {}).get("term", _t)
 
+        def _extract_equipment_terms_from_doc():
+            _terms = []
+            _definitions = {}
+            try:
+                _equipment_doc_path = docs_or_resource_path("Cleric- D&D Beyond.extracted.json")
+                if not os.path.exists(_equipment_doc_path):
+                    return _terms, _definitions
+                with open(_equipment_doc_path, "r", encoding="utf-8") as _edf:
+                    _payload = json.load(_edf)
+                _paragraphs = _payload.get("paragraphs", []) if isinstance(_payload, dict) else []
+                if not isinstance(_paragraphs, list):
+                    return _terms, _definitions
+
+                _equipment_idx = -1
+                for _idx, _p in enumerate(_paragraphs):
+                    if str(_p).strip().lower() == "equipment":
+                        _equipment_idx = _idx
+                        break
+                if _equipment_idx < 0:
+                    return _terms, _definitions
+
+                _stop_headers = {
+                    "spellcasting",
+                    "cantrips",
+                    "preparing and casting spells",
+                    "spellcasting ability",
+                }
+                _seen = set()
+                for _raw in _paragraphs[_equipment_idx + 1 : _equipment_idx + 18]:
+                    _line = re.sub(r"\s+", " ", str(_raw)).strip()
+                    if not _line:
+                        continue
+                    if _line.lower() in _stop_headers:
+                        break
+                    if _line.lower().startswith("you start with the following equipment"):
+                        continue
+
+                    _line = _line.replace("’", "'")
+                    _line = re.sub(r"\([a-z]\)", " ", _line, flags=re.I)
+                    _line = re.sub(r"\([^)]*\)", " ", _line)
+                    _line = re.sub(r"\s+", " ", _line).strip()
+                    if not _line:
+                        continue
+
+                    for _chunk in re.split(r",|\bor\b|\band\b", _line, flags=re.I):
+                        _item = re.sub(r"\s+", " ", str(_chunk)).strip(" .;:-")
+                        _item = re.sub(r"^(?:a|an|any)\s+", "", _item, flags=re.I)
+                        _item = re.sub(r"^\d+\s+", "", _item)
+                        _item = re.sub(r"\s+", " ", _item).strip(" .;:-")
+                        if not _item:
+                            continue
+                        if _item.lower() in {"if proficient", "in addition to the equipment granted by your background"}:
+                            continue
+                        _term = _format_glossary_term(_item)
+                        if not _term:
+                            continue
+                        _seen_key = _term.lower()
+                        if _seen_key in _seen:
+                            continue
+                        _seen.add(_seen_key)
+                        _terms.append(_term)
+                        if _seen_key == "holy symbol":
+                            _definitions[_term] = "A holy symbol is a sacred emblem used by clerics and paladins and can be used as a spellcasting focus."
+                        else:
+                            _definitions[_term] = f"{_term} is listed in the Cleric starting equipment options from D&D Beyond."
+            except Exception as _ex:
+                log_event(f"Could not extract equipment glossary terms: {_ex}", is_error=True)
+            return _terms, _definitions
+
+        def _extract_equipment_terms_from_json():
+            _terms = []
+            _definitions = {}
+
+            def _stringify_equipment_info(_term, _info):
+                if isinstance(_info, str):
+                    return _info.strip()
+                if not isinstance(_info, dict):
+                    return ""
+
+                _description = str(_info.get("description", "") or _info.get("definition", "")).strip()
+                _parts = []
+                _field_map = [
+                    ("category", "Category"),
+                    ("cost", "Cost"),
+                    ("creation_cost", "Creation Cost"),
+                    ("armor_class", "Armor Class"),
+                    ("damage", "Damage"),
+                    ("properties", "Properties"),
+                    ("strength_requirement", "Strength Requirement"),
+                    ("stealth", "Stealth"),
+                    ("weight", "Weight"),
+                    ("attunement", "Attunement"),
+                ]
+                for _key, _label in _field_map:
+                    _val = str(_info.get(_key, "")).strip()
+                    if _val:
+                        _parts.append(f"{_label}: {_val}")
+
+                if _description and _parts:
+                    return f"{'. '.join(_parts)}. {_description}".strip()
+                if _description:
+                    return _description
+                if _parts:
+                    return ". ".join(_parts).strip() + "."
+                return ""
+
+            try:
+                _equipment_json_path = docs_or_resource_path("equipment.json")
+                if not os.path.exists(_equipment_json_path):
+                    return _terms, _definitions
+                with open(_equipment_json_path, "r", encoding="utf-8") as _ejf:
+                    _payload = json.load(_ejf)
+                if not isinstance(_payload, dict):
+                    return _terms, _definitions
+
+                _seen = set()
+                for _raw_term, _raw_info in _payload.items():
+                    _term = _format_glossary_term(_raw_term)
+                    if not _term:
+                        continue
+                    _term_key = _term.lower()
+                    if _term_key in _seen:
+                        continue
+                    _seen.add(_term_key)
+                    _terms.append(_term)
+
+                    _desc = _stringify_equipment_info(_term, _raw_info)
+
+                    if _desc:
+                        _definitions[_term] = _desc
+                    elif _term_key == "holy symbol":
+                        _definitions[_term] = "A holy symbol is a sacred emblem used by clerics and paladins and can be used as a spellcasting focus."
+                    else:
+                        _definitions[_term] = f"{_term} is listed in equipment.json."
+            except Exception as _ex:
+                log_event(f"Could not extract equipment glossary terms from equipment.json: {_ex}", is_error=True)
+            return _terms, _definitions
+
+        _equipment_terms, _equipment_glossary_defs = _extract_equipment_terms_from_json()
+        if not _equipment_terms:
+            _equipment_terms, _equipment_glossary_defs = _extract_equipment_terms_from_doc()
+
         _term_map = {}
         if _curated_glossary_entries:
             for _entry in _curated_glossary_entries.values():
@@ -587,6 +729,10 @@ def safe_main():
                     _term_map[_term_key] = _entry["term"]
         else:
             _collect_bold_terms(cards_raw, _term_map)
+        for _equipment_term in _equipment_terms:
+            _equipment_key = _glossary_term_dedupe_key(_equipment_term)
+            if _equipment_key and _equipment_key not in _term_map:
+                _term_map[_equipment_key] = _equipment_term
         fortune_glossary_terms = sorted(_term_map.values(), key=lambda _t: _t.lower())
 
         _glossary_exact_defs = {
@@ -637,6 +783,11 @@ def safe_main():
             _text = re.sub(r"(\d+)\s*ft\b", r"\1 feet", _text)
             _text = re.sub(r"\s+", " ", _text).strip(" ,")
             return _text
+
+        for _equipment_term, _equipment_def in _equipment_glossary_defs.items():
+            _equipment_key = _normalize_glossary_lookup(_equipment_term)
+            if _equipment_key and _equipment_key not in _glossary_exact_defs:
+                _glossary_exact_defs[_equipment_key] = _equipment_def
 
         def _join_glossary_terms(_parts, _connector="and"):
             if not _parts:
@@ -1288,42 +1439,153 @@ def safe_main():
             _font = f_tiny
             return _font, _wrap_glossary_detail_text(_font, _text, _max_w)
 
-        def _read_docx_paragraphs(_path):
-            if not os.path.isfile(_path):
-                return []
-            try:
-                import zipfile
-                import xml.etree.ElementTree as ET
-                with zipfile.ZipFile(_path, "r") as _zf:
-                    _xml = _zf.read("word/document.xml")
-                _root = ET.fromstring(_xml)
-                _ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
-                _paras = []
-                for _p in _root.findall(".//w:p", _ns):
-                    _pieces = [_t.text for _t in _p.findall(".//w:t", _ns) if _t.text]
-                    _line = "".join(_pieces).strip()
-                    if _line:
-                        _paras.append(_line)
-                return _paras
-            except Exception as _ex:
-                log_event(f"DOCX parse failed for {_path}: {_ex}", is_error=True)
-                return []
-
         def _load_class_info_entries():
-            _docx_path = os.path.join(DOCS_DIR, "Cleric- D&D Beyond.docx")
-            _txt_path = os.path.join(DOCS_DIR, "Cleric- D&D Beyond.extracted.txt")
-            _docx_lines = _read_docx_paragraphs(_docx_path)
-            if _docx_lines:
-                return _docx_lines, os.path.basename(_docx_path)
-            if os.path.isfile(_txt_path):
+            _md_path = docs_or_resource_path("Cleric- D&D Beyond.md")
+            if not os.path.exists(_md_path):
+                _md_path = os.path.join(DOCS_DIR, "Cleric- D&D Beyond.md")
+                
+            if not os.path.isfile(_md_path):
+                return [("Welcome", "Please place 'Cleric- D&D Beyond.md' in your Docs folder to view class info here.")], "None"
+            
+            sections = []
+            current_title = "Class Details"
+            current_body = []
+
+            def _inject_fate_dealer_equipment(_sections):
                 try:
-                    with open(_txt_path, "r", encoding="utf-8") as _tf:
-                        _lines = [str(_ln).strip() for _ln in _tf.read().splitlines() if str(_ln).strip()]
-                    if _lines:
-                        return _lines, os.path.basename(_txt_path)
+                    _equipment_json_path = docs_or_resource_path("equipment.json")
+                    if not os.path.exists(_equipment_json_path):
+                        return _sections
+                    with open(_equipment_json_path, "r", encoding="utf-8") as _ejf:
+                        _payload = json.load(_ejf)
+                    if not isinstance(_payload, dict):
+                        return _sections
+
+                    _fde_key = None
+                    for _k in _payload.keys():
+                        _nk = str(_k).strip().lower().replace("’", "'")
+                        if _nk == "fate dealer's deck":
+                            _fde_key = _k
+                            break
+                    if _fde_key is None:
+                        return _sections
+
+                    _fde_info = _payload.get(_fde_key)
+                    if isinstance(_fde_info, dict):
+                        _parts = []
+                        _field_map = [
+                            ("category", "Category"),
+                            ("attunement", "Attunement"),
+                            ("cost", "Cost"),
+                            ("weight", "Weight"),
+                            ("properties", "Properties"),
+                        ]
+                        for _field, _label in _field_map:
+                            _val = str(_fde_info.get(_field, "")).strip()
+                            if _val:
+                                _parts.append(f"{_label}: {_val}")
+                        _desc = str(_fde_info.get("description", "") or _fde_info.get("definition", "")).strip()
+                        _fde_text = ". ".join(_parts)
+                        if _fde_text:
+                            _fde_text += "."
+                        if _desc:
+                            _fde_text = f"{_fde_text} {_desc}".strip()
+                    else:
+                        _fde_text = str(_fde_info).strip()
+
+                    if not _fde_text:
+                        _fde_text = "Wondrous item used as a spellcasting focus for Divine Seer clerics."
+
+                    _equipment_idx = -1
+                    for _idx, (_title, _body) in enumerate(_sections):
+                        if "equipment" in str(_title).strip().lower():
+                            _equipment_idx = _idx
+                            break
+
+                    _entry_text = f"Fate Dealer's Deck\n{_fde_text}"
+                    if _equipment_idx >= 0:
+                        _title, _body = _sections[_equipment_idx]
+                        if "fate dealer's deck" not in str(_body).lower():
+                            _merged_body = (str(_body).rstrip() + "\n\n" + _entry_text).strip()
+                            _sections[_equipment_idx] = (_title, _merged_body)
+                    else:
+                        _sections.append(("Equipment", _entry_text))
                 except Exception as _ex:
-                    log_event(f"Class info text fallback failed: {_ex}", is_error=True)
-            return ["No class-info document found in Docs folder."], "None"
+                    log_event(f"Could not inject Fate Dealer's Deck into class info equipment section: {_ex}", is_error=True)
+                return _sections
+
+            def _strip_double_asterisks(_txt):
+                return str(_txt).replace("**", "").strip()
+            
+            try:
+                with open(_md_path, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
+                    
+                in_table = False
+                table_headers = []
+                
+                for line in lines:
+                    line = line.strip()
+                    
+                    # Ignore markdown image tags
+                    if line.startswith("![") or line.startswith("]"):
+                        continue
+                    
+                    raw_text = line.replace('#', '').replace('*', '').replace(':', '').strip()
+                    is_heading = line.startswith("#") and len(raw_text) < 60 and not raw_text.endswith('.')
+                    is_bold_title = line.startswith("**") and len(raw_text) < 60 and (line.endswith("**") or line.endswith("**:"))
+                    if is_heading or is_bold_title:
+                        if current_body:
+                            sections.append((_strip_double_asterisks(current_title), _strip_double_asterisks("\n".join(current_body).strip())))
+                        current_title = _strip_double_asterisks(line.replace("*", "").replace("#", "").replace(":", "").strip())
+                        current_body = []
+                        in_table = False
+                        continue
+                        
+                    # Handle Tables and Unpack Them
+                    if line.startswith("|"):
+                        cells = [c.strip() for c in line.split("|") if c.strip()]
+                        if not cells: continue
+                        
+                        # Skip markdown divider rows (e.g. |---|---|)
+                        if all(c.replace("-", "").strip() == "" for c in cells):
+                            continue
+                            
+                        if not in_table:
+                            in_table = True
+                            table_headers = cells
+                            current_body.append("") 
+                        else:
+                            if len(cells) >= 2:
+                                # Is it the Cleric Leveling Table?
+                                if table_headers and "Level" in table_headers[0] and len(cells) >= 3:
+                                    lvl, pb, feats = cells[0], cells[1], cells[2]
+                                    if feats != "—":
+                                        current_body.append(_strip_double_asterisks(f"**Level {lvl}** (PB {pb}): {feats}"))
+                                # Is it the Destroy Undead Table?
+                                elif table_headers and "Destroys Undead" in table_headers[-1]:
+                                    current_body.append(_strip_double_asterisks(f"**Level {cells[0]}:** Destroys CR {cells[1]}"))
+                                # Otherwise, it's a Tarot / Domain Table
+                                else:
+                                    title, desc = cells[0], cells[1]
+                                    desc = desc.replace("**Upright**:", "\nUpright: ")
+                                    desc = desc.replace("**Reverse**:", "\nReverse: ")
+                                    desc = desc.replace("Upright:", "\nUpright: ")
+                                    desc = desc.replace("Reverse:", "\nReverse: ")
+                                    current_body.append(_strip_double_asterisks(f"{title}\n{desc}\n"))
+                        continue
+                    else:
+                        in_table = False
+                        current_body.append(_strip_double_asterisks(line.lstrip('#').strip()))
+                        
+                if current_body:
+                    sections.append((_strip_double_asterisks(current_title), _strip_double_asterisks("\n".join(current_body).strip())))
+
+                sections = _inject_fate_dealer_equipment(sections)
+                return sections, "Markdown Data"
+            except Exception as _ex:
+                log_event(f"Markdown parse failed for {_md_path}: {_ex}", is_error=True)
+                return [("Error", "Failed to parse document.")], "Error"
 
         def _get_filtered_class_info_entries():
             _q = class_info_search.strip().lower()
@@ -1331,16 +1593,16 @@ def safe_main():
                 return list(enumerate(class_info_entries))
             _tokens = [t for t in re.split(r"\s+", _q) if t]
             _res = []
-            for _idx, _txt in enumerate(class_info_entries):
-                _txt_l = str(_txt).lower()
-                if all(_tk in _txt_l for _tk in _tokens):
-                    _res.append((_idx, _txt))
+            for _idx, (_title, _body) in enumerate(class_info_entries):
+                _combined = f"{_title} {_body}".lower()
+                if all(_tk in _combined for _tk in _tokens):
+                    _res.append((_idx, (_title, _body)))
             return _res
 
         def _class_info_layout():
             _outer = pygame.Rect(52, 40, W - 104, H - 80)
             _inner = _outer.inflate(-22, -22)
-            _title_h = 70
+            _title_h = 106
             _search_h = 42
             _gap = 14
             _list_w = max(360, int(_inner.w * 0.58))
@@ -1348,6 +1610,160 @@ def safe_main():
             _detail_panel = pygame.Rect(_list_panel.right + 16, _list_panel.y, _inner.right - (_list_panel.right + 16), _list_panel.h)
             _search_rect = pygame.Rect(_inner.x, _inner.y + _title_h, _list_w, _search_h)
             return _outer, _inner, _search_rect, _list_panel, _detail_panel
+
+        def _build_class_info_keyword_hitboxes(_text, _body_rect, _scroll_y):
+            _glossary_multi_first_token_map = {}
+            _glossary_single_norm_map = {}
+            for _term in fortune_glossary_terms:
+                _term_clean = str(_term).strip()
+                if not _term_clean:
+                    continue
+                _parts = [re.sub(r"[^a-z0-9]+", "", _p.lower()) for _p in _term_clean.split()]
+                _parts = [_p for _p in _parts if _p]
+                if not _parts:
+                    continue
+                if len(_parts) == 1:
+                    _glossary_single_norm_map[_parts[0]] = _term_clean
+                else:
+                    _glossary_multi_first_token_map.setdefault(_parts[0], []).append((_term_clean, _parts))
+            for _k in _glossary_multi_first_token_map:
+                _glossary_multi_first_token_map[_k].sort(key=lambda _it: len(_it[1]), reverse=True)
+
+            _spell_name_map = {}
+            for _sp in fortune_spell_entries:
+                _name = str(_sp.get("name", "")).strip()
+                if _name:
+                    _spell_name_map[_name.lower()] = _name
+            _spell_first_token_map = {}
+            for _name_l, _name in _spell_name_map.items():
+                _tokens = [re.sub(r"[^a-z0-9]+", "", _t.lower()) for _t in _name.split()]
+                _tokens = [_t for _t in _tokens if _t]
+                if not _tokens:
+                    continue
+                _spell_first_token_map.setdefault(_tokens[0], []).append((_name, _tokens))
+            for _k in _spell_first_token_map:
+                _spell_first_token_map[_k].sort(key=lambda _it: len(_it[1]), reverse=True)
+            _hits = []
+            _margin = 15
+            _line_h = rich_renderer.font_reg.get_height() + 6
+            _max_w = _body_rect.width - (_margin * 2)
+            _lines = []
+            _cur_line = []
+            _cur_x = 0
+            _tokens = tokenize_markdown(_text)
+
+            for _tok in _tokens:
+                _paragraphs = str(_tok.get("text", "")).split("\n")
+                for _p_idx, _p_text in enumerate(_paragraphs):
+                    if _p_idx > 0:
+                        _lines.append(_cur_line)
+                        _cur_line = []
+                        _cur_x = 0
+
+                    _words = _p_text.split(" ")
+                    for _i, _word in enumerate(_words):
+                        if not _word and _i > 0:
+                            continue
+                        _space = " " if _i < len(_words) - 1 else ""
+                        _draw_text = _word + _space
+                        _font = rich_renderer.font_bold if _tok.get("bold") else rich_renderer.font_reg
+                        _word_w = _font.size(_draw_text)[0]
+
+                        if _cur_x + _word_w > _max_w:
+                            _lines.append(_cur_line)
+                            _cur_line = []
+                            _cur_x = 0
+
+                        _cur_line.append({
+                            "text": _draw_text,
+                            "font": _font,
+                            "x": _cur_x,
+                            "w": _word_w,
+                        })
+                        _cur_x += _word_w
+
+            if _cur_line:
+                _lines.append(_cur_line)
+
+            for _li, _line in enumerate(_lines):
+                _dy = _body_rect.y + _margin + (_li * _line_h) - int(_scroll_y)
+                if _dy < (_body_rect.y - _line_h) or _dy > _body_rect.bottom:
+                    continue
+                _line_words = []
+                for _seg in _line:
+                    _raw_seg_text = str(_seg["text"])
+                    _match_text = _raw_seg_text.strip()
+                    if not _match_text:
+                        continue
+                    _visible_text = _raw_seg_text.rstrip()
+                    _visible_w = _seg["font"].size(_visible_text)[0]
+                    _rx = _body_rect.x + _margin + int(_seg["x"])
+                    _font_h = _seg["font"].get_height()
+                    _r = pygame.Rect(_rx, _dy, _visible_w, _font_h)
+                    if not (_r.bottom >= _body_rect.y and _r.top <= _body_rect.bottom):
+                        continue
+                    _line_words.append({
+                        "rect": _r,
+                        "norm": re.sub(r"[^a-z0-9]+", "", _match_text.lower()),
+                    })
+
+                _glossary_used_word_idxs = set()
+                for _wi, _wd in enumerate(_line_words):
+                    if _wi in _glossary_used_word_idxs:
+                        continue
+                    _cands = _glossary_multi_first_token_map.get(_wd["norm"], [])
+                    if not _cands:
+                        continue
+                    for _term, _term_tokens in _cands:
+                        _tok_len = len(_term_tokens)
+                        _end_i = _wi + _tok_len - 1
+                        if _end_i >= len(_line_words):
+                            continue
+                        if any(_ix in _glossary_used_word_idxs for _ix in range(_wi, _end_i + 1)):
+                            continue
+                        _window = [_line_words[_ix]["norm"] for _ix in range(_wi, _end_i + 1)]
+                        if _window != _term_tokens:
+                            continue
+                        _start_r = _line_words[_wi]["rect"]
+                        _end_r = _line_words[_end_i]["rect"]
+                        _term_r = pygame.Rect(_start_r.x, min(_start_r.y, _end_r.y), _end_r.right - _start_r.x, max(_start_r.h, _end_r.h))
+                        _hits.append((_term_r, "glossary", _term))
+                        for _ix in range(_wi, _end_i + 1):
+                            _glossary_used_word_idxs.add(_ix)
+                        break
+
+                _spell_used_word_idxs = set()
+                for _wi, _wd in enumerate(_line_words):
+                    if _wi in _glossary_used_word_idxs or _wi in _spell_used_word_idxs:
+                        continue
+                    _cands = _spell_first_token_map.get(_wd["norm"], [])
+                    if not _cands:
+                        continue
+                    for _spell_name, _spell_tokens in _cands:
+                        _tok_len = len(_spell_tokens)
+                        _end_i = _wi + _tok_len - 1
+                        if _end_i >= len(_line_words):
+                            continue
+                        if any((_ix in _glossary_used_word_idxs) or (_ix in _spell_used_word_idxs) for _ix in range(_wi, _end_i + 1)):
+                            continue
+                        _window = [_line_words[_ix]["norm"] for _ix in range(_wi, _end_i + 1)]
+                        if _window != _spell_tokens:
+                            continue
+                        _start_r = _line_words[_wi]["rect"]
+                        _end_r = _line_words[_end_i]["rect"]
+                        _spell_r = pygame.Rect(_start_r.x, min(_start_r.y, _end_r.y), _end_r.right - _start_r.x, max(_start_r.h, _end_r.h))
+                        _hits.append((_spell_r, "spell", _spell_name))
+                        for _ix in range(_wi, _end_i + 1):
+                            _spell_used_word_idxs.add(_ix)
+                        break
+
+                for _wi, _wd in enumerate(_line_words):
+                    if _wi in _spell_used_word_idxs or _wi in _glossary_used_word_idxs:
+                        continue
+                    _term = _glossary_single_norm_map.get(_wd["norm"])
+                    if _term:
+                        _hits.append((_wd["rect"], "glossary", _term))
+            return _hits
 
         def _draw_hover_blurb(_title, _body, _mouse_pos, _edge_col, _fill_col, _max_w=430, _max_lines=7):
             nonlocal _hover_blurb_payload
@@ -1749,9 +2165,14 @@ def safe_main():
         class_info_search_active = False
         class_info_scroll = 0
         class_info_selected_idx = 0
+        class_info_detail_scroll = 0
         class_info_sb_dragging = False
+        class_info_keyword_hits = []
+        tooltips_enabled = True
         _hover_card_token = None
         history_overlay_open, history_scroll = False, 0
+        history_flash_timer = 0.0
+        _prev_history_log_len = len(game.history_log)
         dof_token_fizzles = []
         _prev_dof_uses = game.draw_of_fate_uses
         history_sb_dragging = False
@@ -2496,6 +2917,8 @@ def safe_main():
         game.normalize_fortune_loadouts()
         fortune_setup_return_mode = "library"
         library_return_mode = "menu"
+        glossary_return_mode = "library"
+        spell_list_return_mode = "library"
         fortune_scroll_y = 0
         fortune_selected_loadout_idx = game.active_fortune_loadout
         fortune_edit_loadout = copy.deepcopy(game.fortune_loadouts[fortune_selected_loadout_idx])
@@ -3113,6 +3536,11 @@ def safe_main():
                             game.history_log.pop(0)
             toast_prev_timer = game.toast_timer
             game.shuffle_anim_timer = max(0.0, game.shuffle_anim_timer - dt)
+            history_flash_timer = max(0.0, history_flash_timer - dt)
+            _history_log_len = len(game.history_log)
+            if _history_log_len > _prev_history_log_len:
+                history_flash_timer = 0.9
+            _prev_history_log_len = _history_log_len
             divine_result_banner_timer = max(0.0, divine_result_banner_timer - dt)
             if divine_result_banner_timer <= 0:
                 divine_result_banner_text = None
@@ -3166,7 +3594,7 @@ def safe_main():
             _sync_palm_reading_toggle_buttons()
             _divine_size = 90
             _divine_gap = 18
-            _divine_y = H - _divine_size - 18
+            _divine_y = H - _divine_size - PADDING
             divine_intervention_btn.rect = pygame.Rect((W - _divine_size) // 2, _divine_y, _divine_size, _divine_size)
             undo_btn.rect = pygame.Rect(divine_intervention_btn.rect.x - _divine_size - _divine_gap, _divine_y, _divine_size, _divine_size)
             redo_btn.rect = pygame.Rect(divine_intervention_btn.rect.right + _divine_gap, _divine_y, _divine_size, _divine_size)
@@ -3353,8 +3781,11 @@ def safe_main():
                     if screen_mode == "slot_menu":
                         screen_mode = slot_menu_return_mode
                         continue
-                    if screen_mode in ("fortune_spell_list_view", "fortune_glossary_view"):
-                        screen_mode = "library"
+                    if screen_mode == "fortune_spell_list_view":
+                        screen_mode = "class_info_view" if spell_list_return_mode == "class_info_view" else "library"
+                        continue
+                    if screen_mode == "fortune_glossary_view":
+                        screen_mode = "class_info_view" if glossary_return_mode == "class_info_view" else "library"
                         continue
                     if screen_mode == "class_info_view":
                         screen_mode = "normal"
@@ -3382,6 +3813,11 @@ def safe_main():
                         screen_mode = "menu"
                         continue
                     # In Normal View, Escape does nothing
+                if e.type == pygame.KEYDOWN and e.key == pygame.K_i:
+                    tooltips_enabled = not tooltips_enabled
+                    game.toast_msg = "Tooltips on" if tooltips_enabled else "Tooltips off"
+                    game.toast_timer = TOAST_DURATION
+                    continue
                 if screen_mode in ("fool_video", "greedy_pot_popup"):
                     continue
                 
@@ -3410,6 +3846,7 @@ def safe_main():
                     if library_loadout_btn.handle_event(e):
                         _open_fortune_setup("library")
                     if library_glossary_btn.handle_event(e):
+                        glossary_return_mode = "library"
                         fortune_glossary_scroll = 0
                         fortune_glossary_search = ""
                         fortune_glossary_filter = "all"
@@ -3418,6 +3855,7 @@ def safe_main():
                         glossary_letter_dropdown.is_open = False
                         screen_mode = "fortune_glossary_view"
                     if library_spell_list_btn.handle_event(e):
+                        spell_list_return_mode = "library"
                         fortune_spell_list_scroll = 0
                         fortune_spell_search = ""
                         fortune_spell_filter = "all"
@@ -3654,10 +4092,13 @@ def safe_main():
                 elif screen_mode == "class_info_view":
                     _outer, _inner, _search_rect, _list_panel, _detail_panel = _class_info_layout()
                     _filtered = _get_filtered_class_info_entries()
+                    _prev_selected_idx = class_info_selected_idx
                     if not _filtered:
                         class_info_selected_idx = -1
                     elif class_info_selected_idx not in [_i for _i, _ in _filtered]:
                         class_info_selected_idx = _filtered[0][0]
+                    if class_info_selected_idx != _prev_selected_idx:
+                        class_info_detail_scroll = 0
                     _row_h = 42
                     _content_h = max(_list_panel.h, len(_filtered) * _row_h)
                     _clip, _track_rect, _handle_rect, _max_scroll = _fantasy_scrollbar_geometry(_list_panel.inflate(-10, -10), _content_h, class_info_scroll)
@@ -3669,6 +4110,8 @@ def safe_main():
                         class_info_scroll = int(_rel / max(1, _track_rect.h - _handle_rect.h) * _max_scroll)
                     if e.type == pygame.MOUSEWHEEL and _list_panel.collidepoint(m_pos):
                         class_info_scroll = int(clamp(class_info_scroll - e.y * 46, 0, _max_scroll))
+                    if e.type == pygame.MOUSEWHEEL and _detail_panel.collidepoint(m_pos):
+                        class_info_detail_scroll = int(max(0, class_info_detail_scroll - e.y * 42))
                     if e.type == pygame.KEYDOWN and class_info_search_active:
                         if e.key == pygame.K_BACKSPACE:
                             class_info_search = class_info_search[:-1]
@@ -3684,12 +4127,42 @@ def safe_main():
                             _rel = clamp(e.pos[1] - _track_rect.y - (_handle_rect.h // 2), 0, _track_rect.h - _handle_rect.h)
                             class_info_scroll = int(_rel / max(1, _track_rect.h - _handle_rect.h) * _max_scroll)
                             continue
+                        if _detail_panel.collidepoint(e.pos):
+                            for _kw_rect, _kw_kind, _kw_value in class_info_keyword_hits:
+                                if _kw_rect.collidepoint(e.pos):
+                                    if _kw_kind == "spell":
+                                        spell_list_return_mode = "class_info_view"
+                                        fortune_spell_search = _kw_value
+                                        fortune_spell_list_scroll = 0
+                                        fortune_spell_filter = "all"
+                                        fortune_spell_class_filter = "all"
+                                        fortune_spell_school_filter = "all"
+                                        fortune_spell_search_active = False
+                                        screen_mode = "fortune_spell_list_view"
+                                    else:
+                                        glossary_return_mode = "class_info_view"
+                                        selected_glossary_term = _kw_value
+                                        fortune_glossary_search = _kw_value
+                                        fortune_glossary_filter = "all"
+                                        fortune_glossary_scroll = 0
+                                        fortune_glossary_search_active = False
+                                        glossary_letter_dropdown.selected_index = 0
+                                        glossary_letter_dropdown.is_open = False
+                                        screen_mode = "fortune_glossary_view"
+                                    class_info_search_active = False
+                                    class_info_sb_dragging = False
+                                    break
+                            if screen_mode in ("fortune_glossary_view", "fortune_spell_list_view"):
+                                continue
                         class_info_search_active = _search_rect.collidepoint(e.pos)
                         if _clip.collidepoint(e.pos):
                             _local_y = e.pos[1] - _clip.y + class_info_scroll
                             _row_idx = int(_local_y // _row_h)
                             if 0 <= _row_idx < len(_filtered):
+                                _prev_selected_idx = class_info_selected_idx
                                 class_info_selected_idx = _filtered[_row_idx][0]
+                                if class_info_selected_idx != _prev_selected_idx:
+                                    class_info_detail_scroll = 0
                     if exit_view_btn.handle_event(e):
                         screen_mode = "normal"
                         class_info_search_active = False
@@ -3776,7 +4249,7 @@ def safe_main():
                                         webbrowser.open(_url)
                                     break
                     if fortune_view_back_btn.handle_event(e):
-                        screen_mode = "library"
+                        screen_mode = "class_info_view" if spell_list_return_mode == "class_info_view" else "library"
                         fortune_spell_search_active = False
 
                 elif screen_mode == "fortune_glossary_view":
@@ -3848,7 +4321,7 @@ def safe_main():
                                 selected_glossary_term = _term
                                 break
                     if fortune_view_back_btn.handle_event(e):
-                        screen_mode = "library"
+                        screen_mode = "class_info_view" if glossary_return_mode == "class_info_view" else "library"
                         fortune_glossary_search_active = False
                         glossary_letter_dropdown.is_open = False
                 
@@ -5019,7 +5492,7 @@ def safe_main():
                 if not _filtered_spells:
                     _none = f_fortune_small.render("No spells match your search/filter.", True, (244, 178, 206))
                     screen.blit(_none, (_panel.centerx - _none.get_width() // 2, _panel.centery - _none.get_height() // 2))
-                fortune_view_back_btn.text = "Back to Library"
+                fortune_view_back_btn.text = "Back to Class Info" if spell_list_return_mode == "class_info_view" else "Back to Library"
                 fortune_view_back_btn.draw(screen, f_fortune_small, dt)
 
             elif screen_mode == "fortune_glossary_view":
@@ -5167,9 +5640,7 @@ def safe_main():
                 pygame.draw.rect(screen, _cyan_edge, _outer, 2, 18)
 
                 _title = f_fortune_title.render("CLASS INFO", True, _cyan_soft)
-                screen.blit(_title, (_inner.x + 6, _inner.y + 10))
-                _src = f_fortune_small.render(f"Source: {class_info_source_name}", True, (206, 238, 248))
-                screen.blit(_src, (_inner.x + 10, _inner.y + 62))
+                screen.blit(_title, (_inner.x + 6, _inner.y + 2))
 
                 draw_round_rect(screen, _search_rect, (20, 18, 30, 230), 10)
                 pygame.draw.rect(screen, _cyan_soft if class_info_search_active else _cyan_edge, _search_rect, 2, 10)
@@ -5195,7 +5666,7 @@ def safe_main():
 
                 _clip_prev = screen.get_clip()
                 screen.set_clip(_clip)
-                for _i, (_src_idx, _entry_text) in enumerate(_filtered):
+                for _i, (_src_idx, (_entry_title, _entry_body)) in enumerate(_filtered):
                     _rr = pygame.Rect(_clip.x + 4, _clip.y + (_i * _row_h) - class_info_scroll, _clip.w - _track_rect.w - 14, _row_h - 4)
                     if _rr.bottom < _clip.y or _rr.top > _clip.bottom:
                         continue
@@ -5207,7 +5678,8 @@ def safe_main():
                     else:
                         draw_round_rect(screen, _rr, (28, 26, 40, 220) if _hover else (24, 20, 34, 210), 8)
                         pygame.draw.rect(screen, (102, 220, 255, 130), _rr, 1, 8)
-                    _txt = str(_entry_text)
+                    
+                    _txt = str(_entry_title)
                     if f_fortune_small.size(_txt)[0] > _rr.w - 20:
                         while len(_txt) > 5 and f_fortune_small.size(_txt + "...")[0] > _rr.w - 20:
                             _txt = _txt[:-1]
@@ -5220,25 +5692,31 @@ def safe_main():
                     _draw_fantasy_scrollbar(screen, _track_rect, _handle_rect, _cyan_edge, _cyan_soft)
 
                 _detail_inner = _detail_panel.inflate(-18, -18)
-                _selected_text = ""
                 if class_info_selected_idx is not None and class_info_selected_idx >= 0 and class_info_selected_idx < len(class_info_entries):
-                    _selected_text = str(class_info_entries[class_info_selected_idx])
-                if _selected_text:
-                    _detail_title = f_fortune_header.render("Selected Section", True, (224, 248, 255))
+                    _selected_title, _selected_body = class_info_entries[class_info_selected_idx]
+                    
+                    _detail_title = f_fortune_header.render(_selected_title, True, (224, 248, 255))
                     screen.blit(_detail_title, (_detail_inner.x, _detail_inner.y + 4))
                     pygame.draw.line(screen, (102, 220, 255, 120), (_detail_inner.x, _detail_inner.y + 42), (_detail_inner.right, _detail_inner.y + 42), 2)
-                    _font, _lines = _fit_glossary_detail_text(_selected_text, _detail_inner.w, _detail_inner.h - 58)
-                    _yy = _detail_inner.y + 54
-                    for _line in _lines:
-                        _ls = _font.render(_line, True, (224, 236, 246))
-                        screen.blit(_ls, (_detail_inner.x, _yy))
-                        _yy += _font.get_linesize()
-                        if _yy > _detail_inner.bottom - _font.get_linesize():
-                            break
+
+                    _body_rect = pygame.Rect(_detail_inner.x, _detail_inner.y + 54, _detail_inner.w, max(20, _detail_inner.h - 58))
+                    _max_detail_scroll = rich_renderer.draw_rich_box(screen, _body_rect, _selected_body, class_info_detail_scroll)
+                    _clamped = int(clamp(class_info_detail_scroll, 0, _max_detail_scroll))
+                    if _clamped != class_info_detail_scroll:
+                        class_info_detail_scroll = _clamped
+                        rich_renderer.draw_rich_box(screen, _body_rect, _selected_body, class_info_detail_scroll)
+                    class_info_keyword_hits = _build_class_info_keyword_hitboxes(_selected_body, _body_rect, class_info_detail_scroll)
+                    for _kw_rect, _kw_kind, _kw_value in class_info_keyword_hits:
+                        _u_col = (130, 225, 255) if _kw_rect.collidepoint(m_pos) else (95, 185, 225)
+                        _ux1 = max(_kw_rect.x, _body_rect.x)
+                        _ux2 = min(_kw_rect.right, _body_rect.right)
+                        if _ux2 > _ux1:
+                            _uy = min(_kw_rect.y + _kw_rect.h - 1, _body_rect.bottom - 2)
+                            pygame.draw.line(screen, _u_col, (_ux1, _uy), (_ux2, _uy), 1)
                 else:
+                    class_info_keyword_hits = []
                     _none = f_fortune_small.render("No matching entries. Try a broader filter.", True, (196, 230, 240))
                     screen.blit(_none, (_detail_inner.x, _detail_inner.y + 10))
-
                 exit_view_btn.text = "Back"
                 exit_view_btn.rect = pygame.Rect(_inner.x, _outer.bottom - 62, 160, 44)
                 exit_view_btn.draw(screen, f_small, dt)
@@ -5261,7 +5739,8 @@ def safe_main():
                 screen.blit(_toggle_txt, (_sidebar_toggle_rect.centerx - _toggle_txt.get_width() // 2, _sidebar_toggle_rect.centery - _toggle_txt.get_height() // 2))
 
                 class_info_btn.disabled = sidebar_open
-                class_info_btn.draw(screen, f_small, dt)
+                if not sidebar_open:
+                    class_info_btn.draw(screen, f_small, dt)
                 
                 _lvl_lbl_text = "Select player level"
                 _lvl_lbl_surf = f_small.render(_lvl_lbl_text, True, (200, 255, 220))
@@ -5274,10 +5753,10 @@ def safe_main():
                 redo_btn.draw(screen, f_tiny, dt)
                 _left_hover_title = None
                 _left_hover_body = None
-                if _lvl_lbl_rect.collidepoint(m_pos) or lvl_change_dd.rect.collidepoint(m_pos):
+                if tooltips_enabled and (_lvl_lbl_rect.collidepoint(m_pos) or lvl_change_dd.rect.collidepoint(m_pos)):
                     _left_hover_title = "Select player level"
                     _left_hover_body = _get_feature_blurb(_left_hover_title)
-                if divine_intervention_btn.rect.collidepoint(m_pos):
+                if tooltips_enabled and divine_intervention_btn.rect.collidepoint(m_pos):
                     _left_hover_title = "Divine Intervention"
                     _left_hover_body = _get_feature_blurb(_left_hover_title)
 
@@ -5344,24 +5823,30 @@ def safe_main():
                     screen.blit(_du_lbl, (_du_lbl_x, _du_lbl_y))
                     btn_d1.draw(screen, f_tiny, dt)
                     stack_btn.draw(screen, f_tiny, dt)
-                    if _left_hover_title is None and (_dof_lbl_bg.collidepoint(m_pos) or draw_of_fate_slider.rect.collidepoint(m_pos)):
+                    if tooltips_enabled and _left_hover_title is None and (_dof_lbl_bg.collidepoint(m_pos) or draw_of_fate_slider.rect.collidepoint(m_pos)):
                         _left_hover_title = "Draw of Fate"
                         _left_hover_body = _get_feature_blurb(_left_hover_title)
-                    if _left_hover_title is None and _cd_lbl_bg.collidepoint(m_pos):
+                    if tooltips_enabled and _left_hover_title is None and _cd_lbl_bg.collidepoint(m_pos):
                         _left_hover_title = "Channel Divinity Uses"
                         _left_hover_body = _get_feature_blurb(_left_hover_title)
-                    if _left_hover_title is None and (_tu_lbl_bg.collidepoint(m_pos) or turn_undead_btn.rect.collidepoint(m_pos)):
+                    if tooltips_enabled and _left_hover_title is None and (_tu_lbl_bg.collidepoint(m_pos) or turn_undead_btn.rect.collidepoint(m_pos)):
                         _left_hover_title = "Turn Undead"
                         _left_hover_body = _get_feature_blurb(_left_hover_title)
-                    if _left_hover_title is None and (_du_lbl_bg.collidepoint(m_pos) or destroy_undead_btn.rect.collidepoint(m_pos)):
+                    if tooltips_enabled and _left_hover_title is None and (_du_lbl_bg.collidepoint(m_pos) or destroy_undead_btn.rect.collidepoint(m_pos)):
                         _left_hover_title = "Destroy Undead"
                         _left_hover_body = _get_feature_blurb(_left_hover_title)
-                    if _left_hover_title is None and btn_d1.rect.collidepoint(m_pos):
+                    if tooltips_enabled and _left_hover_title is None and btn_d1.rect.collidepoint(m_pos):
                         _left_hover_title = "Draw"
                         _left_hover_body = _get_feature_blurb(_left_hover_title)
-                    if _left_hover_title is None and stack_btn.rect.collidepoint(m_pos):
+                    if tooltips_enabled and _left_hover_title is None and stack_btn.rect.collidepoint(m_pos):
                         _left_hover_title = "Stack"
                         _left_hover_body = _get_feature_blurb(_left_hover_title)
+                if tooltips_enabled and game.level >= 6:
+                    dt_box = get_seer_dice_rect()
+                    _seer_hover_box = pygame.Rect(dt_box.x, dt_box.y - 38, dt_box.w, dt_box.h + 38)
+                    if _left_hover_title is None and _seer_hover_box.collidepoint(m_pos):
+                        _left_hover_title = "Seer Dice Table"
+                        _left_hover_body = "The first three cards you draw each day are recorded here as Seer Dice. Hover or click them to review the results that can guide your fortune effects."
                 if game.level >= 8:
                     if palm_reading_menu_open:
                         palm_reading_btn.gold = False
@@ -5543,6 +6028,7 @@ def safe_main():
                         
                         # Card Buttons
                         if zone == game.hand:
+                            _card_btn_pulse = (math.sin(pygame.time.get_ticks() * 0.006) + 1) / 2
                             mbr, vbr = pygame.Rect(x+15, y+HAND_CARD_H+8, 110, 30), pygame.Rect(x+135, y+HAND_CARD_H+8, 110, 30)
                             if _left_hover_title is None and mbr.collidepoint(m_pos):
                                 _left_hover_title = "Mull"
@@ -5554,26 +6040,44 @@ def safe_main():
                                 _mull_txt = f_tiny.render("MULL", True, (100, 100, 100))
                                 screen.blit(_mull_txt, _mull_txt.get_rect(center=mbr.center))
                             else:
-                                draw_round_rect(screen, mbr, (50, 70, 40, 100) if mbr.collidepoint(m_pos) else (30, 40, 25, 160), 15)
-                                pygame.draw.rect(screen, (100, 200, 100, 100), mbr, 1, 15)
-                                _mull_txt = f_tiny.render("MULL", True, (200, 255, 200))
+                                _mull_glow_alpha = int(42 + (_card_btn_pulse * 44))
+                                draw_round_rect(screen, mbr.inflate(12, 10), (245, 210, 70, _mull_glow_alpha), 20)
+                                draw_round_rect(screen, mbr, (120, 92, 22, 130) if mbr.collidepoint(m_pos) else (78, 58, 16, 180), 15)
+                                pygame.draw.rect(screen, (250, 214, 96, 155), mbr, 1, 15)
+                                _mull_txt = f_tiny.render("MULL", True, (255, 239, 166))
                                 screen.blit(_mull_txt, _mull_txt.get_rect(center=mbr.center))
                             
-                            draw_round_rect(screen, vbr, (100, 40, 40, 100) if vbr.collidepoint(m_pos) else (45, 25, 25, 160), 15)
-                            pygame.draw.rect(screen, (200, 100, 100, 100), vbr, 1, 15)
                             btn_label = "VANISH" if h.get('tapped') else "USE"
-                            _btn_txt = f_tiny.render(btn_label, True, (240, 240, 240))
+                            if btn_label == "USE":
+                                _use_glow_alpha = int(32 + (_card_btn_pulse * 32))
+                                draw_round_rect(screen, vbr.inflate(12, 10), (70, 210, 120, _use_glow_alpha), 20)
+                                draw_round_rect(screen, vbr, (42, 92, 54, 135) if vbr.collidepoint(m_pos) else (28, 56, 34, 175), 15)
+                                pygame.draw.rect(screen, (110, 235, 150, 145), vbr, 1, 15)
+                                _btn_color = (220, 255, 226)
+                            else:
+                                draw_round_rect(screen, vbr, (100, 40, 40, 100) if vbr.collidepoint(m_pos) else (45, 25, 25, 160), 15)
+                                pygame.draw.rect(screen, (200, 100, 100, 100), vbr, 1, 15)
+                                _btn_color = (240, 240, 240)
+                            _btn_txt = f_tiny.render(btn_label, True, _btn_color)
                             screen.blit(_btn_txt, _btn_txt.get_rect(center=vbr.center))
                         else:
+                            _card_btn_pulse = (math.sin(pygame.time.get_ticks() * 0.006) + 1) / 2
                             vbr = pygame.Rect(x+50, y+HAND_CARD_H+8, 160, 30)
-                            draw_round_rect(screen, vbr, (60, 60, 70, 100) if vbr.collidepoint(m_pos) else (40, 40, 50, 160), 15)
-                            pygame.draw.rect(screen, (200, 200, 255, 60), vbr, 1, 15)
                             btn_label = "VANISH" if h.get('tapped') else "USE"
-                            btn_color = (220, 230, 255) if h.get('tapped') else (240, 240, 240)
+                            if btn_label == "USE":
+                                _use_glow_alpha = int(30 + (_card_btn_pulse * 30))
+                                draw_round_rect(screen, vbr.inflate(12, 10), (70, 210, 120, _use_glow_alpha), 20)
+                                draw_round_rect(screen, vbr, (42, 92, 54, 135) if vbr.collidepoint(m_pos) else (28, 56, 34, 175), 15)
+                                pygame.draw.rect(screen, (110, 235, 150, 145), vbr, 1, 15)
+                                btn_color = (220, 255, 226)
+                            else:
+                                draw_round_rect(screen, vbr, (60, 60, 70, 100) if vbr.collidepoint(m_pos) else (40, 40, 50, 160), 15)
+                                pygame.draw.rect(screen, (200, 200, 255, 60), vbr, 1, 15)
+                                btn_color = (220, 230, 255)
                             _btn_txt = f_tiny.render(btn_label, True, btn_color)
                             screen.blit(_btn_txt, _btn_txt.get_rect(center=vbr.center))
 
-                if _left_hover_title and _left_hover_body:
+                if tooltips_enabled and _left_hover_title and _left_hover_body:
                     _draw_hover_blurb(_left_hover_title, _left_hover_body, m_pos, (212, 168, 96), (20, 18, 30, 238), _max_w=520, _max_lines=8)
 
                 # 6. DECK & VANISHED PILE
@@ -5665,6 +6169,16 @@ def safe_main():
                 draw_round_rect(screen, _mz_title_box, (0, 0, 0, 165), 8)
                 screen.blit(_vz_lbl, (_vz_title_box.centerx - _vz_lbl.get_width() // 2, _vz_title_box.centery - _vz_lbl.get_height() // 2))
                 screen.blit(_mz_lbl, (_mz_title_box.centerx - _mz_lbl.get_width() // 2, _mz_title_box.centery - _mz_lbl.get_height() // 2))
+                if tooltips_enabled and _mz_title_box.collidepoint(m_pos):
+                    _draw_hover_blurb(
+                        "Main Deck",
+                        "This is the Deck of Fate. Draw takes the top card into your hand, and Stack Top lets you place a chosen card on top before the next draw.",
+                        m_pos,
+                        (212, 168, 96),
+                        (20, 18, 30, 238),
+                        _max_w=460,
+                        _max_lines=6,
+                    )
 
                 deck_x, deck_y = mz_rect.x+25, mz_rect.y+48
                 deck_w, deck_h = 160, 224
