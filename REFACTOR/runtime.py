@@ -13,6 +13,7 @@ def safe_main():
     try:
         random.seed(int.from_bytes(os.urandom(16), "big") ^ time.time_ns())
         screen, W, H = safe_init(); clock = pygame.time.Clock(); f_title, f_small, f_tiny, f_seer_bold, f_seer_dice_sim, f_seer_massive, f_preview_title, f_preview_body, f_labels, f_hand_header, f_hand_body = pygame.font.SysFont("Segoe UI", 26, True), pygame.font.SysFont("Segoe UI", 18, True), pygame.font.SysFont("Segoe UI", 18), pygame.font.SysFont("Segoe UI", 20, True), pygame.font.SysFont("Segoe UI", 24, True), pygame.font.SysFont("timesnewroman", 72, True), pygame.font.SysFont("timesnewroman", 44, bold=True), pygame.font.SysFont("georgia", 26), pygame.font.SysFont("timesnewroman", 32, bold=True), pygame.font.SysFont("timesnewroman", 22, bold=True), pygame.font.SysFont("georgia", 18)
+        pygame.key.set_repeat(350, 40)
 
         _loading_log = []       # list of (status_text, thumb_surface_or_None)
         _loading_display_pct = 0.0
@@ -52,7 +53,7 @@ def safe_main():
                     log_event("Loading video backend: cv2")
                     return
             except Exception as _cv2_ex:
-                log_event(f"cv2 unavailable for loading video: {_cv2_ex}", is_error=True)
+                log_event(f"cv2 unavailable for loading video, trying imageio fallback: {_cv2_ex}")
 
             try:
                 import imageio.v2 as _iio
@@ -897,7 +898,8 @@ def safe_main():
             "stack": "Choose and place a card on top of your deck, then resolve your next draw around that stacked card.",
             "past present and future": "Pull one Fortune card from your deck and use its effect without rolling on the Tarot table. This feature has limited charges per long rest.",
             "fated": "Use your selected Major Fortune card directly as a Fated Card. It follows Major Fortune weekly cooldown and activation restrictions.",
-            "palm reading": "Palm Reading opens a guided input panel for A/D selection and mode options used by this feature in your current build.",
+            "palm reading": "Palm Reading opens a guided input panel for A/D selection, a typeable name field, and mode options used by this feature in your current build.",
+            "reader of fate": "Starting at 1st level, you are proficient in Arcana and Insight skills and have expertise with all Card Games, Coin Games and Dice Games.\n\nAlso you learn the Guidance Cantrip. and you can cast the Augury spell as a 10 minute ritual casting using your Tarot cards.\nThis feature has a number of uses equal to your Proficiency Bonus, and you regain any expended uses at the end of a long rest.",
             "divine intervention": "At higher levels, roll to call on divine aid. Success applies a strong divine effect; failure applies cooldown/lockout rules until recovery.",
         }
 
@@ -1263,11 +1265,17 @@ def safe_main():
         _img_glossary_bg = _load_btn_img("Glossary_BG.png")
         _img_class_info = _load_btn_img("Class_Info_Button.png")
         _img_class_info_bg = _load_btn_img("Class_Info_BG.png")
+        _img_reader_board = _load_btn_img("Reader_of_Fate__Board.png")
         _img_library_bg_scaled = pygame.transform.smoothscale(_img_library_bg, (W, H)) if _img_library_bg is not None else None
         _img_spell_library_bg_scaled = pygame.transform.smoothscale(_img_spell_library_bg, (W, H)) if _img_spell_library_bg is not None else None
         _img_glossary_bg_scaled = pygame.transform.smoothscale(_img_glossary_bg, (W, H)) if _img_glossary_bg is not None else None
         _img_class_info_bg_scaled = pygame.transform.smoothscale(_img_class_info_bg, (W, H)) if _img_class_info_bg is not None else None
         _cached_side_panel_bg = None
+        _reader_board_cache = {}
+        _reader_link_urls = {
+            "Guidance": normalize_aidedd_spell_url("https://www.aidedd.org/dnd/sorts.php?vo=guidance", "Guidance"),
+            "Augury": normalize_aidedd_spell_url("https://www.aidedd.org/dnd/sorts.php?vo=augury", "Augury"),
+        }
         if _img_side_panel is not None:
             _cached_side_panel_bg = pygame.transform.smoothscale(_img_side_panel, (PANEL_W, H - PADDING * 2))
             _grey_ov = pygame.Surface((PANEL_W, H - PADDING * 2), pygame.SRCALPHA)
@@ -1279,6 +1287,34 @@ def safe_main():
         _dof_token_scaled_cache = {}
         _promo_stamp_cache = {}
         _card_face_cache = {}
+
+        def _get_reader_board_surface(_size):
+            if _img_reader_board is None:
+                return None
+            _key = (int(_size[0]), int(_size[1]))
+            _surf = _reader_board_cache.get(_key)
+            if _surf is None:
+                _surf = pygame.transform.smoothscale(_img_reader_board, _key)
+                _reader_board_cache[_key] = _surf
+            return _surf
+
+        def _get_reader_token_layout(_board_rect):
+            _count = max(0, int(game.reader_of_fate_current))
+            _cols = 3
+            _rows = 2
+            _size = max(70, min(116, int(min(_board_rect.w / 3.8, _board_rect.h / 2.8))))
+            _gap_x = max(8, int(_size * 0.10))
+            _gap_y = max(8, int(_size * 0.12))
+            _grid_w = (_cols * _size) + ((_cols - 1) * _gap_x)
+            _grid_h = (_rows * _size) + ((_rows - 1) * _gap_y)
+            _start_x = _board_rect.x + max(16, (_board_rect.w - _grid_w) // 2)
+            _start_y = _board_rect.bottom - _grid_h - max(14, int(_board_rect.h * 0.08))
+            _slots = []
+            for _idx in range(_count):
+                _row = _idx // _cols
+                _col = _idx % _cols
+                _slots.append((_idx, pygame.Rect(_start_x + _col * (_size + _gap_x), _start_y + _row * (_size + _gap_y), _size, _size)))
+            return _slots, _size
 
         def _draw_promotion_stamp(_card_rect, _is_major=False, _inverted=False):
             _src = _img_major_stamp if _is_major else _img_fortune_stamp
@@ -1354,6 +1390,12 @@ def safe_main():
         _sidebar_ui_x = ui_x
         _card_zone_x = PANEL_W + 60
         _major_zone_x = _card_zone_x + HAND_GRID_SPACING_X
+        _reader_board_w = _card_zone_x
+        _reader_board_collapsed_h = 0
+        _reader_board_open_h = 248
+        _reader_board_open = False
+        _reader_board_anim_h = float(_reader_board_collapsed_h)
+        _reader_board_handle_rect = pygame.Rect((_reader_board_w // 2) - 48, H - 28, 96, 28)
 
         def _get_glossary_view_layout():
             _panel = pygame.Rect(fortune_setup_box.x + 40, fortune_setup_box.y + 120, fortune_setup_box.w - 80, fortune_setup_box.h - 230)
@@ -2175,6 +2217,7 @@ def safe_main():
         _prev_history_log_len = len(game.history_log)
         dof_token_fizzles = []
         _prev_dof_uses = game.draw_of_fate_uses
+        reader_token_fizzles = []
         history_sb_dragging = False
         grid_sb_dragging = False
         preview_sb_dragging = False
@@ -2207,6 +2250,14 @@ def safe_main():
             "post_action": None,
             "background": None,
         }
+        reader_crystal_state = {
+            "frames": [],
+            "durations": [],
+            "frame_index": 0,
+            "frame_timer": 0.0,
+        }
+        reader_token_hit_rects = []
+        reader_spell_link_rects = []
         normal_zone_y_offset = -50
         normal_card_zone_y_offset = 0
         fortune_major_card_zone_y_offset = -50
@@ -2275,7 +2326,7 @@ def safe_main():
             try:
                 import cv2
             except Exception as ex:
-                log_event(f"OpenCV unavailable for card video playback: {ex}", is_error=True)
+                log_event(f"OpenCV unavailable for card video playback, skipping video: {ex}")
                 post_action()
                 return False
             cap = cv2.VideoCapture(video_path)
@@ -2334,6 +2385,28 @@ def safe_main():
                 greedy_pot_state["durations"].clear()
                 return False
             return bool(greedy_pot_state["frames"])
+
+        def _load_reader_crystal_frames():
+            if reader_crystal_state["frames"]:
+                return True
+            gif_path = os.path.join(IMAGES_DIR, "Crystal_ball_token.gif")
+            if not os.path.exists(gif_path):
+                log_event("Crystal_ball_token.gif not found for Reader of Fate.", is_error=True)
+                return False
+            try:
+                from PIL import Image, ImageSequence
+                with Image.open(gif_path) as gif_img:
+                    for frame in ImageSequence.Iterator(gif_img):
+                        rgba_frame = frame.convert("RGBA")
+                        frame_surface = pygame.image.fromstring(rgba_frame.tobytes(), rgba_frame.size, "RGBA").convert_alpha()
+                        reader_crystal_state["frames"].append(frame_surface)
+                        reader_crystal_state["durations"].append(max(0.03, float(frame.info.get("duration", gif_img.info.get("duration", 100))) / 1000.0))
+            except Exception as ex:
+                log_event(f"Failed to load Crystal_ball_token.gif: {ex}", is_error=True)
+                reader_crystal_state["frames"].clear()
+                reader_crystal_state["durations"].clear()
+                return False
+            return bool(reader_crystal_state["frames"])
 
         def start_greedy_pot_popup(post_action):
             nonlocal screen_mode
@@ -3102,6 +3175,21 @@ def safe_main():
             game.toast_msg = f"Fortune setup saved ({_fortune_slots_summary()})."
             game.toast_timer = TOAST_DURATION
 
+        def _activate_selected_fortune_loadout(loadout_idx, toast_prefix="Applied"):
+            nonlocal fortune_selected_loadout_idx, fortune_edit_loadout, fortune_name_edit_idx, fortune_name_input
+            game.normalize_fortune_loadouts()
+            loadout_idx = int(clamp(loadout_idx, 0, max(0, len(game.fortune_loadouts) - 1)))
+            _changed = game.activate_fortune_loadout(loadout_idx, add_history_entry=True, save_state=True)
+            fortune_selected_loadout_idx = loadout_idx
+            fortune_edit_loadout = _clamp_loadout_for_current_level(game.fortune_loadouts[loadout_idx])
+            fortune_name_edit_idx = None
+            fortune_name_input = ""
+            _persist_loadouts_to_active_save_target()
+            if _changed:
+                _ld_name = str(game.fortune_loadouts[loadout_idx].get("name", f"Loadout {loadout_idx + 1}")).strip() or f"Loadout {loadout_idx + 1}"
+                game.toast_msg = f"{toast_prefix} {_ld_name}."
+                game.toast_timer = TOAST_DURATION
+
         def _fortune_loadout_has_data(loadout_idx):
             try:
                 _ld = game.fortune_loadouts[loadout_idx]
@@ -3324,10 +3412,9 @@ def safe_main():
                     fortune_card_buttons.append((_cid, pygame.Rect(_x, _y, card_w, card_h), "major"))
 
         def _get_selected_stamp_mode(cid):
-            _active_ld = game.get_active_fortune_loadout()
-            if _active_ld.get("major_id") == cid:
+            if game.can_promote_card(cid, to_major=True):
                 return "major"
-            if cid in _active_ld.get("fortune_ids", []):
+            if game.can_promote_card(cid, to_major=False):
                 return "fortune"
             return None
 
@@ -3516,6 +3603,10 @@ def safe_main():
                 _sidebar_anim_x = float(_sidebar_target_x)
             _sidebar_panel_x = int(round(_sidebar_anim_x))
             _sidebar_ui_x = _sidebar_panel_x + PANEL_INNER_PAD
+            _reader_board_target_h = _reader_board_open_h if _reader_board_open else _reader_board_collapsed_h
+            _reader_board_anim_h += (_reader_board_target_h - _reader_board_anim_h) * min(1.0, dt * 12.0)
+            if abs(_reader_board_target_h - _reader_board_anim_h) < 0.5:
+                _reader_board_anim_h = float(_reader_board_target_h)
 
             lvl_change_dd.rect = pygame.Rect(_sidebar_ui_x + 15, PADDING + 45, ui_w - 30, 42)
 
@@ -3545,6 +3636,11 @@ def safe_main():
             if divine_result_banner_timer <= 0:
                 divine_result_banner_text = None
                 divine_result_banner_title = None
+            if _load_reader_crystal_frames() and reader_crystal_state["frames"]:
+                reader_crystal_state["frame_timer"] += dt
+                while reader_crystal_state["frame_timer"] >= reader_crystal_state["durations"][reader_crystal_state["frame_index"]]:
+                    reader_crystal_state["frame_timer"] -= reader_crystal_state["durations"][reader_crystal_state["frame_index"]]
+                    reader_crystal_state["frame_index"] = (reader_crystal_state["frame_index"] + 1) % len(reader_crystal_state["frames"])
             if autosave_enabled:
                 if screen_mode == "normal":
                     if not autosave_was_in_normal:
@@ -3758,6 +3854,15 @@ def safe_main():
                     if confirm_no_btn.handle_event(e):
                         confirm_dialog = None
                         continue
+                    continue
+                _reader_blocks_palm = (screen_mode == "normal" and (_reader_board_open or _reader_board_anim_h > 1.0))
+                if screen_mode == "normal" and game.level >= 8 and e.type == pygame.KEYDOWN and palm_reading_text_active:
+                    if e.key == pygame.K_BACKSPACE:
+                        palm_reading_text = palm_reading_text[:-1]
+                    elif e.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_TAB):
+                        pass
+                    elif e.unicode and e.unicode.isprintable() and len(palm_reading_text) < 20:
+                        palm_reading_text += e.unicode
                     continue
                 if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
                     if screen_mode == "fool_video":
@@ -4022,10 +4127,7 @@ def safe_main():
                                 fortune_name_edit_idx = _idx
                                 fortune_name_input = str(game.fortune_loadouts[_idx].get("name", f"Loadout {_idx + 1}"))[:15]
                             else:
-                                fortune_name_edit_idx = None
-                                fortune_name_input = ""
-                                fortune_selected_loadout_idx = _idx
-                                fortune_edit_loadout = _clamp_loadout_for_current_level(game.fortune_loadouts[_idx])
+                                _activate_selected_fortune_loadout(_idx)
                     active_ld = fortune_edit_loadout
                     _build_fortune_card_buttons()
                     _grid_clip = _fortune_grid_clip_rect()
@@ -4575,13 +4677,6 @@ def safe_main():
                             draw_of_fate_slider.set_value(game.draw_of_fate_uses)
                             _sync_level_steppers(game.level)
                     _palm_text_rect = _get_palm_reading_text_rect() if game.level >= 8 else pygame.Rect(0, 0, 0, 0)
-                    if game.level >= 8 and e.type == pygame.KEYDOWN and palm_reading_text_active:
-                        if e.key == pygame.K_BACKSPACE:
-                            palm_reading_text = palm_reading_text[:-1]
-                        elif e.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_TAB):
-                            pass
-                        elif e.unicode and e.unicode.isprintable() and len(palm_reading_text) < 64:
-                            palm_reading_text += e.unicode
                     if game.level >= 8 and e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                         _palm_controls_hit = (
                             palm_reading_btn.rect.collidepoint(e.pos) or
@@ -4596,7 +4691,7 @@ def safe_main():
                                 palm_reading_d_btn.rect.collidepoint(e.pos)
                             ))
                         )
-                        if palm_reading_menu_open and palm_reading_text_open and _palm_text_rect.collidepoint(e.pos):
+                        if (not _reader_blocks_palm) and palm_reading_menu_open and palm_reading_text_open and _palm_text_rect.collidepoint(e.pos):
                             palm_reading_text_active = True
                         elif not _palm_controls_hit:
                             palm_reading_text_active = False
@@ -4608,6 +4703,33 @@ def safe_main():
                         palm_reading_text_active = False
                         if not sidebar_open:
                             palm_reading_menu_open = False
+                    if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and _reader_board_handle_rect.collidepoint(e.pos):
+                        _reader_board_open = not _reader_board_open
+                        palm_reading_text_active = False
+                    if screen_mode == "normal" and e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                        _reader_link_hit = next(((_label, _url) for _label, _rect, _url in reader_spell_link_rects if _rect.collidepoint(e.pos)), None)
+                        if _reader_link_hit is not None:
+                            try:
+                                webbrowser.open(_reader_link_hit[1])
+                            except Exception:
+                                pass
+                            continue
+                        _reader_token_hit = next(((_slot_idx, _rect) for _slot_idx, _rect in reader_token_hit_rects if _rect.collidepoint(e.pos)), None)
+                        _reader_fizzle_slots = {getattr(_tf, "reader_slot_index", None) for _tf in reader_token_fizzles}
+                        _reader_available_uses = max(0, int(game.reader_of_fate_current) - len(reader_token_fizzles))
+                        if _reader_token_hit is not None and _reader_available_uses > 0 and reader_crystal_state["frames"]:
+                            _slot_idx, _reader_token_rect = _reader_token_hit
+                            if _slot_idx in _reader_fizzle_slots:
+                                continue
+                            game.save_state()
+                            _frame = reader_crystal_state["frames"][reader_crystal_state["frame_index"]]
+                            _token_img = pygame.transform.smoothscale(_frame, (_reader_token_rect.w, _reader_token_rect.h))
+                            _tf = TokenFizzle(_token_img, (_reader_token_rect.x, _reader_token_rect.y), _reader_token_rect.w, _reader_token_rect.h)
+                            _tf.reader_slot_index = _slot_idx
+                            reader_token_fizzles.append(_tf)
+                            play_sfx(_sfx_vanish_fx, priority=True)
+                            game.add_history("Reader of Fate used. A crystal ball vanished.")
+                            continue
                     if (not sidebar_open) and class_info_btn.handle_event(e):
                         screen_mode = "class_info_view"
                         class_info_search_active = False
@@ -4618,23 +4740,23 @@ def safe_main():
                     if stack_btn.handle_event(e): game.save_state(); game.draw_of_fate_current = max(0, game.draw_of_fate_current - 1); screen_mode, scroll_y = "stack_selection", 0
                     if library_btn.handle_event(e):
                         _open_library("normal")
-                    if game.level >= 8 and palm_reading_btn.handle_event(e):
+                    if game.level >= 8 and (not _reader_blocks_palm) and palm_reading_btn.handle_event(e):
                         palm_reading_menu_open = not palm_reading_menu_open
                         palm_reading_btn.pink = palm_reading_menu_open
                         palm_reading_btn.pulse_frame = palm_reading_menu_open
                         if not palm_reading_menu_open:
                             palm_reading_text_active = False
-                    if game.level >= 8 and palm_reading_menu_open and palm_reading_text_toggle_btn.handle_event(e):
+                    if game.level >= 8 and (not _reader_blocks_palm) and palm_reading_menu_open and palm_reading_text_toggle_btn.handle_event(e):
                         palm_reading_text_open = not palm_reading_text_open
                         palm_reading_text_active = False
                         continue
-                    if game.level >= 8 and palm_reading_menu_open and palm_reading_mode_left_btn.handle_event(e):
+                    if game.level >= 8 and (not _reader_blocks_palm) and palm_reading_menu_open and palm_reading_mode_left_btn.handle_event(e):
                         palm_reading_mode_index = (palm_reading_mode_index - 1) % len(palm_reading_mode_options)
-                    if game.level >= 8 and palm_reading_menu_open and palm_reading_mode_right_btn.handle_event(e):
+                    if game.level >= 8 and (not _reader_blocks_palm) and palm_reading_menu_open and palm_reading_mode_right_btn.handle_event(e):
                         palm_reading_mode_index = (palm_reading_mode_index + 1) % len(palm_reading_mode_options)
-                    if game.level >= 8 and palm_reading_menu_open and palm_reading_a_btn.handle_event(e):
+                    if game.level >= 8 and (not _reader_blocks_palm) and palm_reading_menu_open and palm_reading_a_btn.handle_event(e):
                         palm_reading_selection = None if palm_reading_selection == "A" else "A"
-                    if game.level >= 8 and palm_reading_menu_open and palm_reading_d_btn.handle_event(e):
+                    if game.level >= 8 and (not _reader_blocks_palm) and palm_reading_menu_open and palm_reading_d_btn.handle_event(e):
                         palm_reading_selection = None if palm_reading_selection == "D" else "D"
                     if game.level >= 6 and past_present_future_btn.handle_event(e) and not past_present_future_btn.disabled: screen_mode, scroll_y = "ppf_selection", 0
                     if game.level >= 2 and rest_menu_open and short_rest_btn.handle_event(e): game.short_rest(); rest_menu_open = False
@@ -5753,6 +5875,7 @@ def safe_main():
                 redo_btn.draw(screen, f_tiny, dt)
                 _left_hover_title = None
                 _left_hover_body = None
+                _palm_text_overlay_payload = None
                 if tooltips_enabled and (_lvl_lbl_rect.collidepoint(m_pos) or lvl_change_dd.rect.collidepoint(m_pos)):
                     _left_hover_title = "Select player level"
                     _left_hover_body = _get_feature_blurb(_left_hover_title)
@@ -5848,6 +5971,7 @@ def safe_main():
                         _left_hover_title = "Seer Dice Table"
                         _left_hover_body = "The first three cards you draw each day are recorded here as Seer Dice. Hover or click them to review the results that can guide your fortune effects."
                 if game.level >= 8:
+                    _reader_blocks_palm = (_reader_board_open or _reader_board_anim_h > 1.0)
                     if palm_reading_menu_open:
                         palm_reading_btn.gold = False
                         palm_reading_btn.pink = True
@@ -5861,16 +5985,10 @@ def safe_main():
                         palm_reading_text_toggle_btn.draw(screen, f_small, dt)
                         if palm_reading_text_open:
                             _palm_text_rect = _get_palm_reading_text_rect()
-                            draw_round_rect(screen, _palm_text_rect, (20, 18, 30, 230), 10)
-                            pygame.draw.rect(screen, GOLD if palm_reading_text_active else (212, 168, 96), _palm_text_rect, 2, 10)
                             _palm_text_hint = "Name here:"
                             _palm_text_value = palm_reading_text if palm_reading_text else _palm_text_hint
                             _palm_text_color = (236, 218, 182) if palm_reading_text else (138, 126, 110)
-                            _palm_text_surf = f_small.render(_palm_text_value, True, _palm_text_color)
-                            screen.blit(_palm_text_surf, (_palm_text_rect.x + 12, _palm_text_rect.centery - _palm_text_surf.get_height() // 2))
-                            if palm_reading_text_active and (pygame.time.get_ticks() // 500) % 2 == 0:
-                                _cx = min(_palm_text_rect.right - 10, _palm_text_rect.x + 12 + _palm_text_surf.get_width() + 2)
-                                pygame.draw.line(screen, GOLD, (_cx, _palm_text_rect.y + 9), (_cx, _palm_text_rect.bottom - 9), 2)
+                            _palm_text_overlay_payload = (_palm_text_rect, _palm_text_value, _palm_text_color)
                         if palm_reading_selection == "A":
                             _a_glow = pygame.Surface((palm_reading_a_btn.rect.w + 18, palm_reading_a_btn.rect.h + 18), pygame.SRCALPHA)
                             draw_round_rect(_a_glow, _a_glow.get_rect(), (120, 240, 150, 70), 14)
@@ -5896,12 +6014,16 @@ def safe_main():
                         palm_reading_btn.pink = False
                         palm_reading_btn.pulse_frame = False
                     palm_reading_btn.draw(screen, f_tiny, dt)
-                    if _left_hover_title is None and palm_reading_btn.rect.collidepoint(m_pos):
+                    if _reader_blocks_palm:
+                        _palm_disabled_ov = pygame.Surface((palm_reading_btn.rect.w, palm_reading_btn.rect.h), pygame.SRCALPHA)
+                        _palm_disabled_ov.fill((30, 30, 40, 150))
+                        screen.blit(_palm_disabled_ov, palm_reading_btn.rect.topleft)
+                    if (not _reader_blocks_palm) and _left_hover_title is None and palm_reading_btn.rect.collidepoint(m_pos):
                         _left_hover_title = "Palm Reading"
                         _left_hover_body = _get_feature_blurb(_left_hover_title)
                     if not palm_reading_menu_open:
                         _palm_dim = pygame.Surface((palm_reading_btn.rect.w, palm_reading_btn.rect.h), pygame.SRCALPHA)
-                        _palm_dim.fill((60, 60, 70, 90))
+                        _palm_dim.fill((60, 60, 70, 140 if _reader_blocks_palm else 90))
                         screen.blit(_palm_dim, palm_reading_btn.rect.topleft)
                 if game.level >= 6:
                     dt_box = get_seer_dice_rect()
@@ -5920,6 +6042,63 @@ def safe_main():
                         for i, cid in enumerate(game.seer_dice_table):
                             dc_x = int(dt_box.x + spacing * (i + 1))
                             draw_d20_static(screen, (dc_x, dc_y), 22, cid, f_seer_bold)
+
+                _reader_visible_h = max(0, int(round(_reader_board_anim_h)))
+                _reader_board_w = _card_zone_x
+                _reader_board_body_rect = pygame.Rect(0, H - _reader_visible_h, _reader_board_w, _reader_visible_h)
+                _reader_board_full_rect = pygame.Rect(0, H - _reader_board_open_h, _reader_board_w, _reader_board_open_h)
+                reader_token_hit_rects = []
+                reader_spell_link_rects = []
+                if _reader_visible_h > 0:
+                    _reader_board_surf = _get_reader_board_surface((_reader_board_full_rect.w, _reader_board_full_rect.h))
+                    _reader_clip_prev = screen.get_clip()
+                    screen.set_clip(_reader_board_body_rect)
+                    if _reader_board_surf is not None:
+                        screen.blit(_reader_board_surf, _reader_board_full_rect.topleft)
+                    else:
+                        draw_round_rect(screen, _reader_board_full_rect, (20, 18, 30, 220), 14)
+                    screen.set_clip(_reader_clip_prev)
+                    _reader_dim = pygame.Surface((_reader_board_body_rect.w, _reader_board_body_rect.h), pygame.SRCALPHA)
+                    _reader_dim.fill((10, 12, 20, 58 if _reader_board_open else 96))
+                    screen.blit(_reader_dim, _reader_board_body_rect.topleft)
+                    if reader_crystal_state["frames"]:
+                        _crystal_frame = reader_crystal_state["frames"][reader_crystal_state["frame_index"]]
+                        reader_token_hit_rects, _token_size = _get_reader_token_layout(_reader_board_body_rect)
+                        _reader_fizzle_slots = {getattr(_tf, "reader_slot_index", None) for _tf in reader_token_fizzles}
+                        _reader_hovering_token = _reader_board_body_rect.collidepoint(m_pos)
+                        for _slot_idx, _rect in reader_token_hit_rects:
+                            if _slot_idx in _reader_fizzle_slots:
+                                continue
+                            _crystal_surf = pygame.transform.smoothscale(_crystal_frame, (_rect.w, _rect.h))
+                            screen.blit(_crystal_surf, _rect.topleft)
+                        for _tf in reader_token_fizzles[:]:
+                            _tf.update(dt)
+                            _tf.draw(screen)
+                            if _tf.done:
+                                game.reader_of_fate_current = max(0, game.reader_of_fate_current - 1)
+                                reader_token_fizzles.remove(_tf)
+                        if _reader_hovering_token:
+                            _left_hover_title = "Reader of Fate"
+                            _left_hover_body = _get_feature_blurb(_left_hover_title)
+                            _link_y = _reader_board_body_rect.bottom - 48
+                            _link_x = _reader_board_body_rect.x + 18
+                            for _label in ("Guidance", "Augury"):
+                                _url = _reader_link_urls[_label]
+                                _link_w = 118 if _label == "Guidance" else 104
+                                _link_rect = pygame.Rect(_link_x, _link_y, _link_w, 30)
+                                draw_round_rect(screen, _link_rect, (20, 18, 30, 225), 9)
+                                pygame.draw.rect(screen, (130, 225, 255) if _link_rect.collidepoint(m_pos) else (90, 170, 210), _link_rect, 2, 9)
+                                _ls = f_small.render(_label, True, (218, 236, 246))
+                                screen.blit(_ls, (_link_rect.centerx - _ls.get_width() // 2, _link_rect.centery - _ls.get_height() // 2))
+                                reader_spell_link_rects.append((_label, _link_rect, _url))
+                                _link_x = _link_rect.right + 12
+                _reader_board_handle_rect = pygame.Rect((_reader_board_w // 2) - 48, max(PADDING, _reader_board_body_rect.y - 28), 96, 28)
+                draw_round_rect(screen, _reader_board_handle_rect, (18, 24, 38, 240), 10)
+                pygame.draw.rect(screen, (235, 220, 180), _reader_board_handle_rect, 1, 10)
+                _reader_arrow = "v" if _reader_board_open else "^"
+                _reader_arrow_surf = f_small.render(_reader_arrow, True, (245, 230, 190))
+                screen.blit(_reader_arrow_surf, (_reader_board_handle_rect.centerx - _reader_arrow_surf.get_width() // 2, _reader_board_handle_rect.centery - _reader_arrow_surf.get_height() // 2))
+
                 # 4. HORIZONTAL DIVIDER LINE
                 line_y = 80 + normal_zone_y_offset + HAND_CARD_H + 95
                 pygame.draw.line(screen, (255, 255, 255, 180), (_card_zone_x, line_y), (W - 60, line_y), 3)
@@ -6055,8 +6234,10 @@ def safe_main():
                                 pygame.draw.rect(screen, (110, 235, 150, 145), vbr, 1, 15)
                                 _btn_color = (220, 255, 226)
                             else:
-                                draw_round_rect(screen, vbr, (100, 40, 40, 100) if vbr.collidepoint(m_pos) else (45, 25, 25, 160), 15)
-                                pygame.draw.rect(screen, (200, 100, 100, 100), vbr, 1, 15)
+                                _vanish_glow_alpha = int(32 + (_card_btn_pulse * 32))
+                                draw_round_rect(screen, vbr.inflate(12, 10), (220, 70, 70, _vanish_glow_alpha), 20)
+                                draw_round_rect(screen, vbr, (112, 46, 46, 135) if vbr.collidepoint(m_pos) else (62, 28, 28, 175), 15)
+                                pygame.draw.rect(screen, (240, 120, 120, 145), vbr, 1, 15)
                                 _btn_color = (240, 240, 240)
                             _btn_txt = f_tiny.render(btn_label, True, _btn_color)
                             screen.blit(_btn_txt, _btn_txt.get_rect(center=vbr.center))
@@ -6071,14 +6252,26 @@ def safe_main():
                                 pygame.draw.rect(screen, (110, 235, 150, 145), vbr, 1, 15)
                                 btn_color = (220, 255, 226)
                             else:
-                                draw_round_rect(screen, vbr, (60, 60, 70, 100) if vbr.collidepoint(m_pos) else (40, 40, 50, 160), 15)
-                                pygame.draw.rect(screen, (200, 200, 255, 60), vbr, 1, 15)
-                                btn_color = (220, 230, 255)
+                                _vanish_glow_alpha = int(30 + (_card_btn_pulse * 30))
+                                draw_round_rect(screen, vbr.inflate(12, 10), (220, 70, 70, _vanish_glow_alpha), 20)
+                                draw_round_rect(screen, vbr, (112, 46, 46, 135) if vbr.collidepoint(m_pos) else (62, 28, 28, 175), 15)
+                                pygame.draw.rect(screen, (240, 120, 120, 145), vbr, 1, 15)
+                                btn_color = (255, 225, 225)
                             _btn_txt = f_tiny.render(btn_label, True, btn_color)
                             screen.blit(_btn_txt, _btn_txt.get_rect(center=vbr.center))
 
+                if _palm_text_overlay_payload is not None:
+                    _palm_text_rect, _palm_text_value, _palm_text_color = _palm_text_overlay_payload
+                    draw_round_rect(screen, _palm_text_rect, (20, 18, 30, 230), 10)
+                    pygame.draw.rect(screen, GOLD if palm_reading_text_active else (212, 168, 96), _palm_text_rect, 2, 10)
+                    _palm_text_surf = f_small.render(_palm_text_value, True, _palm_text_color)
+                    screen.blit(_palm_text_surf, (_palm_text_rect.x + 12, _palm_text_rect.centery - _palm_text_surf.get_height() // 2))
+                    if palm_reading_text_active and (pygame.time.get_ticks() // 500) % 2 == 0:
+                        _cx = min(_palm_text_rect.right - 10, _palm_text_rect.x + 12 + _palm_text_surf.get_width() + 2)
+                        pygame.draw.line(screen, GOLD, (_cx, _palm_text_rect.y + 9), (_cx, _palm_text_rect.bottom - 9), 2)
+
                 if tooltips_enabled and _left_hover_title and _left_hover_body:
-                    _draw_hover_blurb(_left_hover_title, _left_hover_body, m_pos, (212, 168, 96), (20, 18, 30, 238), _max_w=520, _max_lines=8)
+                    _draw_hover_blurb(_left_hover_title, _left_hover_body, m_pos, (212, 168, 96), (20, 18, 30, 238), _max_w=560, _max_lines=12)
 
                 # 6. DECK & VANISHED PILE
                 _pile_w, _pile_h = 210, 310
@@ -6094,6 +6287,10 @@ def safe_main():
                 _btn_gap = 10
                 # History button directly above deck
                 history_btn.rect = pygame.Rect(mz_rect.x + (mz_rect.w - _hist_sz) // 2, mz_rect.y - _hist_sz - _btn_gap, _hist_sz, _hist_sz)
+                if history_flash_timer > 0:
+                    _hist_pulse = (math.sin(pygame.time.get_ticks() * 0.01) + 1) / 2
+                    _hist_alpha = int((history_flash_timer / 0.9) * (40 + (_hist_pulse * 50)))
+                    draw_round_rect(screen, history_btn.rect.inflate(18, 18), (235, 190, 60, _hist_alpha), 20)
                 history_btn.draw(screen, f_tiny, dt)
                 # Settings menu back to top-right
                 _controls_y = vz_rect.bottom - _rest_sz

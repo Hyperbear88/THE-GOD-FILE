@@ -24,6 +24,8 @@ class Game:
         self.seer_slots_filled_today = 0
         self.draw_of_fate_uses = 0
         self.draw_of_fate_current = 0
+        self.reader_of_fate_uses = 0
+        self.reader_of_fate_current = 0
         self.audio_enabled = True
         self.sfx_enabled = True
         self.sfx_channel = None
@@ -35,6 +37,8 @@ class Game:
         self.rebuild_deck(); self.shuffle_deck(play_sound=False)
         self.draw_of_fate_uses = self.get_draw_of_fate_uses_by_level()
         self.draw_of_fate_current = self.draw_of_fate_uses
+        self.reader_of_fate_uses = self.get_reader_of_fate_uses_by_level()
+        self.reader_of_fate_current = self.reader_of_fate_uses
 
     def get_base_limit(self): return 3 if self.level >= 12 else (2 if self.level >= 6 else 1)
     def get_fortune_option_cap(self):
@@ -116,6 +120,18 @@ class Game:
             return None
         major_id = self.get_active_fortune_loadout().get("major_id")
         return major_id if major_id in MAJOR_UNLOCKS_17 else None
+    def activate_fortune_loadout(self, loadout_idx, add_history_entry=True, save_state=True):
+        self.normalize_fortune_loadouts()
+        if not self.fortune_loadouts:
+            return False
+        loadout_idx = int(clamp(loadout_idx, 0, len(self.fortune_loadouts) - 1))
+        if loadout_idx == self.active_fortune_loadout:
+            return False
+        if save_state:
+            self.save_state()
+        self.active_fortune_loadout = loadout_idx
+        self.enforce_fortune_selection(add_history_entry=add_history_entry)
+        return True
     def can_promote_card(self, card_id, to_major=False):
         if to_major:
             return self.level >= 17 and (not self.major_fortune_used_this_week) and card_id == self.get_allowed_major_id()
@@ -152,6 +168,16 @@ class Game:
         if self.level >= 2:
             return 1
         return 0
+    def get_reader_of_fate_uses_by_level(self):
+        if self.level >= 17:
+            return 6
+        if self.level >= 13:
+            return 5
+        if self.level >= 9:
+            return 4
+        if self.level >= 5:
+            return 3
+        return 2
     
     def add_history(self, text, card_ids=None): 
         self.history_log.append({"text": f"[{datetime.now().strftime('%H:%M')}] {text}", "card_ids": card_ids or []})
@@ -159,10 +185,10 @@ class Game:
         self.toast_msg, self.toast_timer = text, TOAST_DURATION
         
     def _build_state_snapshot(self):
-        return {"deck": list(self.deck), "hand": [copy.deepcopy(h) for h in self.hand], "fortune_zone": [copy.deepcopy(f) for f in self.fortune_zone], "major_zone": [copy.deepcopy(f) for f in self.major_zone], "vanished": list(self.vanished), "stacked": self.stacked, "f3": list(self.first_three_ids), "cd": self.days_until_major, "days": self.days_passed, "limit": self.hand_limit, "table": list(self.seer_dice_table), "history": [copy.copy(e) for e in self.history_log], "level": self.level, "ppf": self.ppf_charges, "used_major": list(self.used_major_ids), "major_cooldown": self.major_fortune_used_this_week, "major_pending": self.major_fortune_activation_pending, "divine_weekly": self.divine_intervention_used_this_week, "divine_rest": self.divine_intervention_failed_until_long_rest, "seer_filled": self.seer_slots_filled_today, "draw_of_fate": self.draw_of_fate_uses, "draw_of_fate_cur": self.draw_of_fate_current, "fortune_loadouts": copy.deepcopy(self.fortune_loadouts), "active_fortune_loadout": self.active_fortune_loadout}
+        return {"deck": list(self.deck), "hand": [copy.deepcopy(h) for h in self.hand], "fortune_zone": [copy.deepcopy(f) for f in self.fortune_zone], "major_zone": [copy.deepcopy(f) for f in self.major_zone], "vanished": list(self.vanished), "stacked": self.stacked, "f3": list(self.first_three_ids), "cd": self.days_until_major, "days": self.days_passed, "limit": self.hand_limit, "table": list(self.seer_dice_table), "history": [copy.copy(e) for e in self.history_log], "level": self.level, "ppf": self.ppf_charges, "used_major": list(self.used_major_ids), "major_cooldown": self.major_fortune_used_this_week, "major_pending": self.major_fortune_activation_pending, "divine_weekly": self.divine_intervention_used_this_week, "divine_rest": self.divine_intervention_failed_until_long_rest, "seer_filled": self.seer_slots_filled_today, "draw_of_fate": self.draw_of_fate_uses, "draw_of_fate_cur": self.draw_of_fate_current, "reader_of_fate": self.reader_of_fate_uses, "reader_of_fate_cur": self.reader_of_fate_current, "fortune_loadouts": copy.deepcopy(self.fortune_loadouts), "active_fortune_loadout": self.active_fortune_loadout}
 
     def _apply_state_snapshot(self, s):
-        self.deck, self.hand, self.fortune_zone, self.major_zone, self.vanished, self.stacked, self.first_three_ids, self.days_until_major, self.days_passed, self.hand_limit, self.seer_dice_table, self.history_log, self.level, self.ppf_charges, self.used_major_ids, self.major_fortune_used_this_week, self.major_fortune_activation_pending, self.divine_intervention_used_this_week, self.divine_intervention_failed_until_long_rest, self.seer_slots_filled_today, self.draw_of_fate_uses, self.draw_of_fate_current = s["deck"], s["hand"], s.get("fortune_zone", []), s.get("major_zone", []), s["vanished"], s["stacked"], s["f3"], s["cd"], s["days"], s["limit"], s["table"], s.get("history", []), s.get("level", 1), s.get("ppf", 3), s.get("used_major", []), s.get("major_cooldown", False), s.get("major_pending", False), s.get("divine_weekly", False), s.get("divine_rest", False), s.get("seer_filled", 0), s.get("draw_of_fate", 0), s.get("draw_of_fate_cur", 0)
+        self.deck, self.hand, self.fortune_zone, self.major_zone, self.vanished, self.stacked, self.first_three_ids, self.days_until_major, self.days_passed, self.hand_limit, self.seer_dice_table, self.history_log, self.level, self.ppf_charges, self.used_major_ids, self.major_fortune_used_this_week, self.major_fortune_activation_pending, self.divine_intervention_used_this_week, self.divine_intervention_failed_until_long_rest, self.seer_slots_filled_today, self.draw_of_fate_uses, self.draw_of_fate_current, self.reader_of_fate_uses, self.reader_of_fate_current = s["deck"], s["hand"], s.get("fortune_zone", []), s.get("major_zone", []), s["vanished"], s["stacked"], s["f3"], s["cd"], s["days"], s["limit"], s["table"], s.get("history", []), s.get("level", 1), s.get("ppf", 3), s.get("used_major", []), s.get("major_cooldown", False), s.get("major_pending", False), s.get("divine_weekly", False), s.get("divine_rest", False), s.get("seer_filled", 0), s.get("draw_of_fate", 0), s.get("draw_of_fate_cur", 0), s.get("reader_of_fate", self.get_reader_of_fate_uses_by_level()), s.get("reader_of_fate_cur", s.get("reader_of_fate", self.get_reader_of_fate_uses_by_level()))
         self.fortune_loadouts = copy.deepcopy(s.get("fortune_loadouts", self.fortune_loadouts))
         self.active_fortune_loadout = s.get("active_fortune_loadout", self.active_fortune_loadout)
         self.normalize_fortune_loadouts()
@@ -229,6 +255,8 @@ class Game:
             "seer_slots_filled_today": self.seer_slots_filled_today,
             "draw_of_fate_uses": self.draw_of_fate_uses,
             "draw_of_fate_current": self.draw_of_fate_current,
+            "reader_of_fate_uses": self.reader_of_fate_uses,
+            "reader_of_fate_current": self.reader_of_fate_current,
             "fortune_loadouts": copy.deepcopy(self.fortune_loadouts),
             "active_fortune_loadout": self.active_fortune_loadout
         }
@@ -265,6 +293,8 @@ class Game:
         self.seer_slots_filled_today = payload.get("seer_slots_filled_today", 0)
         self.draw_of_fate_uses = payload.get("draw_of_fate_uses", self.get_draw_of_fate_uses_by_level())
         self.draw_of_fate_current = payload.get("draw_of_fate_current", self.draw_of_fate_uses)
+        self.reader_of_fate_uses = payload.get("reader_of_fate_uses", self.get_reader_of_fate_uses_by_level())
+        self.reader_of_fate_current = payload.get("reader_of_fate_current", self.reader_of_fate_uses)
         self.fortune_loadouts = copy.deepcopy(payload.get("fortune_loadouts", self.fortune_loadouts))
         self.active_fortune_loadout = payload.get("active_fortune_loadout", self.active_fortune_loadout)
         self.normalize_fortune_loadouts()
@@ -298,6 +328,8 @@ class Game:
         self.seer_slots_filled_today = 0
         self.hand_limit = self.get_base_limit()
         self.draw_of_fate_current = self.draw_of_fate_uses
+        self.reader_of_fate_uses = self.get_reader_of_fate_uses_by_level()
+        self.reader_of_fate_current = self.reader_of_fate_uses
         self.divine_intervention_failed_until_long_rest = False
         self.vanished = []
         self.rebuild_deck()
@@ -326,6 +358,8 @@ class Game:
         self.hand_limit = self.get_base_limit()
         self.draw_of_fate_uses = self.get_draw_of_fate_uses_by_level()
         self.draw_of_fate_current = self.draw_of_fate_uses
+        self.reader_of_fate_uses = self.get_reader_of_fate_uses_by_level()
+        self.reader_of_fate_current = self.reader_of_fate_uses
         self.rebuild_deck()
         self.shuffle_deck()
         self.add_history(f"Level changed to {self.level}: hand returned to deck. Deck shuffled.")
