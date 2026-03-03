@@ -824,3 +824,181 @@ ValueError: too many values to unpack (expected 2)
 19:21:24 [INFO]  Scanning JSON... Found 80 bolded fields.
 19:25:05 [INFO]  Loading video backend: cv2
 19:25:05 [INFO]  Scanning JSON... Found 80 bolded fields.
+23:38:37 [INFO]  Loading video backend: cv2
+23:38:37 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:00:07 [INFO]  Loading video backend: cv2
+00:00:07 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:03:43 [INFO]  Loading video backend: cv2
+00:03:43 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:05:11 [INFO]  Loading video backend: cv2
+00:05:11 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:06:30 [INFO]  Loading video backend: cv2
+00:06:30 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:08:19 [INFO]  Loading video backend: cv2
+00:08:19 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:12:48 [INFO]  Loading video backend: cv2
+00:12:48 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:18:10 [INFO]  Loading video backend: cv2
+00:18:10 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:21:09 [INFO]  Loading video backend: cv2
+00:21:09 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:23:25 [INFO]  Loading video backend: cv2
+00:23:25 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:25:21 [ERROR] Traceback (most recent call last):
+  File "C:\Users\danie\Desktop\BACKUPs\REFACTOR\runtime.py", line 4598, in safe_main
+    game.toast_msg, game.toast_timer = "Major Fortune is on weekly cooldown. You must wait for the weekly reset, which happens after 7 long rests."
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: too many values to unpack (expected 2)
+
+00:28:49 [INFO]  Loading video backend: cv2
+00:28:49 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:38:42 [INFO]  Loading video backend: cv2
+00:38:42 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:42:10 [INFO]  Loading video backend: cv2
+00:42:10 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:47:12 [INFO]  Loading video backend: cv2
+00:47:12 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:51:52 [INFO]  Loading video backend: cv2
+00:51:52 [INFO]  Scanning JSON... Found 80 bolded fields.
+00:54:20 [INFO]  Loading video backend: cv2
+00:54:20 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:02:09 [INFO]  Loading video backend: cv2
+01:02:09 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:05:47 [INFO]  Loading video backend: cv2
+01:05:47 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:10:49 [INFO]  Loading video backend: cv2
+01:10:49 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:17:33 [INFO]  Loading video backend: cv2
+01:17:33 [INFO]  Scanning JSON... Found 80 bolded fields.
+01:30:24 [INFO]  Loading video backend: cv2
+01:30:24 [INFO]  Scanning JSON... Found 80 bolded fields.
+09:38:27 [INFO]  Loading video backend: cv2
+09:38:27 [INFO]  Scanning JSON... Found 80 bolded fields.
+09:44:50 [INFO]  Autosaved to slot 1.
+09:46:50 [INFO]  Loading video backend: cv2
+09:46:50 [INFO]  Scanning JSON... Found 80 bolded fields.
+10:08:09 [INFO]  Loading video backend: cv2
+10:08:09 [INFO]  Scanning JSON... Found 80 bolded fields.
+10:20:11 [INFO]  Loading video backend: cv2
+10:20:11 [INFO]  Scanning JSON... Found 80 bolded fields.
+10:25:09 [INFO]  Loading video backend: cv2
+10:25:09 [INFO]  Scanning JSON... Found 80 bolded fields.
+10:31:37 [INFO]  Loading video backend: cv2
+10:31:37 [INFO]  Scanning JSON... Found 80 bolded fields.
+10:37:29 [INFO]  Autosaved to slot 1.
+10:43:20 [INFO]  Autosaved to slot 2.
+10:45:43 [INFO]  Loading video backend: cv2
+10:45:43 [INFO]  Scanning JSON... Found 80 bolded fields.
+10:51:17 [INFO]  Loading video backend: cv2
+10:51:17 [INFO]  Scanning JSON... Found 80 bolded fields.
+10:56:56 [INFO]  Loading video backend: cv2
+10:56:56 [INFO]  Scanning JSON... Found 80 bolded fields.
+10:59:01 [INFO]  Loading video backend: cv2
+10:59:01 [INFO]  Scanning JSON... Found 80 bolded fields.
+11:03:21 [INFO]  Loading video backend: cv2
+11:03:21 [INFO]  Scanning JSON... Found 80 bolded fields.
+11:13:41 [INFO]  Loading video backend: cv2
+11:13:41 [INFO]  Scanning JSON... Found 80 bolded fields.
+11:16:46 [INFO]  Loading video backend: cv2
+11:16:46 [INFO]  Scanning JSON... Found 80 bolded fields.
+11:24:34 [INFO]  Loading video backend: cv2
+11:24:34 [INFO]  Scanning JSON... Found 80 bolded fields.
+11:42:50 [INFO]  Loading video backend: cv2
+11:42:50 [INFO]  Scanning JSON... Found 80 bolded fields.
+11:52:10 [INFO]  Loading video backend: cv2
+11:52:10 [INFO]  Scanning JSON... Found 80 bolded fields.
+11:53:45 [ERROR] Traceback (most recent call last):
+  File "C:\Users\danie\Desktop\BACKUPs\REFACTOR\runtime.py", line 7079, in safe_main
+    _ns = f_small.render(_line, True, WHITE)
+                                      ^^^^^
+NameError: name 'WHITE' is not defined
+
+11:55:45 [INFO]  Loading video backend: cv2
+11:55:45 [INFO]  Scanning JSON... Found 80 bolded fields.
+12:10:11 [INFO]  Loading video backend: cv2
+12:10:11 [INFO]  Scanning JSON... Found 80 bolded fields.
+12:15:09 [INFO]  Loading video backend: cv2
+12:15:09 [INFO]  Scanning JSON... Found 80 bolded fields.
+12:18:05 [INFO]  Loading video backend: cv2
+12:18:05 [INFO]  Scanning JSON... Found 80 bolded fields.
+12:24:59 [INFO]  Autosaved to slot 1.
+12:26:21 [INFO]  Loading video backend: cv2
+12:26:21 [INFO]  Scanning JSON... Found 80 bolded fields.
+12:31:44 [INFO]  Loading video backend: cv2
+12:31:44 [INFO]  Scanning JSON... Found 80 bolded fields.
+12:34:15 [INFO]  Loading video backend: cv2
+12:34:15 [INFO]  Scanning JSON... Found 80 bolded fields.
+12:40:07 [INFO]  Autosaved to slot 1.
+12:44:02 [INFO]  Loading video backend: cv2
+12:44:02 [INFO]  Scanning JSON... Found 80 bolded fields.
+12:46:02 [INFO]  Loading video backend: cv2
+12:46:02 [INFO]  Scanning JSON... Found 80 bolded fields.
+12:48:22 [INFO]  Loading video backend: cv2
+12:48:22 [INFO]  Scanning JSON... Found 80 bolded fields.
+12:52:15 [INFO]  Loading video backend: cv2
+12:52:15 [INFO]  Scanning JSON... Found 80 bolded fields.
+12:55:08 [INFO]  Loading video backend: cv2
+12:55:08 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:00:59 [INFO]  Autosaved to slot 1.
+13:01:38 [INFO]  Loading video backend: cv2
+13:01:38 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:06:23 [INFO]  Loading video backend: cv2
+13:06:23 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:09:03 [INFO]  Loading video backend: cv2
+13:09:03 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:11:55 [INFO]  Loading video backend: cv2
+13:11:55 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:16:20 [INFO]  Loading video backend: cv2
+13:16:20 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:23:34 [INFO]  Loading video backend: cv2
+13:23:34 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:28:10 [INFO]  Loading video backend: cv2
+13:28:10 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:32:45 [INFO]  Loading video backend: cv2
+13:32:45 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:36:51 [INFO]  Loading video backend: cv2
+13:36:51 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:41:22 [INFO]  Loading video backend: cv2
+13:41:22 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:43:07 [INFO]  Loading video backend: cv2
+13:43:07 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:48:48 [INFO]  Loading video backend: cv2
+13:48:48 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:52:46 [INFO]  Loading video backend: cv2
+13:52:46 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:54:38 [INFO]  Loading video backend: cv2
+13:54:38 [INFO]  Scanning JSON... Found 80 bolded fields.
+13:58:54 [INFO]  Loading video backend: cv2
+13:58:54 [INFO]  Scanning JSON... Found 80 bolded fields.
+14:02:06 [INFO]  Loading video backend: cv2
+14:02:06 [INFO]  Scanning JSON... Found 80 bolded fields.
+14:26:36 [INFO]  Loading video backend: cv2
+14:26:36 [INFO]  Scanning JSON... Found 80 bolded fields.
+14:32:55 [INFO]  Loading video backend: cv2
+14:32:55 [INFO]  Scanning JSON... Found 80 bolded fields.
+14:40:05 [INFO]  Autosaved to slot 1.
+14:42:19 [INFO]  Loading video backend: cv2
+14:42:19 [INFO]  Scanning JSON... Found 80 bolded fields.
+14:44:45 [INFO]  Loading video backend: cv2
+14:44:45 [INFO]  Scanning JSON... Found 80 bolded fields.
+14:48:27 [INFO]  Loading video backend: cv2
+14:48:27 [INFO]  Scanning JSON... Found 80 bolded fields.
+14:52:15 [INFO]  Loading video backend: cv2
+14:52:15 [INFO]  Scanning JSON... Found 80 bolded fields.
+14:57:32 [INFO]  Loading video backend: cv2
+14:57:32 [INFO]  Scanning JSON... Found 80 bolded fields.
+15:17:58 [INFO]  Loading video backend: cv2
+15:17:58 [INFO]  Scanning JSON... Found 80 bolded fields.
+15:22:19 [INFO]  Loading video backend: cv2
+15:22:19 [INFO]  Scanning JSON... Found 80 bolded fields.
+15:29:25 [INFO]  Loading video backend: cv2
+15:29:25 [INFO]  Scanning JSON... Found 80 bolded fields.
+15:36:02 [INFO]  Loading video backend: cv2
+15:36:02 [INFO]  Scanning JSON... Found 80 bolded fields.
+15:43:24 [INFO]  Autosaved to slot 1.
+15:46:51 [INFO]  Loading video backend: cv2
+15:46:51 [INFO]  Scanning JSON... Found 80 bolded fields.
+15:53:11 [INFO]  Loading video backend: cv2
+15:53:11 [INFO]  Scanning JSON... Found 80 bolded fields.
+16:02:42 [INFO]  Loading video backend: cv2
+16:02:42 [INFO]  Scanning JSON... Found 80 bolded fields.

@@ -83,11 +83,11 @@
     "Beginning at 6th level, you can use your Channel Divinity twice between rests, and beginning at 18th level, you can use it three times between rests. When you finish a short or long rest, you regain your expended uses.",
     "Draw of Fate.",
     "Starting at 2nd level, you can use your Channel Divinity to manipulate the Fates or Draw an additional card from your deck.",
-    "As a bonus action (Or once per round at the start of your turn in combat), you can choose to do one of the following options:",
+    "Once per round at the start of your turn in combat, (Or as a bonus action out of combat) , you can choose to do one of the following options:",
     "Draw one random Tarot card from your deck by rolling a 1D20, taking the card number listed below from the Tarot Table.",
     "Shuffle one Tapped Tarot card from your hand to the deck, and apply the first effect. Any card that has been used Vanishes when returned this way. If the card is unused, draw 2 instead (If drawing 2 cards would exceed hand size, draw 1 instead).",
     "Choose one Tarot card in your deck (Except 'the World' card), stack in on top of your deck. The next draw from this feature is that card instead of being random. This effect is removed when the deck is shuffled.",
-    "This tarot card can be used at any time when it is drawn until it is shuffled into the deck. If that card on the Tarot Table is already in your hand you can reroll the dice. If that card has Vanished, place it back into the deck.",
+    "This tarot card can be used at any time when it is drawn until it is shuffled into the deck.  If that card on the Tarot Table is already in your hand you can reroll the dice. If that card has Vanished, place it back into the deck.",
     "Channel Divinity: Turn Undead",
     "As an action, you present your holy symbol and speak a prayer censuring the undead. Each undead that can see or hear you within 30 feet of you must make a Wisdom saving throw. If the creature fails its saving throw, it is turned for 1 minute or until it takes any damage.",
     "A turned creature must spend its turns trying to move as far away from you as it can, and it can’t willingly move to a space within 30 feet of you. It also can’t take reactions. For its action, it can use only the Dash action or try to escape from an effect that prevents it from moving. If there’s nowhere to move, the creature can use the Dodge action.",
@@ -509,7 +509,7 @@
         ],
         [
           "3 - The High Priestess",
-          "Upright: When you cast one of your prepared Divination spells, you can do so without expending a spell slot and as an action. Then 'The High Priestess' card Vanishes.\nReverse: As a reaction you can force a creature within 60 feet of you to re roll a Wisdom ability Check or Wisdom Saving throw, the new result must be taken.(If the creature has a higher Wisdom score than you the card is used and nothing happens). Then 'The High Priestess' card\nVanishes."
+          "Fortune Card:\n\nUpright: You can cast the 'Scrying' and 'Divination' spells using your Reader of Fate Feature, using two charges instead of one, until the next long rest.  'The High Priestess' then becomes a Tapped Card until Vanished\n\nReverse: You can cast the 'Banishment' Spell once without expending a spell slot up to your current spell level. Then 'The High Priestess' card Vanishes. At 13th, Level you can cast the 'Plane Shift' spell instead of 'Banishment' but it uses a spell slot."
         ],
         [
           "4 - The Empress",
@@ -545,7 +545,7 @@
         ],
         [
           "12 - The Hanged Man",
-          "Upright: As a bonus action, you may give yourself or an ally you can see within 30 feet of you a flying speed equal to their walking speed for 10 minutes ( Or whenever you choose to end it). Then 'The Hanged Man' card Vanishes.\nReverse: As a bonus action, you can touch a creature. You can ask the God of Fate one question about that creature's past, present or Future that must be answered truthfully. However, the answer may be spoken in riddles. \nThis ability can be used once. Once used 'The Hanged man’ card Vanishes."
+          "Fortune Card\n\nUpright: As an action, target one creature within 60ft, they are suspended in a magical state, becoming invulnerable for one round and they do not have to take death saving throws, but they are unable to move or take actions. If unwilling, they must make a Wisdom saving throw against your spell DC. On a Success nothing happens. On a failure the effect is applied as normal. Then 'The Hanged Man' card vanishes.\n\nReverse: As a reaction, swap the places of an ally within 60ft who is hit by an attack, with another within 60ft, redirecting the damage to them instead. Also any damage they take heals the other for the double the amount. You can use this reaction once. You can use this reaction twice at 13th level.  'The Hanged Man' then becomes a Tapped Card until Vanished."
         ],
         [
           "13 – Death",
@@ -641,7 +641,7 @@
       "rows": [
         [
           "3 - The High Priestess",
-          "Fortune Card: \nUpright: You can cast the 'Scrying' and 'Divination' spells using your Reader of Fate Feature until the next long rest. 'The High Priestess' then becomes a Tapped Card until Vanished\nReverse: You can cast the 'Banishment' Spell once without expending a spell slot up to your current spell level. Then 'The High Priestess' card Vanishes. At 13th, Level you can cast the 'Plane Shift' spell instead of 'Banishment'."
+          "Fortune Card:\n\nUpright: You can cast the 'Scrying' and 'Divination' spells using your Reader of Fate Feature, using two charges instead of one, until the next long rest.  'The High Priestess' then becomes a Tapped Card until Vanished\n\nReverse: You can cast the 'Banishment' Spell once without expending a spell slot up to your current spell level. Then 'The High Priestess' card Vanishes. At 13th, Level you can cast the 'Plane Shift' spell instead of 'Banishment' but it uses a spell slot."
         ]
       ]
     },
@@ -740,7 +740,7 @@
       "rows": [
         [
           "12-The Hanged Man",
-          "Fortune Card\n\nUpright: As a bonus action, target one creature within 60ft, they are suspended in a magical state, becoming invulnerable for one round and they do not have to take death saving throws, but they are unable to move or take actions. If unwilling, they must make a Wisdom saving throw against your spell DC. On a Success nothing happens. On a failure the effect is applied as normal. Then 'The Hanged Man' card vanishes.\n\nReverse: As a reaction, swap the places of an ally within 60ft who is hit by an attack, with another within 60ft, redirecting the damage to them instead. Also any damage they take heals the other for the double the amount. You can use this reaction once. You can use this reaction twice at 13th level.  'The Hanged Man' then becomes a Tapped Card until Vanished."
+          "Fortune Card\n\nUpright: As an action, target one creature within 60ft, they are suspended in a magical state, becoming invulnerable for one round and they do not have to take death saving throws, but they are unable to move or take actions. If unwilling, they must make a Wisdom saving throw against your spell DC. On a Success nothing happens. On a failure the effect is applied as normal. Then 'The Hanged Man' card vanishes.\n\nReverse: As a reaction, swap the places of an ally within 60ft who is hit by an attack, with another within 60ft, redirecting the damage to them instead. Also any damage they take heals the other for the double the amount. You can use this reaction once. You can use this reaction twice at 13th level.  'The Hanged Man' then becomes a Tapped Card until Vanished."
         ]
       ]
     },

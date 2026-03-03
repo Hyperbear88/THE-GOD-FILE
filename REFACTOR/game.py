@@ -8,6 +8,14 @@ except ImportError:
 # ----------------------------
 
 FORTUNE_LOADOUT_SLOT_COUNT = 10
+VANISHED_DRAW_SASSY_MESSAGES = [
+    "Guess it wasn't on the cards for this one",
+    "Fate filed that one under \"not today.\"",
+    "The threads of destiny just side-eyed that draw.",
+    "The stars said nope and reshuffled your luck.",
+    "That omen was booked for another timeline.",
+    "Destiny pulled a prank and took it back.",
+]
 
 class Game:
     def __init__(self, cards_data):
@@ -24,8 +32,12 @@ class Game:
         self.seer_slots_filled_today = 0
         self.draw_of_fate_uses = 0
         self.draw_of_fate_current = 0
+        self.fortune_uses_max = 0
+        self.fortune_uses_current = 0
         self.reader_of_fate_uses = 0
         self.reader_of_fate_current = 0
+        self.pending_vanished_draw_returns = []
+        self.vanished_draw_popups = []
         self.audio_enabled = True
         self.sfx_enabled = True
         self.sfx_channel = None
@@ -37,6 +49,8 @@ class Game:
         self.rebuild_deck(); self.shuffle_deck(play_sound=False)
         self.draw_of_fate_uses = self.get_draw_of_fate_uses_by_level()
         self.draw_of_fate_current = self.draw_of_fate_uses
+        self.fortune_uses_max = self.get_fortune_uses_cap_by_level()
+        self.fortune_uses_current = self.fortune_uses_max
         self.reader_of_fate_uses = self.get_reader_of_fate_uses_by_level()
         self.reader_of_fate_current = self.reader_of_fate_uses
 
@@ -135,7 +149,7 @@ class Game:
     def can_promote_card(self, card_id, to_major=False):
         if to_major:
             return self.level >= 17 and (not self.major_fortune_used_this_week) and card_id == self.get_allowed_major_id()
-        return self.level >= 6 and card_id in self.get_allowed_fortune_ids()
+        return self.level >= 6 and self.fortune_uses_current > 0 and card_id in self.get_allowed_fortune_ids()
     def is_card_promotion_enabled(self, card_id):
         return self.can_promote_card(card_id, to_major=False) or self.can_promote_card(card_id, to_major=True)
     def enforce_fortune_selection(self, add_history_entry=True):
@@ -168,6 +182,18 @@ class Game:
         if self.level >= 2:
             return 1
         return 0
+    def get_fortune_uses_cap_by_level(self):
+        if self.level >= 17:
+            return 6
+        if self.level >= 13:
+            return 5
+        if self.level >= 9:
+            return 4
+        if self.level >= 6:
+            return 3
+        return 0
+    def is_fortune_zone_locked(self):
+        return self.level >= 6 and self.fortune_uses_current <= 0
     def get_reader_of_fate_uses_by_level(self):
         if self.level >= 17:
             return 6
@@ -179,16 +205,97 @@ class Game:
             return 3
         return 2
     
-    def add_history(self, text, card_ids=None): 
-        self.history_log.append({"text": f"[{datetime.now().strftime('%H:%M')}] {text}", "card_ids": card_ids or []})
+    def _resolve_history_card_state_by_id(self, cid):
+        for _zone_card in (self.hand + self.fortune_zone + self.major_zone):
+            if _zone_card.get("id") == cid:
+                _mode = str(_zone_card.get("mode", "normal"))
+                _orientation = str(_zone_card.get("orientation", "upright"))
+                return {
+                    "id": cid,
+                    "mode": _mode,
+                    "orientation": _orientation,
+                    "tapped": bool(_zone_card.get("tapped", False)),
+                    "stamp_mode": _mode if _mode in ("fortune", "major") else None,
+                }
+        return {
+            "id": cid,
+            "mode": "normal",
+            "orientation": "upright",
+            "tapped": False,
+            "stamp_mode": None,
+        }
+
+    def _normalize_history_card_states(self, card_ids=None, card_states=None):
+        _resolved = []
+        _seen = set()
+        if isinstance(card_states, list):
+            for _entry in card_states:
+                if not isinstance(_entry, dict):
+                    continue
+                try:
+                    _cid = int(_entry.get("id"))
+                except Exception:
+                    continue
+                if _cid in _seen:
+                    continue
+                _mode = str(_entry.get("mode", "normal"))
+                if _mode not in ("normal", "fortune", "major"):
+                    _mode = "normal"
+                _orientation = str(_entry.get("orientation", "upright"))
+                if _orientation not in ("upright", "inverted"):
+                    _orientation = "upright"
+                _resolved.append({
+                    "id": _cid,
+                    "mode": _mode,
+                    "orientation": _orientation,
+                    "tapped": bool(_entry.get("tapped", False)),
+                    "stamp_mode": _entry.get("stamp_mode") if _entry.get("stamp_mode") in ("fortune", "major") else (_mode if _mode in ("fortune", "major") else None),
+                })
+                _seen.add(_cid)
+        for _cid in (card_ids or []):
+            try:
+                _cid = int(_cid)
+            except Exception:
+                continue
+            if _cid in _seen:
+                continue
+            _resolved.append(self._resolve_history_card_state_by_id(_cid))
+            _seen.add(_cid)
+        return _resolved
+
+    def _format_history_state_suffix(self, card_states):
+        if not card_states:
+            return ""
+        _parts = []
+        for _state in card_states[:3]:
+            _cid = _state.get("id")
+            _name = self.cards.get(_cid, {}).get("name", f"Card {_cid}")
+            _mode = str(_state.get("mode", "normal")).upper()
+            _ori = str(_state.get("orientation", "upright")).upper()
+            _tap = " • TAPPED" if _state.get("tapped", False) else ""
+            _parts.append(f"{_name} [{_mode} • {_ori}{_tap}]")
+        if len(card_states) > 3:
+            _parts.append(f"+{len(card_states) - 3} more")
+        return " | " + " ; ".join(_parts)
+
+    def add_history(self, text, card_ids=None, card_states=None): 
+        _states = self._normalize_history_card_states(card_ids=card_ids, card_states=card_states)
+        _card_ids = [int(_s.get("id")) for _s in _states if isinstance(_s, dict) and _s.get("id") is not None]
+        _msg = str(text)
+        _suffix = self._format_history_state_suffix(_states)
+        if _suffix and _suffix not in _msg:
+            _msg += _suffix
+        self.history_log.append({"text": f"[{datetime.now().strftime('%H:%M')}] {_msg}", "card_ids": _card_ids, "card_states": _states})
         if len(self.history_log) > 100: self.history_log.pop(0)
         self.toast_msg, self.toast_timer = text, TOAST_DURATION
         
     def _build_state_snapshot(self):
-        return {"deck": list(self.deck), "hand": [copy.deepcopy(h) for h in self.hand], "fortune_zone": [copy.deepcopy(f) for f in self.fortune_zone], "major_zone": [copy.deepcopy(f) for f in self.major_zone], "vanished": list(self.vanished), "stacked": self.stacked, "f3": list(self.first_three_ids), "cd": self.days_until_major, "days": self.days_passed, "limit": self.hand_limit, "table": list(self.seer_dice_table), "history": [copy.copy(e) for e in self.history_log], "level": self.level, "ppf": self.ppf_charges, "used_major": list(self.used_major_ids), "major_cooldown": self.major_fortune_used_this_week, "major_pending": self.major_fortune_activation_pending, "divine_weekly": self.divine_intervention_used_this_week, "divine_rest": self.divine_intervention_failed_until_long_rest, "seer_filled": self.seer_slots_filled_today, "draw_of_fate": self.draw_of_fate_uses, "draw_of_fate_cur": self.draw_of_fate_current, "reader_of_fate": self.reader_of_fate_uses, "reader_of_fate_cur": self.reader_of_fate_current, "fortune_loadouts": copy.deepcopy(self.fortune_loadouts), "active_fortune_loadout": self.active_fortune_loadout}
+        return {"deck": list(self.deck), "hand": [copy.deepcopy(h) for h in self.hand], "fortune_zone": [copy.deepcopy(f) for f in self.fortune_zone], "major_zone": [copy.deepcopy(f) for f in self.major_zone], "vanished": list(self.vanished), "stacked": self.stacked, "f3": list(self.first_three_ids), "cd": self.days_until_major, "days": self.days_passed, "limit": self.hand_limit, "table": list(self.seer_dice_table), "history": [copy.deepcopy(e) for e in self.history_log], "level": self.level, "ppf": self.ppf_charges, "used_major": list(self.used_major_ids), "major_cooldown": self.major_fortune_used_this_week, "major_pending": self.major_fortune_activation_pending, "divine_weekly": self.divine_intervention_used_this_week, "divine_rest": self.divine_intervention_failed_until_long_rest, "seer_filled": self.seer_slots_filled_today, "draw_of_fate": self.draw_of_fate_uses, "draw_of_fate_cur": self.draw_of_fate_current, "fortune_uses_max": self.fortune_uses_max, "fortune_uses_cur": self.fortune_uses_current, "reader_of_fate": self.reader_of_fate_uses, "reader_of_fate_cur": self.reader_of_fate_current, "pending_vanished_draw_returns": list(self.pending_vanished_draw_returns), "vanished_draw_popups": list(self.vanished_draw_popups), "fortune_loadouts": copy.deepcopy(self.fortune_loadouts), "active_fortune_loadout": self.active_fortune_loadout}
 
     def _apply_state_snapshot(self, s):
-        self.deck, self.hand, self.fortune_zone, self.major_zone, self.vanished, self.stacked, self.first_three_ids, self.days_until_major, self.days_passed, self.hand_limit, self.seer_dice_table, self.history_log, self.level, self.ppf_charges, self.used_major_ids, self.major_fortune_used_this_week, self.major_fortune_activation_pending, self.divine_intervention_used_this_week, self.divine_intervention_failed_until_long_rest, self.seer_slots_filled_today, self.draw_of_fate_uses, self.draw_of_fate_current, self.reader_of_fate_uses, self.reader_of_fate_current = s["deck"], s["hand"], s.get("fortune_zone", []), s.get("major_zone", []), s["vanished"], s["stacked"], s["f3"], s["cd"], s["days"], s["limit"], s["table"], s.get("history", []), s.get("level", 1), s.get("ppf", 3), s.get("used_major", []), s.get("major_cooldown", False), s.get("major_pending", False), s.get("divine_weekly", False), s.get("divine_rest", False), s.get("seer_filled", 0), s.get("draw_of_fate", 0), s.get("draw_of_fate_cur", 0), s.get("reader_of_fate", self.get_reader_of_fate_uses_by_level()), s.get("reader_of_fate_cur", s.get("reader_of_fate", self.get_reader_of_fate_uses_by_level()))
+        self.deck, self.hand, self.fortune_zone, self.major_zone, self.vanished, self.stacked, self.first_three_ids, self.days_until_major, self.days_passed, self.hand_limit, self.seer_dice_table, self.history_log, self.level, self.ppf_charges, self.used_major_ids, self.major_fortune_used_this_week, self.major_fortune_activation_pending, self.divine_intervention_used_this_week, self.divine_intervention_failed_until_long_rest, self.seer_slots_filled_today, self.draw_of_fate_uses, self.draw_of_fate_current, self.fortune_uses_max, self.fortune_uses_current, self.reader_of_fate_uses, self.reader_of_fate_current = s["deck"], s["hand"], s.get("fortune_zone", []), s.get("major_zone", []), s["vanished"], s["stacked"], s["f3"], s["cd"], s["days"], s["limit"], s["table"], s.get("history", []), s.get("level", 1), s.get("ppf", 3), s.get("used_major", []), s.get("major_cooldown", False), s.get("major_pending", False), s.get("divine_weekly", False), s.get("divine_rest", False), s.get("seer_filled", 0), s.get("draw_of_fate", 0), s.get("draw_of_fate_cur", 0), s.get("fortune_uses_max", self.get_fortune_uses_cap_by_level()), s.get("fortune_uses_cur", s.get("fortune_uses_max", self.get_fortune_uses_cap_by_level())), s.get("reader_of_fate", self.get_reader_of_fate_uses_by_level()), s.get("reader_of_fate_cur", s.get("reader_of_fate", self.get_reader_of_fate_uses_by_level()))
+        self.pending_vanished_draw_returns = list(s.get("pending_vanished_draw_returns", []))
+        self.vanished_draw_popups = list(s.get("vanished_draw_popups", []))
         self.fortune_loadouts = copy.deepcopy(s.get("fortune_loadouts", self.fortune_loadouts))
         self.active_fortune_loadout = s.get("active_fortune_loadout", self.active_fortune_loadout)
         self.normalize_fortune_loadouts()
@@ -206,6 +313,8 @@ class Game:
         # Flush transient animation queues to stop them from resolving post-undo
         self.draw_queue = []
         self.is_drawing = False
+        self.pending_vanished_draw_returns = []
+        self.vanished_draw_popups = []
         self.fizzles = []
         self.shuffle_anim_timer = 0.0
         self.add_history("Undo: Reverted to previous state.")
@@ -218,6 +327,8 @@ class Game:
         self._apply_state_snapshot(s)
         self.draw_queue = []
         self.is_drawing = False
+        self.pending_vanished_draw_returns = []
+        self.vanished_draw_popups = []
         self.fizzles = []
         self.shuffle_anim_timer = 0.0
         self.add_history("Redo: Reapplied undone state.")
@@ -255,8 +366,12 @@ class Game:
             "seer_slots_filled_today": self.seer_slots_filled_today,
             "draw_of_fate_uses": self.draw_of_fate_uses,
             "draw_of_fate_current": self.draw_of_fate_current,
+            "fortune_uses_max": self.fortune_uses_max,
+            "fortune_uses_current": self.fortune_uses_current,
             "reader_of_fate_uses": self.reader_of_fate_uses,
             "reader_of_fate_current": self.reader_of_fate_current,
+            "pending_vanished_draw_returns": list(self.pending_vanished_draw_returns),
+            "vanished_draw_popups": list(self.vanished_draw_popups),
             "fortune_loadouts": copy.deepcopy(self.fortune_loadouts),
             "active_fortune_loadout": self.active_fortune_loadout
         }
@@ -293,8 +408,12 @@ class Game:
         self.seer_slots_filled_today = payload.get("seer_slots_filled_today", 0)
         self.draw_of_fate_uses = payload.get("draw_of_fate_uses", self.get_draw_of_fate_uses_by_level())
         self.draw_of_fate_current = payload.get("draw_of_fate_current", self.draw_of_fate_uses)
+        self.fortune_uses_max = payload.get("fortune_uses_max", self.get_fortune_uses_cap_by_level())
+        self.fortune_uses_current = payload.get("fortune_uses_current", self.fortune_uses_max)
         self.reader_of_fate_uses = payload.get("reader_of_fate_uses", self.get_reader_of_fate_uses_by_level())
         self.reader_of_fate_current = payload.get("reader_of_fate_current", self.reader_of_fate_uses)
+        self.pending_vanished_draw_returns = list(payload.get("pending_vanished_draw_returns", []))
+        self.vanished_draw_popups = list(payload.get("vanished_draw_popups", []))
         self.fortune_loadouts = copy.deepcopy(payload.get("fortune_loadouts", self.fortune_loadouts))
         self.active_fortune_loadout = payload.get("active_fortune_loadout", self.active_fortune_loadout)
         self.normalize_fortune_loadouts()
@@ -302,7 +421,7 @@ class Game:
 
     def rebuild_deck(self):
         possessed_ids = [h['id'] for h in (self.hand + self.fortune_zone + self.major_zone)]
-        self.deck = [cid for cid in self.ids if cid not in possessed_ids and cid not in self.vanished]
+        self.deck = [cid for cid in self.ids if cid not in possessed_ids]
 
     def shuffle_deck(self, play_sound=True, trigger_anim=True):
         random.shuffle(self.deck)
@@ -322,22 +441,19 @@ class Game:
         self.save_state()
         returned_ids = [h['id'] for h in (self.hand + self.fortune_zone + self.major_zone)]
         for h in (self.hand + self.fortune_zone + self.major_zone):
-            if h['id'] not in self.vanished:
-                if h['id'] not in self.deck: self.deck.append(h['id'])
-        self.hand, self.fortune_zone, self.major_zone, self.stacked, self.first_three_ids, self.seer_dice_table, self.ppf_charges, self.days_passed = [], [], [], None, [], [], 3, self.days_passed + 1
+            if h['id'] not in self.deck: self.deck.append(h['id'])
+        self.hand, self.fortune_zone, self.major_zone, self.stacked, self.first_three_ids, self.seer_dice_table, self.ppf_charges = [], [], [], None, [], [], 3
+        self.days_passed += 1
         self.seer_slots_filled_today = 0
         self.hand_limit = self.get_base_limit()
         self.draw_of_fate_current = self.draw_of_fate_uses
+        self.fortune_uses_max = self.get_fortune_uses_cap_by_level()
+        self.fortune_uses_current = self.fortune_uses_max
         self.reader_of_fate_uses = self.get_reader_of_fate_uses_by_level()
         self.reader_of_fate_current = self.reader_of_fate_uses
         self.divine_intervention_failed_until_long_rest = False
         self.vanished = []
         self.rebuild_deck()
-        if self.days_passed >= 7:
-            self.days_passed = 0
-            self.major_fortune_used_this_week = False
-            self.major_fortune_activation_pending = False
-            self.divine_intervention_used_this_week = False
         self.shuffle_deck()
         self.add_history(f"Long Rest (Day {self.days_passed}): Hand returned to deck. Deck shuffled.")
         if not skip_draw: self.initiate_bulk_draw(self.hand_limit)
@@ -346,7 +462,7 @@ class Game:
     def reset_for_level_change(self, skip_draw=False):
         self.save_state()
         for h in (self.hand + self.fortune_zone + self.major_zone):
-            if h['id'] not in self.vanished and h['id'] not in self.deck:
+            if h['id'] not in self.deck:
                 self.deck.append(h['id'])
         self.hand = []
         self.fortune_zone = []
@@ -358,6 +474,8 @@ class Game:
         self.hand_limit = self.get_base_limit()
         self.draw_of_fate_uses = self.get_draw_of_fate_uses_by_level()
         self.draw_of_fate_current = self.draw_of_fate_uses
+        self.fortune_uses_max = self.get_fortune_uses_cap_by_level()
+        self.fortune_uses_current = self.fortune_uses_max
         self.reader_of_fate_uses = self.get_reader_of_fate_uses_by_level()
         self.reader_of_fate_current = self.reader_of_fate_uses
         self.rebuild_deck()
@@ -385,15 +503,22 @@ class Game:
             return
         self.save_state()
         cid = card_obj['id']
+        _hist_state = {
+            "id": cid,
+            "mode": str(card_obj.get("mode", "normal")),
+            "orientation": str(card_obj.get("orientation", "upright")),
+            "tapped": bool(card_obj.get("tapped", False)),
+            "stamp_mode": str(card_obj.get("mode", "normal")) if str(card_obj.get("mode", "normal")) in ("fortune", "major") else None,
+        }
         target_list.remove(card_obj)
         is_tapped = card_obj.get('tapped', False)
         if is_tapped:
             if cid not in self.vanished:
                 self.vanished.append(cid)
-            self.add_history(f"Mulligan: {self.cards[cid]['name']} (Tapped) -> Vanished.", [cid])
+            self.add_history(f"Mulligan: {self.cards[cid]['name']} (Tapped) -> Vanished.", [cid], card_states=[_hist_state])
         else:
             self.deck.append(cid)
-            self.add_history(f"Mulligan: {self.cards[cid]['name']} -> Shuffled.", [cid])
+            self.add_history(f"Mulligan: {self.cards[cid]['name']} -> Shuffled.", [cid], card_states=[_hist_state])
         self.shuffle_deck()
         self.initiate_bulk_draw(1 if is_tapped else 2)
         
@@ -426,15 +551,34 @@ class Game:
     def process_draw_queue(self):
         drawn_ids = []
         for cid in self.draw_queue:
+            if cid in self.vanished:
+                if cid not in self.pending_vanished_draw_returns:
+                    self.pending_vanished_draw_returns.append(cid)
+                self.vanished_draw_popups.append(cid)
+                _card_name = self.cards[cid]['name']
+                if random.random() < 0.5:
+                    _toast = f"You drew {_card_name} as a vanished card, you skip this draw"
+                else:
+                    _toast = f"You drew {_card_name} as a vanished card: {random.choice(VANISHED_DRAW_SASSY_MESSAGES)}"
+                self.add_history(_toast, [cid])
+                continue
             if self.stacked == cid: self.stacked = None 
             self.hand.append({"id": cid, "mode": "normal", "orientation": "upright", "flip": 0.0, "scroll_up": 0, "scroll_inv": 0, "max_sc_up": 0, "max_sc_inv": 0, "is_vanishing": False, "tapped": False})
             if len(self.first_three_ids) < 3: self.first_three_ids.append(cid)
             if self.seer_slots_filled_today < 3: 
                 self.seer_dice_table.append(cid); self.seer_slots_filled_today += 1
             drawn_ids.append(cid)
-        names = ", ".join(self.cards[cid]['name'] for cid in drawn_ids)
-        self.add_history(f"Drew {len(drawn_ids)} card(s): {names}", drawn_ids)
+        if drawn_ids:
+            names = ", ".join(self.cards[cid]['name'] for cid in drawn_ids)
+            self.add_history(f"Drew {len(drawn_ids)} card(s): {names}", drawn_ids)
         self.draw_queue, self.is_drawing = [], False
+        self.shuffle_deck(play_sound=False, trigger_anim=False)
+
+    def resolve_pending_vanished_draw(self, cid):
+        if cid in self.pending_vanished_draw_returns:
+            self.pending_vanished_draw_returns.remove(cid)
+        if cid not in self.deck:
+            self.deck.append(cid)
         self.shuffle_deck(play_sound=False, trigger_anim=False)
 
     def check_has_tapped_effect(self, card_dict):

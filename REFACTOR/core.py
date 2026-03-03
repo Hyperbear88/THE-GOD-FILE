@@ -91,6 +91,7 @@ def load_user_settings():
         "sfx_enabled": True,
         "menu_videos_enabled": True,
         "card_videos_enabled": True,
+        "display_mode": "fullscreen",
         "autosave_enabled": False,
         "autosave_interval_min": 5,
     }
@@ -108,6 +109,8 @@ def load_user_settings():
     defaults["sfx_enabled"] = bool(defaults.get("sfx_enabled", True))
     defaults["menu_videos_enabled"] = bool(defaults.get("menu_videos_enabled", True))
     defaults["card_videos_enabled"] = bool(defaults.get("card_videos_enabled", True))
+    _display_mode = str(defaults.get("display_mode", "fullscreen")).strip().lower()
+    defaults["display_mode"] = "windowed" if _display_mode == "windowed" else "fullscreen"
     defaults["autosave_enabled"] = bool(defaults.get("autosave_enabled", False))
     _autosave_raw = defaults.get("autosave_interval_min", 5)
     try:
@@ -175,6 +178,7 @@ LIBRARY_MUSIC = resource_path(os.path.join("audio", "Library.mp3"))
 SPELL_LIBRARY_MUSIC = resource_path(os.path.join("audio", "Spell Library.mp3"))
 GLOSSARY_MUSIC = resource_path(os.path.join("audio", "Glossary.mp3"))
 PPF_BG_MUSIC = resource_path(os.path.join("audio", "PP&F_BG.mp3"))
+FORTUNE_CARD_VIDEO_MUSIC = resource_path(os.path.join("audio", "Fortune_Card_Video_music.wav"))
 BUTTON_PRESS_SOUND = resource_path(os.path.join("audio", "button-press.mp3"))
 TURNPAGE_SOUND = resource_path(os.path.join("audio", "turnpage.mp3"))
 MAJOR_PROMOTION_SOUND = resource_path(os.path.join("audio", "MFortune_promotion.mp3"))
@@ -405,7 +409,18 @@ def safe_init():
     info = pygame.display.Info()
     w, h = info.current_w, info.current_h
     if w == 0 or h == 0: w, h = 1920, 1080
-    surf = pygame.display.set_mode((w, h), pygame.FULLSCREEN | pygame.DOUBLEBUF)
+    _disp_mode = "fullscreen"
+    try:
+        _disp_mode = str(load_user_settings().get("display_mode", "fullscreen")).strip().lower()
+    except Exception:
+        _disp_mode = "fullscreen"
+    if _disp_mode == "windowed":
+        _ww = int(clamp(w, 1280, 1920))
+        _wh = int(clamp(h, 720, 1080))
+        surf = pygame.display.set_mode((_ww, _wh), pygame.RESIZABLE | pygame.DOUBLEBUF)
+        w, h = _ww, _wh
+    else:
+        surf = pygame.display.set_mode((w, h), pygame.FULLSCREEN | pygame.DOUBLEBUF)
     try: pygame.event.set_grab(True)
     except: pass
     pygame.display.set_caption("Divine Seer Domain")
@@ -707,8 +722,8 @@ class Button:
                     base_col = (236, 126, 194)
                     hover_col = (255, 176, 224)
                 elif self.cyan:
-                    base_col = (120, 232, 255)
-                    hover_col = (190, 246, 255)
+                    base_col = (180, 50, 255)
+                    hover_col = (220, 100, 255)
                 else:
                     base_col = (235, 190, 60)
                     hover_col = (255, 228, 140)
@@ -727,14 +742,14 @@ class Button:
         if self.disabled: bg = (40, 40, 40)
         elif self.fantasy and self.green: bg = (34, 102, 56)
         elif self.fantasy and self.pink: bg = (112, 44, 102)
-        elif self.fantasy and self.cyan: bg = (32, 92, 112)
+        elif self.fantasy and self.cyan: bg = (88, 32, 108)
         elif self.fantasy and self.danger: bg = (110, 42, 36)
         elif self.fantasy and self.warning: bg = (128, 94, 38)
         elif self.fantasy and self.primary: bg = (88, 60, 34)
         elif self.fantasy and self.gold: bg = (108, 82, 30)
         elif self.fantasy: bg = (72, 50, 30)
         elif self.pink: bg = (118, 50, 110)
-        elif self.cyan: bg = (35, 100, 120)
+        elif self.cyan: bg = (64, 15, 92)
         elif self.green: bg = (30, 90, 45)
         elif self.primary: bg = (35, 65, 110)
         elif self.danger: bg = (110, 45, 60)
@@ -755,7 +770,7 @@ class Button:
         draw_round_rect(surf, self.rect, bg, 12)
         bc = (
             (236, 126, 194) if (self.pink and not self.disabled) else
-            ((120, 232, 255) if (self.cyan and not self.disabled) else
+            ((180, 50, 255) if (self.cyan and not self.disabled) else
              ((120, 240, 150) if (self.green and not self.disabled) else
               ((255, 126, 126) if (self.danger and not self.disabled) else
              (GOLD if (self.gold and not self.disabled) else
@@ -763,11 +778,13 @@ class Button:
                ((80,80,80) if self.disabled else ((212, 168, 96) if self.fantasy else (255,255,255,40))))))))
         )
         pygame.draw.rect(surf, bc, self.rect, 2, 12)
-        txt_col = (100,100,100) if self.disabled else ((248, 231, 199) if self.fantasy else (245,245,255))
+        txt_col = (255, 255, 255)
         _shadow = self._get_shadow_surface(font)
         _txt = self._get_text_surface(font, txt_col)
+        _txt_rect = _txt.get_rect(center=self.rect.center)
         surf.blit(_shadow, _shadow.get_rect(center=(self.rect.centerx + 1, self.rect.centery + 1)))
-        surf.blit(_txt, _txt.get_rect(center=self.rect.center))
+        surf.blit(_txt, _txt_rect)
+        surf.blit(_txt, (_txt_rect.x + 1, _txt_rect.y))
     def handle_event(self, e):
         if self.disabled: return False
         if e.type == pygame.MOUSEMOTION: self.hover = self.rect.collidepoint(e.pos)
@@ -809,9 +826,19 @@ class Dropdown:
         _bg = (56, 40, 25) if self.fantasy else (10, 15, 25)
         _bc = (212, 168, 96) if self.fantasy else (255, 255, 255, 30)
         draw_round_rect(surf, self.rect, _bg, 8); pygame.draw.rect(surf, _bc, self.rect, 1, 8)
-        if is_cooldown: surf.blit(font.render("On Cooldown", True, (210, 120, 110) if self.fantasy else (200, 100, 100)), (self.rect.x + 10, self.rect.y + 7))
-        elif self.items: idx = clamp(self.selected_index, 0, len(self.items)-1); surf.blit(font.render(str(self.items[idx][1]), True, (238, 220, 182) if self.fantasy else (200, 200, 200)), (self.rect.x + 10, self.rect.y + 7))
-        else: surf.blit(font.render("Spent / Empty", True, (130, 116, 96) if self.fantasy else (100, 100, 110)), (self.rect.x + 10, self.rect.y + 7))
+        if is_cooldown:
+            _txt = "On Cooldown"
+        elif self.items:
+            idx = clamp(self.selected_index, 0, len(self.items)-1)
+            _txt = str(self.items[idx][1])
+        else:
+            _txt = "Spent / Empty"
+        _shadow = font.render(_txt, True, (0, 0, 0))
+        _label = font.render(_txt, True, (255, 255, 255))
+        _x, _y = self.rect.x + 10, self.rect.y + 7
+        surf.blit(_shadow, (_x + 1, _y + 1))
+        surf.blit(_label, (_x, _y))
+        surf.blit(_label, (_x + 1, _y))
     def draw_menu(self, surf, font):
         if not self.is_open: return
         visible_count = min(len(self.items), self.max_visible); menu_rect = self._menu_rect(); pygame.draw.rect(surf, (48, 34, 21) if self.fantasy else (20, 25, 40), menu_rect); pygame.draw.rect(surf, (212, 168, 96, 170) if self.fantasy else (255, 255, 255, 50), menu_rect, 1)
@@ -822,7 +849,13 @@ class Dropdown:
             r = pygame.Rect(self.rect.x, menu_rect.y + i * self.item_h, self.rect.w, self.item_h)
             if r.collidepoint(pygame.mouse.get_pos()): pygame.draw.rect(surf, (90, 67, 40) if self.fantasy else (40, 60, 100), r)
             if idx == self.selected_index: pygame.draw.rect(surf, (204, 156, 82) if self.fantasy else (60, 80, 150), r, 2)
-            txt = font.render(str(self.items[idx][1]), True, (246, 230, 196) if self.fantasy else (255, 255, 255)); surf.blit(txt, (r.x + 15, r.y + (self.item_h // 2 - txt.get_height() // 2)))
+            _txt_str = str(self.items[idx][1])
+            _txt = font.render(_txt_str, True, (255, 255, 255))
+            _shadow = font.render(_txt_str, True, (0, 0, 0))
+            _tx, _ty = (r.x + 15, r.y + (self.item_h // 2 - _txt.get_height() // 2))
+            surf.blit(_shadow, (_tx + 1, _ty + 1))
+            surf.blit(_txt, (_tx, _ty))
+            surf.blit(_txt, (_tx + 1, _ty))
         if len(self.items) > self.max_visible:
             bw, bh = 4, visible_count * self.item_h; pygame.draw.rect(surf, (220, 185, 120, 40) if self.fantasy else (255, 255, 255, 20), (menu_rect.right - bw - 2, menu_rect.y, bw, bh)); pygame.draw.rect(surf, (214, 172, 98, 220) if self.fantasy else (100, 160, 255, 200), (menu_rect.right - bw - 2, menu_rect.y + int(bh * (self.scroll_offset / len(self.items))), bw, int(bh * (self.max_visible / len(self.items)))))
     def get_selected(self): return self.items[clamp(self.selected_index, 0, len(self.items)-1)][0] if self.items else 1
@@ -950,11 +983,12 @@ class FantasyLevelStepper:
         _show_txt = self.input_buffer if self.editing else str(self.value)
         if self.editing and (pygame.time.get_ticks() // 450) % 2 == 0:
             _show_txt += "|"
-        _num = font.render(_show_txt, True, (247, 228, 188))
+        _num = font.render(_show_txt, True, (255, 255, 255))
         _num_shadow = font.render(_show_txt, True, (30, 18, 10))
         cx, cy = self.center_rect.center
         surf.blit(_num_shadow, (_num_shadow.get_rect(center=(cx + 1, cy + 1))))
         surf.blit(_num, (_num.get_rect(center=(cx, cy))))
+        surf.blit(_num, (_num.get_rect(center=(cx + 1, cy))))
 
     def draw_menu(self, surf, font):
         return
