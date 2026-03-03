@@ -1,10 +1,13 @@
 {
   "menu_music_enabled": true,
-  "menu_music_volume": 17,
+  "menu_music_volume": 9,
   "audio_enabled": true,
   "sfx_enabled": true,
   "menu_videos_enabled": true,
   "card_videos_enabled": true,
   "autosave_enabled": true,
-  "autosave_interval_min": 5
+  "autosave_interval_min": 5,
+  "display_mode": "fullscreen",
+  "windowed_width": 1600,
+  "windowed_height": 900
 }

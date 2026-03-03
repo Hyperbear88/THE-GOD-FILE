@@ -157,7 +157,7 @@ Starting at 1st level, you are proficient in Arcana and Insight skills and have 
 
 Also you learn the Guidance Cantrip. and you can cast the Augury spell as a 10 minute ritual casting using your Tarot cards. This feature has a number of uses equal to your Proficiency Bonus, and you regain any expended uses at the end of a long rest.
 
-# **Hand Size Limit**
+# **handsize limit**
 
 You can only hold one tarot card in your hand at a time. At 6th level, you can hold two tarot cards at a time. At 8th level you can hold three tarot cards at a time. At 12th level you can hold four tarot cards at a time.
 
@@ -195,7 +195,7 @@ Tarot Table
 | 17- The Moon | Upright: You learn the spell 'Invisibility' as one of your Cleric spells . Also you can cast it at will as a 2nd level spell. Then 'The Moon' card becomes a Tapped Card until Vanished.  Reverse: You learn the spell 'See Invisibility' and can cast it at will.  Then 'The Moon' becomes a Tapped Card until Vanished. |
 | 18 - The Sun | **Upright:** You learn the 'Healing Word' spell. It is treated as a Cleric spell for you and you can cast it using your Cleric spell slots. At 3rd level you also learn the 'Lesser Restoration' spell'. And at 5th level  you learn the 'Mass Healing Word' spell. Then 'The Sun' becomes a **Tapped** Card until **Vanished**.  Reverse: You learn the spell 'Burning Hands'. It is treated as a Cleric spell for you and you can cast it using your Cleric spell slots. At 3rd level you also learn the 'Scorching Ray spell'. And at 5th level you learn the 'Fireball' spell. Then 'The Sun' becomes a Tapped Card until Vanished. |
 | 19 – Judgement | **Upright:** As a bonus action, choose one creature you can see within 60 feet of you.  You immediately learn whether the creature has any damage immunities, resistances, or vulnerabilities and what they are. If the creature is hidden from divination magic, you sense that it has no damage immunities, resistances, or vulnerabilities. at 14th level, you give that creature vulnerability or immunity to one  damage type of your choice until the next time it takes damage from that type. Then 'The Judgement' card Vanishes.  Reverse: As a bonus action, choose one creature you can see within 60 feet of you. You can give that creature disadvantage on one type of saving throw until your next turn. Then 'The Judgement' card Vanishes. |
-| 20 - The World | **Upright:** When used. Draw two more cards from your Tarot Deck: you can use both cards simultaneously. (These additional draws can exceed your hand size limit, but you cannot draw additional cards until your Hand Size is able). Then 'The World' card Vanishes.  Reverse: When used: Add one of your Vanished Tarot Cards (Except 'The World') to your hand. That Tarot card can be reused again. Then 'The World' card Vanishes. |
+| 20 - The World | **Upright:** When used. Draw two more cards from your Tarot Deck: you can use both cards simultaneously. (These additional draws can exceed your handsize limit, but you cannot draw additional cards until your handsize is able). Then 'The World' card Vanishes.  Reverse: When used: Add one of your Vanished Tarot Cards (Except 'The World') to your hand. That Tarot card can be reused again. Then 'The World' card Vanishes. |
 
 **Vanished Cards & Quick Info**
 
@@ -216,7 +216,7 @@ Starting at 2nd level, you can use your Channel Divinity to manipulate the Fates
 As a bonus action (Or once per round at the start of your turn in combat), you can choose to do one of the following options:
 
 * Draw one random Tarot card from your deck by rolling a 1D20, taking the card number listed below from the **Tarot Table**.
-* Shuffle one Tapped Tarot card from your hand to the deck, and apply the first effect. Any card that has been used **Vanishes** when returned this way. If the card is unused, draw 2 instead (If drawing 2 cards would exceed hand size, draw 1 instead).
+* Shuffle one Tapped Tarot card from your hand to the deck, and apply the first effect. Any card that has been used **Vanishes** when returned this way. If the card is unused, draw 2 instead (If drawing 2 cards would exceed handsize, draw 1 instead).
 * Choose one Tarot card in your deck (Except 'the World' card), stack in on top of your deck. The next draw from this feature is that card instead of being random. This effect is removed when the deck is shuffled.
 
 This tarot card can be used at any time when it is drawn until it is shuffled into the deck. If that card on the **Tarot Table** is already in your hand you can reroll the dice. If that card has **Vanished,** place it back into the deck.

@@ -1,20 +1,11 @@
 {
   "version": 1,
   "slot_index": 1,
-  "saved_at": "2026-03-03 17:09:51",
+  "saved_at": "2026-03-03 18:37:14",
   "loadout": {
-    "name": "bait",
-    "fortune_ids": [
-      6,
-      5,
-      11,
-      10,
-      17,
-      15,
-      19,
-      18
-    ],
-    "major_id": 16,
-    "level": 1
+    "name": "Loadout 2",
+    "fortune_ids": [],
+    "major_id": null,
+    "level": 20
   }
 }

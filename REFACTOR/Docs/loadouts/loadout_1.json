@@ -1,20 +1,11 @@
 {
   "version": 1,
   "slot_index": 0,
-  "saved_at": "2026-03-03 17:09:51",
+  "saved_at": "2026-03-03 18:37:14",
   "loadout": {
-    "name": "dantheman",
-    "fortune_ids": [
-      2,
-      3,
-      5,
-      6,
-      11,
-      10,
-      7,
-      9
-    ],
-    "major_id": 13,
+    "name": "Loadout 1",
+    "fortune_ids": [],
+    "major_id": null,
     "level": 20
   }
 }

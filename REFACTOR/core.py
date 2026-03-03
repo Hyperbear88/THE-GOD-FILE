@@ -92,6 +92,8 @@ def load_user_settings():
         "menu_videos_enabled": True,
         "card_videos_enabled": True,
         "display_mode": "fullscreen",
+        "windowed_width": 1600,
+        "windowed_height": 900,
         "autosave_enabled": False,
         "autosave_interval_min": 5,
     }
@@ -111,6 +113,16 @@ def load_user_settings():
     defaults["card_videos_enabled"] = bool(defaults.get("card_videos_enabled", True))
     _display_mode = str(defaults.get("display_mode", "fullscreen")).strip().lower()
     defaults["display_mode"] = "windowed" if _display_mode == "windowed" else "fullscreen"
+    try:
+        _ww = int(defaults.get("windowed_width", 1600))
+    except Exception:
+        _ww = 1600
+    try:
+        _wh = int(defaults.get("windowed_height", 900))
+    except Exception:
+        _wh = 900
+    defaults["windowed_width"] = int(clamp(_ww, 960, 3840))
+    defaults["windowed_height"] = int(clamp(_wh, 540, 2160))
     defaults["autosave_enabled"] = bool(defaults.get("autosave_enabled", False))
     _autosave_raw = defaults.get("autosave_interval_min", 5)
     try:
@@ -399,6 +411,7 @@ def make_glow(w, h, color):
     return s
 
 def safe_init():
+    os.environ.setdefault("SDL_VIDEO_CENTERED", "1")
     try: pygame.mixer.pre_init(44100, -16, 2, 128)
     except: pass
     pygame.init()
@@ -410,18 +423,27 @@ def safe_init():
     w, h = info.current_w, info.current_h
     if w == 0 or h == 0: w, h = 1920, 1080
     _disp_mode = "fullscreen"
+    _settings = {}
     try:
-        _disp_mode = str(load_user_settings().get("display_mode", "fullscreen")).strip().lower()
+        _settings = load_user_settings()
+        _disp_mode = str(_settings.get("display_mode", "fullscreen")).strip().lower()
     except Exception:
         _disp_mode = "fullscreen"
     if _disp_mode == "windowed":
-        _ww = int(clamp(w, 1280, 1920))
-        _wh = int(clamp(h, 720, 1080))
+        _ww = int(clamp(_settings.get("windowed_width", 1600), 960, max(960, w)))
+        _wh = int(clamp(_settings.get("windowed_height", 900), 540, max(540, h)))
         surf = pygame.display.set_mode((_ww, _wh), pygame.RESIZABLE | pygame.DOUBLEBUF)
         w, h = _ww, _wh
+        try:
+            _wx = max(0, (info.current_w - w) // 2)
+            _wy = max(0, (info.current_h - h) // 2)
+            if hasattr(pygame.display, "set_window_position"):
+                pygame.display.set_window_position(_wx, _wy)
+        except Exception:
+            pass
     else:
         surf = pygame.display.set_mode((w, h), pygame.FULLSCREEN | pygame.DOUBLEBUF)
-    try: pygame.event.set_grab(True)
+    try: pygame.event.set_grab(_disp_mode != "windowed")
     except: pass
     pygame.display.set_caption("Divine Seer Domain")
     return surf, w, h

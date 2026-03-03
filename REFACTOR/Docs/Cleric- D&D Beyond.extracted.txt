@@ -62,7 +62,7 @@ Every time you roll a dice, play a card or flip heads or tails on a coin she wat
 Reader of Fate:
 Starting at 1st level, you are proficient in Arcana and Insight skills and have expertise with all Card Games, Coin Games and Dice Games.
 Also you learn the Guidance Cantrip. and you can cast the Augury spell as a 10 minute ritual casting using your Tarot cards. This feature has a number of uses equal to your Proficiency Bonus, and you regain any expended uses at the end of a long rest.
-Hand Size Limit
+handsize limit
 You can only hold one tarot card in your hand at a time. At 6th level, you can hold two tarot cards at a time. At 8th level you can hold three tarot cards at a time. At 12th level you can hold four tarot cards at a time.
 Tarot Reading
 After each long rest, Draw one card at random from your Tarot Deck by rolling 1D20, taking the card number listed below from the Tarot Table (If the same number is rolled more than once, you can re roll the dice). This tarot card can be used at any time when it is drawn until your next long rest.
@@ -80,7 +80,7 @@ Draw of Fate.
 Starting at 2nd level, you can use your Channel Divinity to manipulate the Fates or Draw an additional card from your deck.
 As a bonus action (Or once per round at the start of your turn in combat), you can choose to do one of the following options:
 Draw one random Tarot card from your deck by rolling a 1D20, taking the card number listed below from the Tarot Table.
-Shuffle one Tapped Tarot card from your hand to the deck, and apply the first effect. Any card that has been used Vanishes when returned this way. If the card is unused, draw 2 instead (If drawing 2 cards would exceed hand size, draw 1 instead).
+Shuffle one Tapped Tarot card from your hand to the deck, and apply the first effect. Any card that has been used Vanishes when returned this way. If the card is unused, draw 2 instead (If drawing 2 cards would exceed handsize, draw 1 instead).
 Choose one Tarot card in your deck (Except 'the World' card), stack in on top of your deck. The next draw from this feature is that card instead of being random. This effect is removed when the deck is shuffled.
 This tarot card can be used at any time when it is drawn until it is shuffled into the deck. If that card on the Tarot Table is already in your hand you can reroll the dice. If that card has Vanished, place it back into the deck.
 Channel Divinity: Turn Undead
